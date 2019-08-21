@@ -1,0 +1,117 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background-color: #ccffcc;
+}
+
+#tablero{
+    display: inline-block;
+    margin: 3em;
+    padding-top: 1.5em;
+    padding-right: 1.5em;
+    background-color: #1a0d00;
+}
+
+#numeros{
+    float: left;
+    display: flex;
+    flex-direction: column;
+}
+
+#numeros span{
+    width: 1.5em;
+    line-height: 4.5em;
+    text-align: center;
+    color: #ff9933;
+}
+
+#letras{
+    display: flex;
+    margin-left: 1.5em;
+}
+
+#letras span{
+    flex-basis: 4.5em;
+    line-height: 1.5em;
+    text-align: center;
+    color: #ff9933;
+}
+
+#casillasTablero{
+    border-collapse: collapse;
+}
+
+#casillasTablero td{
+    width: 4.5em;
+    height: 4.5em;
+    border: none;
+    background-size: 4.5em;
+    background-repeat: no-repeat;
+}
+
+#casillasTablero tr:nth-child(odd) td:nth-child(odd){
+    background-color: #ffdf80;
+}
+
+#casillasTablero tr:nth-child(even) td:nth-child(even){
+    background-color: #ffdf80;
+}
+
+#casillasTablero tr:nth-child(odd) td:nth-child(even){
+    background-color: #996633;
+}
+
+#casillasTablero tr:nth-child(even) td:nth-child(odd){
+    background-color: #996633;
+}
+
+.peonNegro{
+    background-image: url("../img/peon_negro.svg");
+}
+
+.torreNegro{
+    background-image: url("../img/torre_negro.svg");
+}
+
+.caballoNegro{
+    background-image: url("../img/caballo_negro.svg");
+}
+
+.alfilNegro{
+    background-image: url("../img/alfil_negro.svg");
+}
+
+.reinaNegro{
+    background-image: url("../img/reina_negro.svg");
+}
+
+.reyNegro{
+    background-image: url("../img/rey_negro.svg");
+}
+
+.peonBlanco{
+    background-image: url("../img/peon_blanco.svg");
+}
+
+.torreBlanco{
+    background-image: url("../img/torre_blanco.svg");
+}
+
+.caballoBlanco{
+    background-image: url("../img/caballo_blanco.svg");
+}
+
+.alfilBlanco{
+    background-image: url("../img/alfil_blanco.svg");
+}
+
+.reinaBlanco{
+    background-image: url("../img/reina_blanco.svg");
+}
+
+.reyBlanco{
+    background-image: url("../img/rey_blanco.svg");
+}
