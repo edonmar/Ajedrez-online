@@ -3,6 +3,7 @@ var tableroHTML = [];    // El tablero que se muestra en pantalla (el del HTML)
 var hayPiezaSelec = false;
 var piezaSelec = {posX: undefined, posY: undefined};
 var movPosibles = [];
+var turno = true;    // true = blancas, false = negras
 
 window.onload = function(){
     inicializarTablero();
@@ -188,7 +189,7 @@ function iniciarEventosTablero(){
 // Si pulso la misma pieza que ya esta seleccionada, la deselecciono
 function clickEnCasilla(i, j){
     if(hayPiezaSelec == false){
-        if(tablero[i][j] > 0){
+        if(turno == true && tablero[i][j] > 0 || turno == false && tablero[i][j] < 0){
             movPosibles = [];
             calcularMovSegunPieza(i, j);
             seleccionarPieza(i, j);
@@ -199,11 +200,12 @@ function clickEnCasilla(i, j){
             moverPieza(i, j);
             deseleccionarPieza();
             movPosibles = [];
+            turno = !turno;
         }
         else
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
             if(i != piezaSelec.posX || j != piezaSelec.posY){
-                if(tablero[i][j] > 0){
+                if(turno == true && tablero[i][j] > 0 || turno == false && tablero[i][j] < 0){
                     movPosibles = [];
                     calcularMovSegunPieza(i, j);
                     seleccionarPieza(i, j);
@@ -231,6 +233,9 @@ function calcularMovSegunPieza(x, y){
         case 1:
             calcularMovPeonBlanco(x, y);
             break;
+        case -1:
+            calcularMovPeonNegro(x, y);
+            break;
     }
 }
 
@@ -240,6 +245,14 @@ function calcularMovPeonBlanco(x, y){
             movPosibles.push(pos = {posX: x - 1, posY: y});
     if(x == 6)
         movPosibles.push(pos = {posX: x - 2, posY: y});
+}
+
+function calcularMovPeonNegro(x, y){
+    if(x != 7)
+        if(tablero[x + 1][y] == 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y});
+    if(x == 1)
+        movPosibles.push(pos = {posX: x + 2, posY: y});
 }
 
 function moverPieza(x, y){
