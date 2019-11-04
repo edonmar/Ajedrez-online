@@ -9,7 +9,7 @@ window.onload = function(){
     inicializarTablero();
     colocarPiezasIniciales();
     inicializarTableroHTML();
-    annadirEstiloPiezasIniciales();
+    annadirImgPiezasIniciales();
     iniciarEventosTablero();
 }
 
@@ -65,19 +65,19 @@ function inicializarTableroHTML(){
     }
 }
 
-function annadirEstiloPiezasIniciales(){
+function annadirImgPiezasIniciales(){
     // Blancas
-    for(i=6; i<8; i++)
-        for(j=0; j<8; j++)
-            annadirEstiloPieza(i, j);
+    for(let i=6; i<8; i++)
+        for(let j=0; j<8; j++)
+            annadirImgPieza(i, j);
 
     // Negras
-    for(i=0; i<2; i++)
-        for(j=0; j<8; j++)
-            annadirEstiloPieza(i, j);
+    for(let i=0; i<2; i++)
+        for(let j=0; j<8; j++)
+            annadirImgPieza(i, j);
 }
 
-function annadirEstiloPieza(x, y){
+function annadirImgPieza(x, y){
     var piezaHTML = tableroHTML[x][y];
     var tipo = tablero[x][y];
 
@@ -126,7 +126,7 @@ function annadirEstiloPieza(x, y){
     }
 }
 
-function eliminarEstiloPieza(x, y){
+function eliminarImgPieza(x, y){
     var piezaHTML = tableroHTML[x][y];
     var tipo = tablero[x][y];
 
@@ -193,11 +193,13 @@ function clickEnCasilla(i, j){
             movPosibles = [];
             calcularMovSegunPieza(i, j);
             seleccionarPieza(i, j);
+            annadirEstiloMovPosibles();
         }
     }
     else
         if(esMovValido(i, j)){
             moverPieza(i, j);
+            eliminarEstiloMovPosibles();
             deseleccionarPieza();
             movPosibles = [];
             turno = !turno;
@@ -206,14 +208,18 @@ function clickEnCasilla(i, j){
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
             if(i != piezaSelec.posX || j != piezaSelec.posY){
                 if(turno == true && tablero[i][j] > 0 || turno == false && tablero[i][j] < 0){
+                    eliminarEstiloMovPosibles();
                     movPosibles = [];
                     calcularMovSegunPieza(i, j);
                     seleccionarPieza(i, j);
+                    annadirEstiloMovPosibles();
                 }
             }
             // Si la pieza pulsada es la que estaba seleccionada, la deselecciono
-            else
+            else{
+                eliminarEstiloMovPosibles();
                 deseleccionarPieza();
+            }
 }
 
 function seleccionarPieza(i, j){
@@ -224,6 +230,26 @@ function seleccionarPieza(i, j){
 function deseleccionarPieza(){
     hayPiezaSelec = false;
     piezaSelec = {posX: undefined, posY: undefined};
+}
+
+function annadirEstiloMovPosibles(){
+    // Pieza seleccionada
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.add("piezaSeleccionada");
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "<div class='piezaSeleccionadaBorde'></div>";
+
+    // Movimientos posibles
+    for(let i=0, fin=movPosibles.length; i<fin; i++)
+        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "<div class='movPosible'></div>";
+}
+
+function eliminarEstiloMovPosibles(){
+    // Pieza seleccionada
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.remove("piezaSeleccionada");
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "";
+
+    // Movimientos posibles
+    for(let i=0, fin=movPosibles.length; i<fin; i++)
+        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "";
 }
 
 function calcularMovSegunPieza(x, y){
@@ -258,14 +284,14 @@ function calcularMovPeonNegro(x, y){
 function moverPieza(x, y){
     // Si come otra pieza, eliminar estilo de la pieza comida
     if(tablero[x][y] != 0)
-        eliminarEstiloPieza(x, y);
+        eliminarImgPieza(x, y);
 
     // Pone la pieza y el estilo en la nueva posicion
     tablero[x][y] = tablero[piezaSelec.posX][piezaSelec.posY];
-    annadirEstiloPieza(x, y);
+    annadirImgPieza(x, y);
     
     // Elimina el estilo y la pieza de la anterior posicion
-    eliminarEstiloPieza(piezaSelec.posX, piezaSelec.posY);
+    eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
     tablero[piezaSelec.posX][piezaSelec.posY] = 0;
 }
 
