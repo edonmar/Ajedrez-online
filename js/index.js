@@ -290,6 +290,13 @@ function calcularMovSegunPieza(x, y){
         case -5:
             calcularMovReinaNegra(x, y);
             break;
+
+        case 6:
+            calcularMovReyBlanco(x, y);
+            break;
+        case -6:
+            calcularMovReyNegro(x, y);
+            break;
     }
 }
 
@@ -653,6 +660,90 @@ function calcularMovReinaBlanca(x, y){
 function calcularMovReinaNegra(x, y){
     calcularMovTorreNegra(x, y);
     calcularMovAlfilNegro(x, y);
+}
+
+function calcularMovReyBlanco(x, y){
+    // Arriba - Izquierda
+    if(x - 1 >= 0 && y - 1 >= 0)
+        if(tablero[x - 1][y - 1] <= 0)
+            movPosibles.push(pos = {posX: x - 1, posY: y - 1});
+
+    // Arriba
+    if(x - 1 >= 0)
+        if(tablero[x - 1][y] <= 0)
+            movPosibles.push(pos = {posX: x - 1, posY: y});
+
+    // Arriba - Derecha
+    if(x - 1 >= 0 && y + 1 <= 7)
+        if(tablero[x - 1][y + 1] <= 0)
+            movPosibles.push(pos = {posX: x - 1, posY: y + 1});
+
+    // Derecha
+    if(y + 1 <= 7)
+        if(tablero[x][y + 1] <= 0)
+            movPosibles.push(pos = {posX: x, posY: y + 1});
+
+    // Abajo - Derecha
+    if(x + 1 <= 7 && y + 1 <= 7)
+        if(tablero[x + 1][y + 1] <= 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y + 1});
+
+    // Abajo
+    if(x + 1 <= 7)
+        if(tablero[x + 1][y] <= 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y});
+
+    // Abajo - Izquierda
+    if(x + 1 <= 7 && y - 1 >= 0)
+        if(tablero[x + 1][y - 1] <= 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y - 1});
+
+    // Izquierda
+    if(y - 1 >= 0)
+        if(tablero[x][y - 1] <= 0)
+            movPosibles.push(pos = {posX: x, posY: y - 1});
+}
+
+function calcularMovReyNegro(x, y){
+    // Arriba - Izquierda
+    if(x - 1 >= 0 && y - 1 >= 0)
+        if(tablero[x - 1][y - 1] >= 0)
+            movPosibles.push(pos = {posX: x - 1, posY: y - 1});
+
+    // Arriba
+    if(x - 1 >= 0)
+        if(tablero[x - 1][y] >= 0)
+            movPosibles.push(pos = {posX: x - 1, posY: y});
+
+    // Arriba - Derecha
+    if(x - 1 >= 0 && y + 1 <= 7)
+        if(tablero[x - 1][y + 1] >= 0)
+            movPosibles.push(pos = {posX: x - 1, posY: y + 1});
+
+    // Derecha
+    if(y + 1 <= 7)
+        if(tablero[x][y + 1] >= 0)
+            movPosibles.push(pos = {posX: x, posY: y + 1});
+
+    // Abajo - Derecha
+    if(x + 1 <= 7 && y + 1 <= 7)
+        if(tablero[x + 1][y + 1] >= 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y + 1});
+
+    // Abajo
+    if(x + 1 <= 7)
+        if(tablero[x + 1][y] >= 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y});
+
+    // Abajo - Izquierda
+    if(x + 1 <= 7 && y - 1 >= 0)
+        if(tablero[x + 1][y - 1] >= 0)
+            movPosibles.push(pos = {posX: x + 1, posY: y - 1});
+
+    // Izquierda
+    if(y - 1 >= 0)
+        if(tablero[x][y - 1] >= 0)
+            movPosibles.push(pos = {posX: x, posY: y - 1});
 }
 
 function moverPieza(x, y){
