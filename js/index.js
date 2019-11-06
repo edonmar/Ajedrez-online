@@ -262,6 +262,13 @@ function calcularMovSegunPieza(x, y){
         case -1:
             calcularMovPeonNegro(x, y);
             break;
+
+        case 2:
+            calcularMovTorreBlanca(x, y);
+            break;
+        case -2:
+            calcularMovTorreNegra(x, y);
+            break;
     }
 }
 
@@ -307,6 +314,118 @@ function calcularMovPeonNegro(x, y){
     // Dos casillas hacia delante
     if(x == 1 && tablero[2][y] == 0 && tablero[3][y] == 0)
         movPosibles.push(pos = {posX: 3, posY: y});
+}
+
+function calcularMovTorreBlanca(x, y){
+    var i;
+
+    // Arriba
+    i = 1;
+    while(x - i >= 0){
+        if(tablero[x - i][y] > 0)
+            break;
+
+        movPosibles.push(pos = {posX: x - i, posY: y});
+
+        if(tablero[x - i][y] < 0)
+            break;
+        i++;
+    }
+
+    // Derecha
+    i = 1;
+    while(y + i <= 7){
+        if(tablero[x][y + i] > 0)
+            break;
+
+        movPosibles.push(pos = {posX: x, posY: y + i});
+
+        if(tablero[x][y + i] < 0)
+            break;
+        i++;
+    }
+
+    // Abajo
+    i = 1;
+    while(x + i <= 7){
+        if(tablero[x + i][y] > 0)
+            break;
+
+        movPosibles.push(pos = {posX: x + i, posY: y});
+
+        if(tablero[x + i][y] < 0)
+            break;
+        i++;
+    }
+
+    // Izquierda
+    i = 1;
+    while(y - i >= 0){
+        if(tablero[x][y - i] > 0)
+            break;
+
+        movPosibles.push(pos = {posX: x, posY: y - i});
+
+        if(tablero[x][y - i] < 0)
+            break;
+        i++;
+    }
+}
+
+function calcularMovTorreNegra(x, y){
+    var i;
+
+    // Arriba
+    i = 1;
+    while(x - i >= 0){
+        if(tablero[x - i][y] < 0)
+            break;
+
+        movPosibles.push(pos = {posX: x - i, posY: y});
+
+        if(tablero[x - i][y] > 0)
+            break;
+        i++;
+    }
+
+    // Derecha
+    i = 1;
+    while(y + i <= 7){
+        if(tablero[x][y + i] < 0)
+            break;
+
+        movPosibles.push(pos = {posX: x, posY: y + i});
+
+        if(tablero[x][y + i] > 0)
+            break;
+        i++;
+    }
+
+    // Abajo
+    i = 1;
+    while(x + i <= 7){
+        if(tablero[x + i][y] < 0)
+            break;
+
+        movPosibles.push(pos = {posX: x + i, posY: y});
+
+        if(tablero[x + i][y] > 0)
+            break;
+        i++;
+    }
+
+    // Izquierda
+    i = 1;
+    while(y - i >= 0){
+        if(tablero[x][y - i] < 0)
+            break;
+
+        movPosibles.push(pos = {posX: x, posY: y - i});
+
+        if(tablero[x][y - i] > 0)
+            break;
+        i++;
+    }
 }
 
 function moverPieza(x, y){
