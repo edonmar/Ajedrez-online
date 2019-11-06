@@ -266,19 +266,47 @@ function calcularMovSegunPieza(x, y){
 }
 
 function calcularMovPeonBlanco(x, y){
-    if(x != 0)
+    if(x != 0){
+        // Una casilla hacia delante
         if(tablero[x - 1][y] == 0)
             movPosibles.push(pos = {posX: x - 1, posY: y});
-    if(x == 6)
-        movPosibles.push(pos = {posX: x - 2, posY: y});
+
+        // Comer hacia la izquierda
+        if(y > 0)
+            if(tablero[x - 1][y - 1] < 0)
+                movPosibles.push(pos = {posX: x - 1, posY: y - 1});
+
+        // Comer hacia la derecha
+        if(y < 7)
+            if(tablero[x - 1][y + 1] < 0)
+                movPosibles.push(pos = {posX: x - 1, posY: y + 1});
+    }
+
+    // Dos casillas hacia delante
+    if(x == 6 && tablero[5][y] == 0 && tablero[4][y] == 0)
+        movPosibles.push(pos = {posX: 4, posY: y});
 }
 
 function calcularMovPeonNegro(x, y){
-    if(x != 7)
+    if(x != 7){
+        // Una casilla hacia delante
         if(tablero[x + 1][y] == 0)
             movPosibles.push(pos = {posX: x + 1, posY: y});
-    if(x == 1)
-        movPosibles.push(pos = {posX: x + 2, posY: y});
+
+        // Comer hacia la izquierda
+        if(y > 0)
+            if(tablero[x + 1][y - 1] > 0)
+                movPosibles.push(pos = {posX: x + 1, posY: y - 1});
+
+        // Comer hacia la derecha
+        if(y < 7)
+            if(tablero[x + 1][y + 1] > 0)
+                movPosibles.push(pos = {posX: x + 1, posY: y + 1});
+    }
+
+    // Dos casillas hacia delante
+    if(x == 1 && tablero[2][y] == 0 && tablero[3][y] == 0)
+        movPosibles.push(pos = {posX: 3, posY: y});
 }
 
 function moverPieza(x, y){
@@ -289,7 +317,7 @@ function moverPieza(x, y){
     // Pone la pieza y el estilo en la nueva posicion
     tablero[x][y] = tablero[piezaSelec.posX][piezaSelec.posY];
     annadirImgPieza(x, y);
-    
+
     // Elimina el estilo y la pieza de la anterior posicion
     eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
     tablero[piezaSelec.posX][piezaSelec.posY] = 0;
