@@ -283,6 +283,13 @@ function calcularMovSegunPieza(x, y){
         case -4:
             calcularMovAlfilNegro(x, y);
             break;
+
+        case 5:
+            calcularMovReinaBlanca(x, y);
+            break;
+        case -5:
+            calcularMovReinaNegra(x, y);
+            break;
     }
 }
 
@@ -636,6 +643,16 @@ function calcularMovAlfilNegro(x, y){
         i++;
         j++;
     }
+}
+
+function calcularMovReinaBlanca(x, y){
+    calcularMovTorreBlanca(x, y);
+    calcularMovAlfilBlanco(x, y);
+}
+
+function calcularMovReinaNegra(x, y){
+    calcularMovTorreNegra(x, y);
+    calcularMovAlfilNegro(x, y);
 }
 
 function moverPieza(x, y){
