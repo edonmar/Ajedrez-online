@@ -60,6 +60,29 @@ body{
     background-color: #996633;
 }
 
+.movPosible{
+    position: relative;
+    left: 35%;
+    box-sizing: border-box;
+    width: 30%;
+    height: 30%;
+    border: 1px solid black;
+    border-radius: 50%;
+    background-color: #57cbcb;
+}
+
+.piezaSeleccionada{
+    background-color: #57cbcb;
+}
+
+.piezaSeleccionadaBorde{
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+}
+
 .peonNegro{
     background-image: url("../img/peon_negro.svg");
 }
@@ -106,27 +129,4 @@ body{
 
 .reyBlanco{
     background-image: url("../img/rey_blanco.svg");
-}
-
-.movPosible{
-    position: relative;
-    left: 35%;
-    box-sizing: border-box;
-    width: 30%;
-    height: 30%;
-    border: 1px solid black;
-    border-radius: 50%;
-    background-color: #57cbcb;
-}
-
-.piezaSeleccionada{
-    background-color: #57cbcb;
-}
-
-.piezaSeleccionadaBorde{
-    position: relative;
-    box-sizing: border-box;
-    width: 100%;
-    height: 100%;
-    border: 1px solid black;
 }

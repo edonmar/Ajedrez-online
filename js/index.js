@@ -1,36 +1,34 @@
-var tablero = [];    // El tablero donde se hacen todas las operaciones
-var tableroHTML = [];    // El tablero que se muestra en pantalla (el del HTML)
-var hayPiezaSelec = false;
-var piezaSelec = {posX: undefined, posY: undefined};
-var movPosibles = [];
-var turno = true;    // true = blancas, false = negras
+let tablero = [];    // El tablero donde se hacen todas las operaciones
+let tableroHTML = [];    // El tablero que se muestra en pantalla (el del HTML)
+let hayPiezaSelec = false;
+let piezaSelec = {posX: undefined, posY: undefined};
+let movPosibles = [];    // Array donde se van a guardar objetos con coordenadas de movimientos posibles
+let turno = true;    // true = blancas, false = negras
 
-window.onload = function(){
+window.onload = function () {
     inicializarTablero();
     colocarPiezasIniciales();
     inicializarTableroHTML();
     annadirImgPiezasIniciales();
     iniciarEventosTablero();
-}
+};
 
 // Asigna a la variable Tablero un array 8x8 vacio
-function inicializarTablero(){
+function inicializarTablero() {
     tablero = new Array(8);
-
-    for(let i=0, fin=tablero.length; i<fin; i++)
+    for (let i = 0, fin = tablero.length; i < fin; i++)
         tablero[i] = new Array(8);
 }
 
-function colocarPiezasIniciales(){
+function colocarPiezasIniciales() {
     // Casillas en blanco
-    for(let i=0; i<8; i++)
-        for(let j=0; j<8; j++)
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
             tablero[i][j] = 0;
 
     // Piezas blancas
-    for(let i=0; i<8; i++)
-        tablero[6][i] = 1;    // Peon
-
+    for (let i = 0; i < 8; i++)
+        tablero[6][i] = 1;    // Peones
     tablero[7][0] = 2;    // Torre
     tablero[7][1] = 3;    // Caballo
     tablero[7][2] = 4;    // Alfil
@@ -41,9 +39,8 @@ function colocarPiezasIniciales(){
     tablero[7][7] = 2;    // Torre
 
     // Piezas negras
-    for(let i=0; i<8; i++)
-        tablero[1][i] = -1;    // Peon
-
+    for (let i = 0; i < 8; i++)
+        tablero[1][i] = -1;    // Peones
     tablero[0][0] = -2;    // Torre
     tablero[0][1] = -3;    // Caballo
     tablero[0][2] = -4;    // Alfil
@@ -55,33 +52,33 @@ function colocarPiezasIniciales(){
 }
 
 // Asigna a la variable tableroHTML un array de 8x8 con las celdas HTML
-function inicializarTableroHTML(){
-    var filas, casillasDeLaFila;
+function inicializarTableroHTML() {
+    let filas, casillasDeLaFila;
 
     filas = document.querySelectorAll("tr");
-    for(let i=0, fin=filas.length; i<fin; i++){
+    for (let i = 0, fin = filas.length; i < fin; i++) {
         casillasDeLaFila = filas[i].querySelectorAll("td");
         tableroHTML.push(casillasDeLaFila);
     }
 }
 
-function annadirImgPiezasIniciales(){
+function annadirImgPiezasIniciales() {
     // Blancas
-    for(let i=6; i<8; i++)
-        for(let j=0; j<8; j++)
+    for (let i = 6; i < 8; i++)
+        for (let j = 0; j < 8; j++)
             annadirImgPieza(i, j);
 
     // Negras
-    for(let i=0; i<2; i++)
-        for(let j=0; j<8; j++)
+    for (let i = 0; i < 2; i++)
+        for (let j = 0; j < 8; j++)
             annadirImgPieza(i, j);
 }
 
-function annadirImgPieza(x, y){
-    var piezaHTML = tableroHTML[x][y];
-    var tipo = tablero[x][y];
+function annadirImgPieza(x, y) {
+    let piezaHTML = tableroHTML[x][y];
+    let tipo = tablero[x][y];
 
-    switch(tipo){
+    switch (tipo) {
         case 1:
             piezaHTML.classList.add("peonBlanco");
             break;
@@ -126,11 +123,11 @@ function annadirImgPieza(x, y){
     }
 }
 
-function eliminarImgPieza(x, y){
-    var piezaHTML = tableroHTML[x][y];
-    var tipo = tablero[x][y];
+function eliminarImgPieza(x, y) {
+    let piezaHTML = tableroHTML[x][y];
+    let tipo = tablero[x][y];
 
-    switch(tipo){
+    switch (tipo) {
         case 1:
             piezaHTML.classList.remove("peonBlanco");
             break;
@@ -175,10 +172,30 @@ function eliminarImgPieza(x, y){
     }
 }
 
-function iniciarEventosTablero(){
-    for(let i=0; i<8; i++)
-        for(let j=0; j<8; j++)
-            tableroHTML[i][j].addEventListener("click", function(){
+function annadirEstiloMovPosibles() {
+    // Pieza seleccionada
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.add("piezaSeleccionada");
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "<div class='piezaSeleccionadaBorde'></div>";
+
+    // Movimientos posibles
+    for (let i = 0, fin = movPosibles.length; i < fin; i++)
+        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "<div class='movPosible'></div>";
+}
+
+function eliminarEstiloMovPosibles() {
+    // Pieza seleccionada
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.remove("piezaSeleccionada");
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "";
+
+    // Movimientos posibles
+    for (let i = 0, fin = movPosibles.length; i < fin; i++)
+        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "";
+}
+
+function iniciarEventosTablero() {
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            tableroHTML[i][j].addEventListener("click", function () {
                 clickEnCasilla(i, j);
             });
 }
@@ -187,75 +204,72 @@ function iniciarEventosTablero(){
 // Si pulso una casilla a la que no me puedo mover, no pasa nada
 // Si pulso una pieza y luego otra, selecciono la segunda
 // Si pulso la misma pieza que ya esta seleccionada, la deselecciono
-function clickEnCasilla(i, j){
-    if(hayPiezaSelec == false){
-        if(turno == true && tablero[i][j] > 0 || turno == false && tablero[i][j] < 0){
+function clickEnCasilla(i, j) {
+    if (!hayPiezaSelec) {
+        if (turno && tablero[i][j] > 0 || !turno && tablero[i][j] < 0) {
             movPosibles = [];
             calcularMovSegunPieza(i, j);
             seleccionarPieza(i, j);
             annadirEstiloMovPosibles();
         }
-    }
-    else
-        if(esMovValido(i, j)){
+    } else {
+        if (esMovValido(i, j)) {
             moverPieza(i, j);
             eliminarEstiloMovPosibles();
             deseleccionarPieza();
             movPosibles = [];
             turno = !turno;
-        }
-        else
+        } else {
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
-            if(i != piezaSelec.posX || j != piezaSelec.posY){
-                if(turno == true && tablero[i][j] > 0 || turno == false && tablero[i][j] < 0){
+            if (i !== piezaSelec.posX || j !== piezaSelec.posY) {
+                // Compruebo que este pulsando una pieza y que sea de mi color
+                if (turno && tablero[i][j] > 0 || !turno && tablero[i][j] < 0) {
                     eliminarEstiloMovPosibles();
                     movPosibles = [];
                     calcularMovSegunPieza(i, j);
                     seleccionarPieza(i, j);
                     annadirEstiloMovPosibles();
                 }
-            }
-            // Si la pieza pulsada es la que estaba seleccionada, la deselecciono
-            else{
+            } else {    // Si la pieza pulsada es la que estaba seleccionada, la deselecciono
                 eliminarEstiloMovPosibles();
                 deseleccionarPieza();
             }
+        }
+    }
 }
 
-function seleccionarPieza(i, j){
+function seleccionarPieza(i, j) {
     hayPiezaSelec = true;
     piezaSelec = {posX: i, posY: j};
 }
 
-function deseleccionarPieza(){
+function deseleccionarPieza() {
     hayPiezaSelec = false;
     piezaSelec = {posX: undefined, posY: undefined};
 }
 
-function annadirEstiloMovPosibles(){
-    // Pieza seleccionada
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.add("piezaSeleccionada");
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "<div class='piezaSeleccionadaBorde'></div>";
-
-    // Movimientos posibles
-    for(let i=0, fin=movPosibles.length; i<fin; i++)
-        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "<div class='movPosible'></div>";
+function esMovValido(x, y) {
+    return movPosibles.some(pos => pos.posX === x && pos.posY === y);
 }
 
-function eliminarEstiloMovPosibles(){
-    // Pieza seleccionada
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.remove("piezaSeleccionada");
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "";
+function moverPieza(x, y) {
+    // Si come otra pieza, eliminar estilo de la pieza comida
+    if (tablero[x][y] !== 0)
+        eliminarImgPieza(x, y);
 
-    // Movimientos posibles
-    for(let i=0, fin=movPosibles.length; i<fin; i++)
-        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "";
+    // Pone la pieza y el estilo en la nueva posicion
+    tablero[x][y] = tablero[piezaSelec.posX][piezaSelec.posY];
+    annadirImgPieza(x, y);
+
+    // Elimina el estilo y la pieza de la anterior posicion
+    eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
+    tablero[piezaSelec.posX][piezaSelec.posY] = 0;
 }
 
-function calcularMovSegunPieza(x, y){
-    var tipo = tablero[x][y];
+function calcularMovSegunPieza(x, y) {
+    let tipo = tablero[x][y];
 
-    switch(tipo){
+    switch (tipo) {
         case 1:
             calcularMovPeonBlanco(x, y);
             break;
@@ -300,243 +314,225 @@ function calcularMovSegunPieza(x, y){
     }
 }
 
-function calcularMovPeonBlanco(x, y){
-    if(x != 0){
+function calcularMovPeonBlanco(x, y) {
+    if (x !== 0) {
         // Una casilla hacia delante
-        if(tablero[x - 1][y] == 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y});
+        if (tablero[x - 1][y] === 0)
+            movPosibles.push({posX: x - 1, posY: y});
 
         // Comer hacia la izquierda
-        if(y > 0)
-            if(tablero[x - 1][y - 1] < 0)
-                movPosibles.push(pos = {posX: x - 1, posY: y - 1});
+        if (y > 0)
+            if (tablero[x - 1][y - 1] < 0)
+                movPosibles.push({posX: x - 1, posY: y - 1});
 
         // Comer hacia la derecha
-        if(y < 7)
-            if(tablero[x - 1][y + 1] < 0)
-                movPosibles.push(pos = {posX: x - 1, posY: y + 1});
+        if (y < 7)
+            if (tablero[x - 1][y + 1] < 0)
+                movPosibles.push({posX: x - 1, posY: y + 1});
     }
 
     // Dos casillas hacia delante
-    if(x == 6 && tablero[5][y] == 0 && tablero[4][y] == 0)
-        movPosibles.push(pos = {posX: 4, posY: y});
+    if (x === 6 && tablero[5][y] === 0 && tablero[4][y] === 0)
+        movPosibles.push({posX: 4, posY: y});
 }
 
-function calcularMovPeonNegro(x, y){
-    if(x != 7){
+function calcularMovPeonNegro(x, y) {
+    if (x !== 7) {
         // Una casilla hacia delante
-        if(tablero[x + 1][y] == 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y});
+        if (tablero[x + 1][y] === 0)
+            movPosibles.push({posX: x + 1, posY: y});
 
         // Comer hacia la izquierda
-        if(y > 0)
-            if(tablero[x + 1][y - 1] > 0)
-                movPosibles.push(pos = {posX: x + 1, posY: y - 1});
+        if (y > 0)
+            if (tablero[x + 1][y - 1] > 0)
+                movPosibles.push({posX: x + 1, posY: y - 1});
 
         // Comer hacia la derecha
-        if(y < 7)
-            if(tablero[x + 1][y + 1] > 0)
-                movPosibles.push(pos = {posX: x + 1, posY: y + 1});
+        if (y < 7)
+            if (tablero[x + 1][y + 1] > 0)
+                movPosibles.push({posX: x + 1, posY: y + 1});
     }
 
     // Dos casillas hacia delante
-    if(x == 1 && tablero[2][y] == 0 && tablero[3][y] == 0)
-        movPosibles.push(pos = {posX: 3, posY: y});
+    if (x === 1 && tablero[2][y] === 0 && tablero[3][y] === 0)
+        movPosibles.push({posX: 3, posY: y});
 }
 
-function calcularMovTorreBlanca(x, y){
-    var i;
+function calcularMovTorreBlanca(x, y) {
+    let i;
 
     // Arriba
     i = 1;
-    while(x - i >= 0){
-        if(tablero[x - i][y] > 0)
+    while (x - i >= 0) {
+        if (tablero[x - i][y] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x - i, posY: y});
-
-        if(tablero[x - i][y] < 0)
+        movPosibles.push({posX: x - i, posY: y});
+        if (tablero[x - i][y] < 0)
             break;
         i++;
     }
 
     // Derecha
     i = 1;
-    while(y + i <= 7){
-        if(tablero[x][y + i] > 0)
+    while (y + i <= 7) {
+        if (tablero[x][y + i] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x, posY: y + i});
-
-        if(tablero[x][y + i] < 0)
+        movPosibles.push({posX: x, posY: y + i});
+        if (tablero[x][y + i] < 0)
             break;
         i++;
     }
 
     // Abajo
     i = 1;
-    while(x + i <= 7){
-        if(tablero[x + i][y] > 0)
+    while (x + i <= 7) {
+        if (tablero[x + i][y] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x + i, posY: y});
-
-        if(tablero[x + i][y] < 0)
+        movPosibles.push({posX: x + i, posY: y});
+        if (tablero[x + i][y] < 0)
             break;
         i++;
     }
 
     // Izquierda
     i = 1;
-    while(y - i >= 0){
-        if(tablero[x][y - i] > 0)
+    while (y - i >= 0) {
+        if (tablero[x][y - i] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x, posY: y - i});
-
-        if(tablero[x][y - i] < 0)
+        movPosibles.push({posX: x, posY: y - i});
+        if (tablero[x][y - i] < 0)
             break;
         i++;
     }
 }
 
-function calcularMovTorreNegra(x, y){
-    var i;
+function calcularMovTorreNegra(x, y) {
+    let i;
 
     // Arriba
     i = 1;
-    while(x - i >= 0){
-        if(tablero[x - i][y] < 0)
+    while (x - i >= 0) {
+        if (tablero[x - i][y] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x - i, posY: y});
-
-        if(tablero[x - i][y] > 0)
+        movPosibles.push({posX: x - i, posY: y});
+        if (tablero[x - i][y] > 0)
             break;
         i++;
     }
 
     // Derecha
     i = 1;
-    while(y + i <= 7){
-        if(tablero[x][y + i] < 0)
+    while (y + i <= 7) {
+        if (tablero[x][y + i] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x, posY: y + i});
-
-        if(tablero[x][y + i] > 0)
+        movPosibles.push({posX: x, posY: y + i});
+        if (tablero[x][y + i] > 0)
             break;
         i++;
     }
 
     // Abajo
     i = 1;
-    while(x + i <= 7){
-        if(tablero[x + i][y] < 0)
+    while (x + i <= 7) {
+        if (tablero[x + i][y] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x + i, posY: y});
-
-        if(tablero[x + i][y] > 0)
+        movPosibles.push({posX: x + i, posY: y});
+        if (tablero[x + i][y] > 0)
             break;
         i++;
     }
 
     // Izquierda
     i = 1;
-    while(y - i >= 0){
-        if(tablero[x][y - i] < 0)
+    while (y - i >= 0) {
+        if (tablero[x][y - i] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x, posY: y - i});
-
-        if(tablero[x][y - i] > 0)
+        movPosibles.push({posX: x, posY: y - i});
+        if (tablero[x][y - i] > 0)
             break;
         i++;
     }
 }
 
-function calcularMovCaballoBlanco(x, y){
+function calcularMovCaballoBlanco(x, y) {
     // Arriba - Izquierda
-    if(x - 1 >= 0 && y - 2 >= 0)
-        if(tablero[x - 1][y - 2] <= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y - 2});
-    if(x - 2 >= 0 && y - 1 >= 0)
-        if(tablero[x - 2][y - 1] <= 0)
-            movPosibles.push(pos = {posX: x - 2, posY: y - 1});
+    if (x - 1 >= 0 && y - 2 >= 0)
+        if (tablero[x - 1][y - 2] <= 0)
+            movPosibles.push({posX: x - 1, posY: y - 2});
+    if (x - 2 >= 0 && y - 1 >= 0)
+        if (tablero[x - 2][y - 1] <= 0)
+            movPosibles.push({posX: x - 2, posY: y - 1});
 
     // Arriba - Derecha
-    if(x - 1 >= 0 && y + 2 <= 7)
-        if(tablero[x - 1][y + 2] <= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y + 2});
-    if(x - 2 >= 0 && y + 1 <= 7)
-        if(tablero[x - 2][y + 1] <= 0)
-            movPosibles.push(pos = {posX: x - 2, posY: y + 1});
+    if (x - 1 >= 0 && y + 2 <= 7)
+        if (tablero[x - 1][y + 2] <= 0)
+            movPosibles.push({posX: x - 1, posY: y + 2});
+    if (x - 2 >= 0 && y + 1 <= 7)
+        if (tablero[x - 2][y + 1] <= 0)
+            movPosibles.push({posX: x - 2, posY: y + 1});
 
     // Abajo - Derecha
-    if(x + 1 <= 7 && y + 2 <= 7)
-        if(tablero[x + 1][y + 2] <= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y + 2});
-    if(x + 2 <= 7 && y + 1 <= 7)
-        if(tablero[x + 2][y + 1] <= 0)
-            movPosibles.push(pos = {posX: x + 2, posY: y + 1});
+    if (x + 1 <= 7 && y + 2 <= 7)
+        if (tablero[x + 1][y + 2] <= 0)
+            movPosibles.push({posX: x + 1, posY: y + 2});
+    if (x + 2 <= 7 && y + 1 <= 7)
+        if (tablero[x + 2][y + 1] <= 0)
+            movPosibles.push({posX: x + 2, posY: y + 1});
 
     // Abajo - Izquierda
-    if(x + 1 <= 7 && y - 2 >= 0)
-        if(tablero[x + 1][y - 2] <= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y - 2});
-    if(x + 2 <= 7 && y - 1 >= 0)
-        if(tablero[x + 2][y - 1] <= 0)
-            movPosibles.push(pos = {posX: x + 2, posY: y - 1});
+    if (x + 1 <= 7 && y - 2 >= 0)
+        if (tablero[x + 1][y - 2] <= 0)
+            movPosibles.push({posX: x + 1, posY: y - 2});
+    if (x + 2 <= 7 && y - 1 >= 0)
+        if (tablero[x + 2][y - 1] <= 0)
+            movPosibles.push({posX: x + 2, posY: y - 1});
 }
 
-function calcularMovCaballoNegro(x, y){
+function calcularMovCaballoNegro(x, y) {
     // Arriba - Izquierda
-    if(x - 1 >= 0 && y - 2 >= 0)
-        if(tablero[x - 1][y - 2] >= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y - 2});
-    if(x - 2 >= 0 && y - 1 >= 0)
-        if(tablero[x - 2][y - 1] >= 0)
-            movPosibles.push(pos = {posX: x - 2, posY: y - 1});
+    if (x - 1 >= 0 && y - 2 >= 0)
+        if (tablero[x - 1][y - 2] >= 0)
+            movPosibles.push({posX: x - 1, posY: y - 2});
+    if (x - 2 >= 0 && y - 1 >= 0)
+        if (tablero[x - 2][y - 1] >= 0)
+            movPosibles.push({posX: x - 2, posY: y - 1});
 
     // Arriba - Derecha
-    if(x - 1 >= 0 && y + 2 <= 7)
-        if(tablero[x - 1][y + 2] >= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y + 2});
-    if(x - 2 >= 0 && y + 1 <= 7)
-        if(tablero[x - 2][y + 1] >= 0)
-            movPosibles.push(pos = {posX: x - 2, posY: y + 1});
+    if (x - 1 >= 0 && y + 2 <= 7)
+        if (tablero[x - 1][y + 2] >= 0)
+            movPosibles.push({posX: x - 1, posY: y + 2});
+    if (x - 2 >= 0 && y + 1 <= 7)
+        if (tablero[x - 2][y + 1] >= 0)
+            movPosibles.push({posX: x - 2, posY: y + 1});
 
     // Abajo - Derecha
-    if(x + 1 <= 7 && y + 2 <= 7)
-        if(tablero[x + 1][y + 2] >= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y + 2});
-    if(x + 2 <= 7 && y + 1 <= 7)
-        if(tablero[x + 2][y + 1] >= 0)
-            movPosibles.push(pos = {posX: x + 2, posY: y + 1});
+    if (x + 1 <= 7 && y + 2 <= 7)
+        if (tablero[x + 1][y + 2] >= 0)
+            movPosibles.push({posX: x + 1, posY: y + 2});
+    if (x + 2 <= 7 && y + 1 <= 7)
+        if (tablero[x + 2][y + 1] >= 0)
+            movPosibles.push({posX: x + 2, posY: y + 1});
 
     // Abajo - Izquierda
-    if(x + 1 <= 7 && y - 2 >= 0)
-        if(tablero[x + 1][y - 2] >= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y - 2});
-    if(x + 2 <= 7 && y - 1 >= 0)
-        if(tablero[x + 2][y - 1] >= 0)
-            movPosibles.push(pos = {posX: x + 2, posY: y - 1});
+    if (x + 1 <= 7 && y - 2 >= 0)
+        if (tablero[x + 1][y - 2] >= 0)
+            movPosibles.push({posX: x + 1, posY: y - 2});
+    if (x + 2 <= 7 && y - 1 >= 0)
+        if (tablero[x + 2][y - 1] >= 0)
+            movPosibles.push({posX: x + 2, posY: y - 1});
 }
 
-function calcularMovAlfilBlanco(x, y){
-    var i, j;
+function calcularMovAlfilBlanco(x, y) {
+    let i, j;
 
     // Arriba - Izquierda
     i = 1;
     j = 1;
-    while(x - i >= 0 && y - j >= 0){
-        if(tablero[x - i][y - j] > 0)
+    while (x - i >= 0 && y - j >= 0) {
+        if (tablero[x - i][y - j] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x - i, posY: y - j});
-
-        if(tablero[x - i][y - j] < 0)
+        movPosibles.push({posX: x - i, posY: y - j});
+        if (tablero[x - i][y - j] < 0)
             break;
         i++;
         j++;
@@ -545,13 +541,11 @@ function calcularMovAlfilBlanco(x, y){
     // Arriba - Derecha
     i = 1;
     j = 1;
-    while(x - i >= 0 && y + j <= 7){
-        if(tablero[x - i][y + j] > 0)
+    while (x - i >= 0 && y + j <= 7) {
+        if (tablero[x - i][y + j] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x - i, posY: y + j});
-
-        if(tablero[x - i][y + j] < 0)
+        movPosibles.push({posX: x - i, posY: y + j});
+        if (tablero[x - i][y + j] < 0)
             break;
         i++;
         j++;
@@ -560,13 +554,11 @@ function calcularMovAlfilBlanco(x, y){
     // Abajo - Derecha
     i = 1;
     j = 1;
-    while(x + i <= 7 && y + j <= 7){
-        if(tablero[x + i][y + j] > 0)
+    while (x + i <= 7 && y + j <= 7) {
+        if (tablero[x + i][y + j] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x + i, posY: y + j});
-
-        if(tablero[x + i][y + j] < 0)
+        movPosibles.push({posX: x + i, posY: y + j});
+        if (tablero[x + i][y + j] < 0)
             break;
         i++;
         j++;
@@ -575,32 +567,28 @@ function calcularMovAlfilBlanco(x, y){
     // Abajo - Izquierda
     i = 1;
     j = 1;
-    while(x + i <= 7 && y - j >= 0){
-        if(tablero[x + i][y - j] > 0)
+    while (x + i <= 7 && y - j >= 0) {
+        if (tablero[x + i][y - j] > 0)
             break;
-
-        movPosibles.push(pos = {posX: x + i, posY: y - j});
-
-        if(tablero[x + i][y - j] < 0)
+        movPosibles.push({posX: x + i, posY: y - j});
+        if (tablero[x + i][y - j] < 0)
             break;
         i++;
         j++;
     }
 }
 
-function calcularMovAlfilNegro(x, y){
-    var i, j;
+function calcularMovAlfilNegro(x, y) {
+    let i, j;
 
     // Arriba - Izquierda
     i = 1;
     j = 1;
-    while(x - i >= 0 && y - j >= 0){
-        if(tablero[x - i][y - j] < 0)
+    while (x - i >= 0 && y - j >= 0) {
+        if (tablero[x - i][y - j] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x - i, posY: y - j});
-
-        if(tablero[x - i][y - j] > 0)
+        movPosibles.push({posX: x - i, posY: y - j});
+        if (tablero[x - i][y - j] > 0)
             break;
         i++;
         j++;
@@ -609,13 +597,11 @@ function calcularMovAlfilNegro(x, y){
     // Arriba - Derecha
     i = 1;
     j = 1;
-    while(x - i >= 0 && y + j <= 7){
-        if(tablero[x - i][y + j] < 0)
+    while (x - i >= 0 && y + j <= 7) {
+        if (tablero[x - i][y + j] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x - i, posY: y + j});
-
-        if(tablero[x - i][y + j] > 0)
+        movPosibles.push({posX: x - i, posY: y + j});
+        if (tablero[x - i][y + j] > 0)
             break;
         i++;
         j++;
@@ -624,13 +610,11 @@ function calcularMovAlfilNegro(x, y){
     // Abajo - Derecha
     i = 1;
     j = 1;
-    while(x + i <= 7 && y + j <= 7){
-        if(tablero[x + i][y + j] < 0)
+    while (x + i <= 7 && y + j <= 7) {
+        if (tablero[x + i][y + j] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x + i, posY: y + j});
-
-        if(tablero[x + i][y + j] > 0)
+        movPosibles.push({posX: x + i, posY: y + j});
+        if (tablero[x + i][y + j] > 0)
             break;
         i++;
         j++;
@@ -639,127 +623,107 @@ function calcularMovAlfilNegro(x, y){
     // Abajo - Izquierda
     i = 1;
     j = 1;
-    while(x + i <= 7 && y - j >= 0){
-        if(tablero[x + i][y - j] < 0)
+    while (x + i <= 7 && y - j >= 0) {
+        if (tablero[x + i][y - j] < 0)
             break;
-
-        movPosibles.push(pos = {posX: x + i, posY: y - j});
-
-        if(tablero[x + i][y - j] > 0)
+        movPosibles.push({posX: x + i, posY: y - j});
+        if (tablero[x + i][y - j] > 0)
             break;
         i++;
         j++;
     }
 }
 
-function calcularMovReinaBlanca(x, y){
+function calcularMovReinaBlanca(x, y) {
     calcularMovTorreBlanca(x, y);
     calcularMovAlfilBlanco(x, y);
 }
 
-function calcularMovReinaNegra(x, y){
+function calcularMovReinaNegra(x, y) {
     calcularMovTorreNegra(x, y);
     calcularMovAlfilNegro(x, y);
 }
 
-function calcularMovReyBlanco(x, y){
+function calcularMovReyBlanco(x, y) {
     // Arriba - Izquierda
-    if(x - 1 >= 0 && y - 1 >= 0)
-        if(tablero[x - 1][y - 1] <= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y - 1});
+    if (x - 1 >= 0 && y - 1 >= 0)
+        if (tablero[x - 1][y - 1] <= 0)
+            movPosibles.push({posX: x - 1, posY: y - 1});
 
     // Arriba
-    if(x - 1 >= 0)
-        if(tablero[x - 1][y] <= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y});
+    if (x - 1 >= 0)
+        if (tablero[x - 1][y] <= 0)
+            movPosibles.push({posX: x - 1, posY: y});
 
     // Arriba - Derecha
-    if(x - 1 >= 0 && y + 1 <= 7)
-        if(tablero[x - 1][y + 1] <= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y + 1});
+    if (x - 1 >= 0 && y + 1 <= 7)
+        if (tablero[x - 1][y + 1] <= 0)
+            movPosibles.push({posX: x - 1, posY: y + 1});
 
     // Derecha
-    if(y + 1 <= 7)
-        if(tablero[x][y + 1] <= 0)
-            movPosibles.push(pos = {posX: x, posY: y + 1});
+    if (y + 1 <= 7)
+        if (tablero[x][y + 1] <= 0)
+            movPosibles.push({posX: x, posY: y + 1});
 
     // Abajo - Derecha
-    if(x + 1 <= 7 && y + 1 <= 7)
-        if(tablero[x + 1][y + 1] <= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y + 1});
+    if (x + 1 <= 7 && y + 1 <= 7)
+        if (tablero[x + 1][y + 1] <= 0)
+            movPosibles.push({posX: x + 1, posY: y + 1});
 
     // Abajo
-    if(x + 1 <= 7)
-        if(tablero[x + 1][y] <= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y});
+    if (x + 1 <= 7)
+        if (tablero[x + 1][y] <= 0)
+            movPosibles.push({posX: x + 1, posY: y});
 
     // Abajo - Izquierda
-    if(x + 1 <= 7 && y - 1 >= 0)
-        if(tablero[x + 1][y - 1] <= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y - 1});
+    if (x + 1 <= 7 && y - 1 >= 0)
+        if (tablero[x + 1][y - 1] <= 0)
+            movPosibles.push({posX: x + 1, posY: y - 1});
 
     // Izquierda
-    if(y - 1 >= 0)
-        if(tablero[x][y - 1] <= 0)
-            movPosibles.push(pos = {posX: x, posY: y - 1});
+    if (y - 1 >= 0)
+        if (tablero[x][y - 1] <= 0)
+            movPosibles.push({posX: x, posY: y - 1});
 }
 
-function calcularMovReyNegro(x, y){
+function calcularMovReyNegro(x, y) {
     // Arriba - Izquierda
-    if(x - 1 >= 0 && y - 1 >= 0)
-        if(tablero[x - 1][y - 1] >= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y - 1});
+    if (x - 1 >= 0 && y - 1 >= 0)
+        if (tablero[x - 1][y - 1] >= 0)
+            movPosibles.push({posX: x - 1, posY: y - 1});
 
     // Arriba
-    if(x - 1 >= 0)
-        if(tablero[x - 1][y] >= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y});
+    if (x - 1 >= 0)
+        if (tablero[x - 1][y] >= 0)
+            movPosibles.push({posX: x - 1, posY: y});
 
     // Arriba - Derecha
-    if(x - 1 >= 0 && y + 1 <= 7)
-        if(tablero[x - 1][y + 1] >= 0)
-            movPosibles.push(pos = {posX: x - 1, posY: y + 1});
+    if (x - 1 >= 0 && y + 1 <= 7)
+        if (tablero[x - 1][y + 1] >= 0)
+            movPosibles.push({posX: x - 1, posY: y + 1});
 
     // Derecha
-    if(y + 1 <= 7)
-        if(tablero[x][y + 1] >= 0)
-            movPosibles.push(pos = {posX: x, posY: y + 1});
+    if (y + 1 <= 7)
+        if (tablero[x][y + 1] >= 0)
+            movPosibles.push({posX: x, posY: y + 1});
 
     // Abajo - Derecha
-    if(x + 1 <= 7 && y + 1 <= 7)
-        if(tablero[x + 1][y + 1] >= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y + 1});
+    if (x + 1 <= 7 && y + 1 <= 7)
+        if (tablero[x + 1][y + 1] >= 0)
+            movPosibles.push({posX: x + 1, posY: y + 1});
 
     // Abajo
-    if(x + 1 <= 7)
-        if(tablero[x + 1][y] >= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y});
+    if (x + 1 <= 7)
+        if (tablero[x + 1][y] >= 0)
+            movPosibles.push({posX: x + 1, posY: y});
 
     // Abajo - Izquierda
-    if(x + 1 <= 7 && y - 1 >= 0)
-        if(tablero[x + 1][y - 1] >= 0)
-            movPosibles.push(pos = {posX: x + 1, posY: y - 1});
+    if (x + 1 <= 7 && y - 1 >= 0)
+        if (tablero[x + 1][y - 1] >= 0)
+            movPosibles.push({posX: x + 1, posY: y - 1});
 
     // Izquierda
-    if(y - 1 >= 0)
-        if(tablero[x][y - 1] >= 0)
-            movPosibles.push(pos = {posX: x, posY: y - 1});
-}
-
-function moverPieza(x, y){
-    // Si come otra pieza, eliminar estilo de la pieza comida
-    if(tablero[x][y] != 0)
-        eliminarImgPieza(x, y);
-
-    // Pone la pieza y el estilo en la nueva posicion
-    tablero[x][y] = tablero[piezaSelec.posX][piezaSelec.posY];
-    annadirImgPieza(x, y);
-
-    // Elimina el estilo y la pieza de la anterior posicion
-    eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
-    tablero[piezaSelec.posX][piezaSelec.posY] = 0;
-}
-
-function esMovValido(x, y){
-    return movPosibles.some(pos => pos['posX'] === x && pos['posY'] === y);
+    if (y - 1 >= 0)
+        if (tablero[x][y - 1] >= 0)
+            movPosibles.push({posX: x, posY: y - 1});
 }
