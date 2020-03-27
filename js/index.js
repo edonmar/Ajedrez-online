@@ -2,12 +2,15 @@ let tablero = [];    // El tablero donde se hacen todas las operaciones
 let tableroHTML = [];    // El tablero que se muestra en pantalla (el del HTML)
 let hayPiezaSelec = false;
 let piezaSelec = {posX: undefined, posY: undefined};
+let piezasBlancas = [];    // Array con las coordenadas de todas las piezas blancas. El rey en la posicion 0
+let piezasNegras = [];    // Array con las coordenadas de todas las piezas negras. El rey en la posicion 0
 let movPosibles = [];    // Array donde se van a guardar objetos con coordenadas de movimientos posibles
 let turno = true;    // true = blancas, false = negras
 
 window.onload = function () {
     inicializarTablero();
     colocarPiezasIniciales();
+    inicializarArraysPiezas();
     inicializarTableroHTML();
     annadirImgPiezasIniciales();
     iniciarEventosTablero();
@@ -49,6 +52,32 @@ function colocarPiezasIniciales() {
     tablero[0][5] = -4;    // Alfil
     tablero[0][6] = -3;    // Caballo
     tablero[0][7] = -2;    // Torre
+}
+
+function inicializarArraysPiezas() {
+    // Blancas
+    piezasBlancas.push({posX: 7, posY: 4});    // Rey
+    piezasBlancas.push({posX: 7, posY: 3});    // Reina
+    piezasBlancas.push({posX: 7, posY: 2});    // Alfil
+    piezasBlancas.push({posX: 7, posY: 5});    // Alfil
+    piezasBlancas.push({posX: 7, posY: 1});    // Caballo
+    piezasBlancas.push({posX: 7, posY: 6});    // Caballo
+    piezasBlancas.push({posX: 7, posY: 0});    // Torre
+    piezasBlancas.push({posX: 7, posY: 7});    // Torre
+    for (let i = 0; i < 8; i++)
+        piezasBlancas.push({posX: 6, posY: i});    // Peones
+
+    // Negras
+    piezasNegras.push({posX: 0, posY: 4});    // Rey
+    piezasNegras.push({posX: 0, posY: 3});    // Reina
+    piezasNegras.push({posX: 0, posY: 2});    // Alfil
+    piezasNegras.push({posX: 0, posY: 5});    // Alfil
+    piezasNegras.push({posX: 0, posY: 1});    // Caballo
+    piezasNegras.push({posX: 0, posY: 6});    // Caballo
+    piezasNegras.push({posX: 0, posY: 0});    // Torre
+    piezasNegras.push({posX: 0, posY: 7});    // Torre
+    for (let i = 0; i < 8; i++)
+        piezasNegras.push({posX: 1, posY: i});    // Peones
 }
 
 // Asigna a la variable tableroHTML un array de 8x8 con las celdas HTML
@@ -264,6 +293,34 @@ function moverPieza(x, y) {
     // Elimina el estilo y la pieza de la anterior posicion
     eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
     tablero[piezaSelec.posX][piezaSelec.posY] = 0;
+
+    if (turno) {
+        cambiarObjetoPiezaMovida(piezasBlancas, x, y);
+        eliminarObjetoPiezaComida(piezasNegras, x, y);
+    } else {
+        cambiarObjetoPiezaMovida(piezasNegras, x, y);
+        eliminarObjetoPiezaComida(piezasBlancas, x, y);
+    }
+}
+
+// Cambia las coordenadas de la pieza en el array de objetos
+function cambiarObjetoPiezaMovida(piezasColor, x, y) {
+    piezasColor.find((pos, i) => {
+        if (pos.posX === piezaSelec.posX && pos.posY === piezaSelec.posY) {
+            piezasColor[i] = {posX: x, posY: y};
+            return true;    // Parar la busqueda
+        }
+    });
+}
+
+// Comprueba si ha comido una pieza y eliminar la pieza comida del array del otro color
+function eliminarObjetoPiezaComida(piezasColor, x, y) {
+    piezasColor.find((pos, i) => {
+        if (pos.posX === x && pos.posY === y) {
+            piezasColor.splice(i, 1);
+            return true;    // Parar la busqueda
+        }
+    });
 }
 
 function calcularMovSegunPieza(x, y) {
