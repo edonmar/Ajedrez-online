@@ -264,6 +264,7 @@ function clickEnCasilla(i, j) {
             movPosibles = [];
             calcularMovSegunPieza(i, j);
             seleccionarPieza(i, j);
+            eliminarMovQueAmenazanAMiRey();
             annadirEstiloMovPosibles();
         }
     } else {
@@ -285,6 +286,7 @@ function clickEnCasilla(i, j) {
                     movPosibles = [];
                     calcularMovSegunPieza(i, j);
                     seleccionarPieza(i, j);
+                    eliminarMovQueAmenazanAMiRey();
                     annadirEstiloMovPosibles();
                 }
             } else {    // Si la pieza pulsada es la que estaba seleccionada, la deselecciono
@@ -337,6 +339,38 @@ function esJaque(colorAmenazante) {
     movPosibles = movPosiblesAux;
 
     return jaque;
+}
+
+// Para cada movimiento posible de la pieza seleccionada:
+// Simulo mover la pieza para ver como quedaria el tablero si hiciera ese movimiento
+// Llamando a la funcion esJaque, compruebo si al hacer ese movimiento mi rey quedaria en jaque
+// Si queda en jaque, elimino ese movimiento de movPosibles
+// Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
+function eliminarMovQueAmenazanAMiRey() {
+    let valorCasillaActual = tablero[piezaSelec.posX][piezaSelec.posY];
+    let valorCasillaNueva;
+    let casillaNuevaX;
+    let casillaNuevaY;
+
+    if (movPosibles.length > 0) {
+        let i = 0;
+        do {
+            casillaNuevaX = movPosibles[i].posX;
+            casillaNuevaY = movPosibles[i].posY;
+            valorCasillaNueva = tablero[casillaNuevaX][casillaNuevaY];
+
+            tablero[piezaSelec.posX][piezaSelec.posY] = 0;
+            tablero[casillaNuevaX][casillaNuevaY] = valorCasillaActual;
+
+            if (esJaque(!turno))
+                movPosibles.splice(i, 1);
+            else
+                i++;
+
+            tablero[piezaSelec.posX][piezaSelec.posY] = valorCasillaActual;
+            tablero[casillaNuevaX][casillaNuevaY] = valorCasillaNueva;
+        } while (i < movPosibles.length);
+    }
 }
 
 function esMovValido(x, y) {
