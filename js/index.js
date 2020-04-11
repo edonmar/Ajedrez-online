@@ -204,7 +204,7 @@ function eliminarImgPieza(x, y) {
 function annadirEstiloMovPosibles() {
     // Pieza seleccionada
     tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.add("piezaSeleccionada");
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "<div class='piezaSeleccionadaBorde'></div>";
+    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "<div class='piezaResaltadaBorde'></div>";
 
     // Movimientos posibles
     for (let i = 0, fin = movPosibles.length; i < fin; i++)
@@ -214,11 +214,36 @@ function annadirEstiloMovPosibles() {
 function eliminarEstiloMovPosibles() {
     // Pieza seleccionada
     tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.remove("piezaSeleccionada");
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "";
+    if (!tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.contains("reyAmenazado"))
+        tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "";
 
     // Movimientos posibles
     for (let i = 0, fin = movPosibles.length; i < fin; i++)
         tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "";
+}
+
+function annadirEstiloJaque() {
+    let piezasColor;
+
+    if (turno)
+        piezasColor = piezasNegras;
+    else
+        piezasColor = piezasBlancas;
+
+    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].classList.add("reyAmenazado");
+    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].innerHTML = "<div class='piezaResaltadaBorde'></div>";
+}
+
+function eliminarEstiloJaque() {
+    let piezasColor;
+
+    if (turno)
+        piezasColor = piezasBlancas;
+    else
+        piezasColor = piezasNegras;
+
+    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].classList.remove("reyAmenazado");
+    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].innerHTML = "";
 }
 
 function iniciarEventosTablero() {
@@ -243,10 +268,13 @@ function clickEnCasilla(i, j) {
         }
     } else {
         if (esMovValido(i, j)) {
+            eliminarEstiloJaque();
             moverPieza(i, j);
             eliminarEstiloMovPosibles();
             deseleccionarPieza();
             movPosibles = [];
+            if (esJaque(turno))
+                annadirEstiloJaque();
             turno = !turno;
         } else {
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
@@ -275,6 +303,40 @@ function seleccionarPieza(i, j) {
 function deseleccionarPieza() {
     hayPiezaSelec = false;
     piezaSelec = {posX: undefined, posY: undefined};
+}
+
+// Comprueba todos los movimientos posibles de todas las piezas de un color
+// Acaba el bucle y devuelve true si uno de los movimientos es comerse al rey del otro color
+function esJaque(colorAmenazante) {
+    let movPosiblesAux = movPosibles;
+    let piezasAmenazantes;
+    let reyAmenazado;
+    let jaque = false;
+
+    if (colorAmenazante) {
+        piezasAmenazantes = piezasBlancas;
+        reyAmenazado = -6;
+    } else {
+        piezasAmenazantes = piezasNegras;
+        reyAmenazado = 6;
+    }
+
+    let numPiezasAmenazantes = piezasAmenazantes.length;
+    let i = 0;
+    do {
+        movPosibles = [];
+        calcularMovSegunPieza(piezasAmenazantes[i].posX, piezasAmenazantes[i].posY);
+        for (let i = 0, fin = movPosibles.length; i < fin; i++)
+            if (tablero[movPosibles[i].posX][movPosibles[i].posY] === reyAmenazado) {
+                jaque = true;
+                break;
+            }
+        i++;
+    } while (i < numPiezasAmenazantes && !jaque);
+
+    movPosibles = movPosiblesAux;
+
+    return jaque;
 }
 
 function esMovValido(x, y) {

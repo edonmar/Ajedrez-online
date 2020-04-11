@@ -71,11 +71,15 @@ body{
     background-color: #57cbcb;
 }
 
+.reyAmenazado{
+    background-color: #ff2424;
+}
+
 .piezaSeleccionada{
     background-color: #57cbcb;
 }
 
-.piezaSeleccionadaBorde{
+.piezaResaltadaBorde{
     position: relative;
     box-sizing: border-box;
     width: 100%;
