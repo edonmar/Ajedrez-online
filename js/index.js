@@ -273,9 +273,18 @@ function clickEnCasilla(i, j) {
             moverPieza(i, j);
             eliminarEstiloMovPosibles();
             deseleccionarPieza();
+            if (tieneMovimientos()) {
+                if (esJaque(turno)) {    // Jaque
+                    annadirEstiloJaque();
+                }
+            } else {
+                if (esJaque(turno)) {    // Jaque mate
+                    annadirEstiloJaque();
+                } else {    // Rey ahogado
+
+                }
+            }
             movPosibles = [];
-            if (esJaque(turno))
-                annadirEstiloJaque();
             turno = !turno;
         } else {
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
@@ -342,35 +351,74 @@ function esJaque(colorAmenazante) {
 }
 
 // Para cada movimiento posible de la pieza seleccionada:
-// Simulo mover la pieza para ver como quedaria el tablero si hiciera ese movimiento
-// Llamando a la funcion esJaque, compruebo si al hacer ese movimiento mi rey quedaria en jaque
+// Compruebo si al hacer ese movimiento mi rey quedaria en jaque
 // Si queda en jaque, elimino ese movimiento de movPosibles
-// Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
 function eliminarMovQueAmenazanAMiRey() {
-    let valorCasillaActual = tablero[piezaSelec.posX][piezaSelec.posY];
-    let valorCasillaNueva;
-    let casillaNuevaX;
-    let casillaNuevaY;
-
     if (movPosibles.length > 0) {
+        let valorCasillaOrigen = tablero[piezaSelec.posX][piezaSelec.posY];
         let i = 0;
         do {
-            casillaNuevaX = movPosibles[i].posX;
-            casillaNuevaY = movPosibles[i].posY;
-            valorCasillaNueva = tablero[casillaNuevaX][casillaNuevaY];
-
-            tablero[piezaSelec.posX][piezaSelec.posY] = 0;
-            tablero[casillaNuevaX][casillaNuevaY] = valorCasillaActual;
-
-            if (esJaque(!turno))
+            if (movAmenazaReyPropio(i, !turno, piezaSelec, valorCasillaOrigen))
                 movPosibles.splice(i, 1);
             else
                 i++;
-
-            tablero[piezaSelec.posX][piezaSelec.posY] = valorCasillaActual;
-            tablero[casillaNuevaX][casillaNuevaY] = valorCasillaNueva;
         } while (i < movPosibles.length);
     }
+}
+
+// Compruebo si el color contrario al que acaba de mover tiene algun movimiento posible
+// Para cada movimiento de cada pieza, compruebo si al hacer ese movimiento el rey de ese color quedaria en jaque
+// Si hay al menos un movimiento que sea posible sin colocar a su propio rey en jaque, acaba el bucle y devuelve true
+function tieneMovimientos() {
+    let puedeMover = false;
+    let piezasAmenazadas;
+
+    if (turno)
+        piezasAmenazadas = piezasNegras;
+    else
+        piezasAmenazadas = piezasBlancas;
+
+    let numPiezasAmenazadas = piezasAmenazadas.length;
+    let i = 0;
+    do {
+        movPosibles = [];
+        calcularMovSegunPieza(piezasAmenazadas[i].posX, piezasAmenazadas[i].posY);
+        let numMovimientos = movPosibles.length;
+        if (numMovimientos > 0) {
+            let valorCasillaOrigen = tablero[piezasAmenazadas[i].posX][piezasAmenazadas[i].posY];
+            let j = 0;
+            do {
+                if (!movAmenazaReyPropio(j, turno, piezasAmenazadas[i], valorCasillaOrigen))
+                    puedeMover = true;
+                j++;
+            } while (j < numMovimientos && !puedeMover);
+        }
+        i++;
+    } while (i < numPiezasAmenazadas && !puedeMover);
+
+    return puedeMover;
+}
+
+// Llamando a la funcion esJaque, compruebo si al hacer un movimiento el rey del color movido quedaria en jaque
+function movAmenazaReyPropio(i, color, casillaOrigen, valorCasillaOrigen) {
+    let jaque = false;
+    let casillaDestinoX = movPosibles[i].posX;
+    let casillaDestinoY = movPosibles[i].posY;
+    let valorCasillaDestino = tablero[casillaDestinoX][casillaDestinoY];
+
+    // Simulo mover una pieza para ver como quedaria el tablero si hiciera ese movimiento
+    tablero[casillaOrigen.posX][casillaOrigen.posY] = 0;
+    tablero[casillaDestinoX][casillaDestinoY] = valorCasillaOrigen;
+
+    // Realizo la comprobacion
+    if (esJaque(color))
+        jaque = true;
+
+    // Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
+    tablero[casillaOrigen.posX][casillaOrigen.posY] = valorCasillaOrigen;
+    tablero[casillaDestinoX][casillaDestinoY] = valorCasillaDestino;
+
+    return jaque;
 }
 
 function esMovValido(x, y) {
