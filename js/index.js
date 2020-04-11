@@ -402,9 +402,22 @@ function tieneMovimientos() {
 // Llamando a la funcion esJaque, compruebo si al hacer un movimiento el rey del color movido quedaria en jaque
 function movAmenazaReyPropio(i, color, casillaOrigen, valorCasillaOrigen) {
     let jaque = false;
+    let come = false;
+    let colorComida;
+    let posComida;
     let casillaDestinoX = movPosibles[i].posX;
     let casillaDestinoY = movPosibles[i].posY;
     let valorCasillaDestino = tablero[casillaDestinoX][casillaDestinoY];
+
+    // Si el movimiento come una pieza, simulo eliminar la pieza comida de su array
+    if (valorCasillaOrigen > 0 && valorCasillaDestino < 0 || valorCasillaOrigen < 0 && valorCasillaDestino > 0) {
+        if (valorCasillaDestino > 0)
+            colorComida = piezasBlancas;
+        else
+            colorComida = piezasNegras;
+        posComida = eliminarObjetoPiezaComida(colorComida, casillaDestinoX, casillaDestinoY);
+        come = true;
+    }
 
     // Simulo mover una pieza para ver como quedaria el tablero si hiciera ese movimiento
     tablero[casillaOrigen.posX][casillaOrigen.posY] = 0;
@@ -418,6 +431,10 @@ function movAmenazaReyPropio(i, color, casillaOrigen, valorCasillaOrigen) {
     tablero[casillaOrigen.posX][casillaOrigen.posY] = valorCasillaOrigen;
     tablero[casillaDestinoX][casillaDestinoY] = valorCasillaDestino;
 
+    // Vuelvo a colocar la pieza en su array, en la posicion donde estaba
+    if (come)
+        colorComida.splice(posComida, 0, {posX: casillaDestinoX, posY: casillaDestinoY});
+
     return jaque;
 }
 
@@ -426,9 +443,13 @@ function esMovValido(x, y) {
 }
 
 function moverPieza(x, y) {
+    let come = false;
+
     // Si come otra pieza, eliminar estilo de la pieza comida
-    if (tablero[x][y] !== 0)
+    if (tablero[x][y] !== 0) {
         eliminarImgPieza(x, y);
+        come = true;
+    }
 
     // Pone la pieza y el estilo en la nueva posicion
     tablero[x][y] = tablero[piezaSelec.posX][piezaSelec.posY];
@@ -440,10 +461,12 @@ function moverPieza(x, y) {
 
     if (turno) {
         cambiarObjetoPiezaMovida(piezasBlancas, x, y);
-        eliminarObjetoPiezaComida(piezasNegras, x, y);
+        if (come)
+            eliminarObjetoPiezaComida(piezasNegras, x, y);
     } else {
         cambiarObjetoPiezaMovida(piezasNegras, x, y);
-        eliminarObjetoPiezaComida(piezasBlancas, x, y);
+        if (come)
+            eliminarObjetoPiezaComida(piezasBlancas, x, y);
     }
 }
 
@@ -459,12 +482,15 @@ function cambiarObjetoPiezaMovida(piezasColor, x, y) {
 
 // Comprueba si ha comido una pieza y eliminar la pieza comida del array del otro color
 function eliminarObjetoPiezaComida(piezasColor, x, y) {
+    let posicion = undefined;
     piezasColor.find((pos, i) => {
         if (pos.posX === x && pos.posY === y) {
             piezasColor.splice(i, 1);
+            posicion = i;
             return true;    // Parar la busqueda
         }
     });
+    return posicion;
 }
 
 function calcularMovSegunPieza(x, y) {
