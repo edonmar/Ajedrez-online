@@ -2,6 +2,7 @@ let tablero = [];    // El tablero donde se hacen todas las operaciones
 let tableroHTML = [];    // El tablero que se muestra en pantalla (el del HTML)
 let hayPiezaSelec = false;
 let piezaSelec = {posX: undefined, posY: undefined};
+let peonAlPaso = {posX: undefined, posY: undefined};    // Si hay un peon que pueda ser capturado al paso
 let piezasBlancas = [];    // Array con las coordenadas de todas las piezas blancas. El rey en la posicion 0
 let piezasNegras = [];    // Array con las coordenadas de todas las piezas negras. El rey en la posicion 0
 let movPosibles = [];    // Array donde se van a guardar objetos con coordenadas de movimientos posibles
@@ -271,6 +272,7 @@ function clickEnCasilla(i, j) {
         if (esMovValido(i, j)) {
             eliminarEstiloJaque();
             moverPieza(i, j);
+            comerAlPaso(i, j);
             eliminarEstiloMovPosibles();
             deseleccionarPieza();
             if (tieneMovimientos()) {
@@ -470,6 +472,39 @@ function moverPieza(x, y) {
     }
 }
 
+// Comprueba cuando un peon mueve dos casillas y lo guarda para que pueda ser capturado al paso
+// Comprueba si el movimiento que se acaba de hacer es una captura al paso y elimina el peon capturado
+function comerAlPaso(i, j) {
+    // Si la pieza movida es un peon
+    if (Math.abs(tablero[i][j]) === 1) {
+        // Si ha avanzado dos casillas
+        if (Math.abs(piezaSelec.posX - i) === 2) {
+            peonAlPaso.posX = i;
+            peonAlPaso.posY = j;
+        } else {
+            // Si ha comido al paso
+            if (turno) {
+                if (i === peonAlPaso.posX - 1) {    // Si comen las blancas
+                    eliminarImgPieza(i + 1, j);
+                    tablero[i + 1][j] = 0;
+                    eliminarObjetoPiezaComida(piezasNegras, i + 1, j);
+                }
+            } else {    // Si comen las negras
+                if (i === peonAlPaso.posX + 1) {
+                    eliminarImgPieza(i - 1, j);
+                    tablero[i - 1][j] = 0;
+                    eliminarObjetoPiezaComida(piezasBlancas, i - 1, j);
+                }
+            }
+            peonAlPaso.posX = undefined;
+            peonAlPaso.posY = undefined;
+        }
+    } else {
+        peonAlPaso.posX = undefined;
+        peonAlPaso.posY = undefined;
+    }
+}
+
 // Cambia las coordenadas de la pieza en el array de objetos
 function cambiarObjetoPiezaMovida(piezasColor, x, y) {
     piezasColor.find((pos, i) => {
@@ -548,14 +583,24 @@ function calcularMovPeonBlanco(x, y) {
             movPosibles.push({posX: x - 1, posY: y});
 
         // Comer hacia la izquierda
-        if (y > 0)
+        if (y > 0) {
+            // Comer normal
             if (tablero[x - 1][y - 1] < 0)
                 movPosibles.push({posX: x - 1, posY: y - 1});
+            // Comer al paso
+            if (x === 3 && peonAlPaso.posX === 3 && peonAlPaso.posY === y - 1)
+                movPosibles.push({posX: x - 1, posY: y - 1});
+        }
 
         // Comer hacia la derecha
-        if (y < 7)
+        if (y < 7) {
+            // Comer normal
             if (tablero[x - 1][y + 1] < 0)
                 movPosibles.push({posX: x - 1, posY: y + 1});
+            // Comer al paso
+            if (x === 3 && peonAlPaso.posX === 3 && peonAlPaso.posY === y + 1)
+                movPosibles.push({posX: x - 1, posY: y + 1});
+        }
     }
 
     // Dos casillas hacia delante
@@ -570,14 +615,24 @@ function calcularMovPeonNegro(x, y) {
             movPosibles.push({posX: x + 1, posY: y});
 
         // Comer hacia la izquierda
-        if (y > 0)
+        if (y > 0) {
+            // Comer normal
             if (tablero[x + 1][y - 1] > 0)
                 movPosibles.push({posX: x + 1, posY: y - 1});
+            // Comer al paso
+            if (x === 4 && peonAlPaso.posX === 4 && peonAlPaso.posY === y - 1)
+                movPosibles.push({posX: x + 1, posY: y - 1});
+        }
 
         // Comer hacia la derecha
-        if (y < 7)
+        if (y < 7) {
+            // Comer normal
             if (tablero[x + 1][y + 1] > 0)
                 movPosibles.push({posX: x + 1, posY: y + 1});
+            // Comer al paso
+            if (x === 4 && peonAlPaso.posX === 4 && peonAlPaso.posY === y + 1)
+                movPosibles.push({posX: x + 1, posY: y + 1});
+        }
     }
 
     // Dos casillas hacia delante
