@@ -404,26 +404,44 @@ function tieneMovimientos() {
 // Llamando a la funcion esJaque, compruebo si al hacer un movimiento el rey del color movido quedaria en jaque
 function movAmenazaReyPropio(i, color, casillaOrigen, valorCasillaOrigen) {
     let jaque = false;
-    let come = false;
+    let comeNormal = false;
+    let comeAlPaso = false;
     let colorComida;
     let posComida;
     let casillaDestinoX = movPosibles[i].posX;
     let casillaDestinoY = movPosibles[i].posY;
     let valorCasillaDestino = tablero[casillaDestinoX][casillaDestinoY];
 
-    // Si el movimiento come una pieza, simulo eliminar la pieza comida de su array
-    if (valorCasillaOrigen > 0 && valorCasillaDestino < 0 || valorCasillaOrigen < 0 && valorCasillaDestino > 0) {
-        if (valorCasillaDestino > 0)
-            colorComida = piezasBlancas;
-        else
-            colorComida = piezasNegras;
-        posComida = eliminarObjetoPiezaComida(colorComida, casillaDestinoX, casillaDestinoY);
-        come = true;
+    // Compruebo si ha comido de manera normal
+    if (valorCasillaOrigen < 0 && valorCasillaDestino > 0) {
+        colorComida = piezasBlancas;
+        comeNormal = true;
+    } else if (valorCasillaOrigen > 0 && valorCasillaDestino < 0) {
+        colorComida = piezasNegras;
+        comeNormal = true;
+    } else if (Math.abs(valorCasillaOrigen) === 1) {    // Compruebo si ha comido al paso
+        if (casillaOrigen.posX === peonAlPaso.posX && casillaDestinoY === peonAlPaso.posY) {
+            if (casillaDestinoX === peonAlPaso.posX - 1) {
+                colorComida = piezasNegras;
+                comeAlPaso = true;
+            } else if (casillaDestinoX === peonAlPaso.posX + 1) {
+                colorComida = piezasBlancas;
+                comeAlPaso = true;
+            }
+        }
     }
+
+    // Si el movimiento come una pieza, simulo eliminar la pieza comida de su array
+    if (comeNormal)
+        posComida = eliminarObjetoPiezaComida(colorComida, casillaDestinoX, casillaDestinoY);
+    else if (comeAlPaso)
+        posComida = eliminarObjetoPiezaComida(colorComida, peonAlPaso.posX, peonAlPaso.posY);
 
     // Simulo mover una pieza para ver como quedaria el tablero si hiciera ese movimiento
     tablero[casillaOrigen.posX][casillaOrigen.posY] = 0;
     tablero[casillaDestinoX][casillaDestinoY] = valorCasillaOrigen;
+    if (comeAlPaso)
+        tablero[peonAlPaso.posX][peonAlPaso.posY] = 0;
 
     // Realizo la comprobacion
     if (esJaque(color))
@@ -432,10 +450,18 @@ function movAmenazaReyPropio(i, color, casillaOrigen, valorCasillaOrigen) {
     // Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
     tablero[casillaOrigen.posX][casillaOrigen.posY] = valorCasillaOrigen;
     tablero[casillaDestinoX][casillaDestinoY] = valorCasillaDestino;
+    if (comeAlPaso) {
+        if (colorComida === piezasBlancas)
+            tablero[peonAlPaso.posX][peonAlPaso.posY] = 1;
+        if (colorComida === piezasNegras)
+            tablero[peonAlPaso.posX][peonAlPaso.posY] = -1;
+    }
 
-    // Vuelvo a colocar la pieza en su array, en la posicion donde estaba
-    if (come)
+    // Vuelvo a colocar la pieza comida (si la hay) en su array, en la posicion donde estaba
+    if (comeNormal)
         colorComida.splice(posComida, 0, {posX: casillaDestinoX, posY: casillaDestinoY});
+    else if (comeAlPaso)
+        colorComida.splice(posComida, 0, {posX: peonAlPaso.posX, posY: peonAlPaso.posY});
 
     return jaque;
 }
