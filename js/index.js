@@ -6,6 +6,10 @@ let peonAlPaso = {posX: undefined, posY: undefined};    // Si hay un peon que pu
 let piezasBlancas = [];    // Array con las coordenadas de todas las piezas blancas. El rey en la posicion 0
 let piezasNegras = [];    // Array con las coordenadas de todas las piezas negras. El rey en la posicion 0
 let movPosibles = [];    // Array donde se van a guardar objetos con coordenadas de movimientos posibles
+let movidaEnroqueCortoBlanco = false;    // Si una de las piezas implicadas en el enroque se mueve, no podra enrocar
+let movidaEnroqueLargoBlanco = false;
+let movidaEnroqueCortoNegro = false;
+let movidaEnroqueLargoNegro = false;
 let turno = true;    // true = blancas, false = negras
 
 window.onload = function () {
@@ -273,6 +277,7 @@ function clickEnCasilla(i, j) {
             eliminarEstiloJaque();
             moverPieza(i, j);
             comerAlPaso(i, j);
+            enroque(i, j);
             eliminarEstiloMovPosibles();
             deseleccionarPieza();
             if (tieneMovimientos()) {
@@ -528,6 +533,55 @@ function comerAlPaso(i, j) {
     } else {
         peonAlPaso.posX = undefined;
         peonAlPaso.posY = undefined;
+    }
+}
+
+// Comprueba cuando se mueve el rey o la torre. Ese color no podra hacer enroque
+// Comprueba si el movimiento que se acaba de hacer es un enroque y mueve la torre
+function enroque(i, j) {
+    if (tablero[i][j] === 2) {    // Si ha movido torre blanca
+        if (j === 0)
+            movidaEnroqueLargoBlanco = true;
+        if (j === 7)
+            movidaEnroqueCortoBlanco = true;
+    } else if (tablero[i][j] === -2) {    // Si ha movido torre negra
+        if (j === 0)
+            movidaEnroqueLargoNegro = true;
+        if (j === 7)
+            movidaEnroqueCortoNegro = true;
+    } else if (Math.abs(tablero[i][j]) === 6) {    // Si ha movido un rey
+        if (Math.abs(piezaSelec.posY - j) === 2) {    // Si el movimiento es un enroque
+            let posX;
+            let posYOrigenTorre;
+            let posYDestinoTorre;
+
+            if (turno)
+                posX = 7;
+            else
+                posX = 0;
+
+            if (j === 6) {    // Enroque corto
+                posYOrigenTorre = 7;
+                posYDestinoTorre = 5;
+            } else {    // Enroque largo
+                posYOrigenTorre = 0;
+                posYDestinoTorre = 3;
+            }
+
+            // Selecciono la torre y la muevo
+            seleccionarPieza(posX, posYOrigenTorre);
+            moverPieza(posX, posYDestinoTorre);
+            // Vuelvo a seleccionar la casilla de origen del rey
+            seleccionarPieza(posX, 4);
+        }
+
+        if (turno) {
+            movidaEnroqueLargoBlanco = true;
+            movidaEnroqueCortoBlanco = true;
+        } else {
+            movidaEnroqueLargoNegro = true;
+            movidaEnroqueCortoNegro = true;
+        }
     }
 }
 
@@ -992,6 +1046,16 @@ function calcularMovReyBlanco(x, y) {
     if (y - 1 >= 0)
         if (tablero[x][y - 1] <= 0)
             movPosibles.push({posX: x, posY: y - 1});
+
+    // Enroque corto
+    if (!movidaEnroqueCortoBlanco)
+        if (tablero[7][5] === 0 && tablero[7][6] === 0)
+            movPosibles.push({posX: x, posY: y + 2});
+
+    // Enroque largo
+    if (!movidaEnroqueLargoBlanco)
+        if (tablero[7][1] === 0 && tablero[7][2] === 0 && tablero[7][3] === 0)
+            movPosibles.push({posX: x, posY: y - 2});
 }
 
 function calcularMovReyNegro(x, y) {
@@ -1034,4 +1098,14 @@ function calcularMovReyNegro(x, y) {
     if (y - 1 >= 0)
         if (tablero[x][y - 1] >= 0)
             movPosibles.push({posX: x, posY: y - 1});
+
+    // Enroque corto
+    if (!movidaEnroqueCortoNegro)
+        if (tablero[0][5] === 0 && tablero[0][6] === 0)
+            movPosibles.push({posX: x, posY: y + 2});
+
+    // Enroque largo
+    if (!movidaEnroqueLargoNegro)
+        if (tablero[0][1] === 0 && tablero[0][2] === 0 && tablero[0][3] === 0)
+            movPosibles.push({posX: x, posY: y - 2});
 }
