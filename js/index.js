@@ -270,6 +270,7 @@ function clickEnCasilla(i, j) {
             calcularMovSegunPieza(i, j);
             seleccionarPieza(i, j);
             eliminarMovQueAmenazanAMiRey();
+            annadirEnroquesPosibles();
             annadirEstiloMovPosibles();
         }
     } else {
@@ -303,6 +304,7 @@ function clickEnCasilla(i, j) {
                     calcularMovSegunPieza(i, j);
                     seleccionarPieza(i, j);
                     eliminarMovQueAmenazanAMiRey();
+                    annadirEnroquesPosibles();
                     annadirEstiloMovPosibles();
                 }
             } else {    // Si la pieza pulsada es la que estaba seleccionada, la deselecciono
@@ -581,6 +583,75 @@ function enroque(i, j) {
         } else {
             movidaEnroqueLargoNegro = true;
             movidaEnroqueCortoNegro = true;
+        }
+    }
+}
+
+// Comprueba si se ha seleccionado un rey y si tiene algun enroque disponible
+// Si lo hay, comprueba todos los movimientos posibles de todas las piezas del otro color
+// Si ninguno de esos movimientos amenaza al rey o a las casillas por las que pasa, annade el enroque a movPosibles
+function annadirEnroquesPosibles() {
+    if (Math.abs(tablero[piezaSelec.posX][piezaSelec.posY]) === 6) {
+        let comprobarEnroqueCorto = false;
+        let comprobarEnroqueLargo = false;
+        let piezasAmenazantes;
+        let posX;
+
+        if (turno) {
+            piezasAmenazantes = piezasNegras;
+            posX = 7;
+        } else {
+            piezasAmenazantes = piezasBlancas;
+            posX = 0;
+        }
+
+        // Enroque corto
+        if (turno && !movidaEnroqueCortoBlanco || !turno && !movidaEnroqueCortoNegro)
+            if (tablero[posX][5] === 0 && tablero[posX][6] === 0)
+                comprobarEnroqueCorto = true;
+
+        // Enroque largo
+        if (turno && !movidaEnroqueLargoBlanco || !turno && !movidaEnroqueLargoNegro)
+            if (tablero[posX][1] === 0 && tablero[posX][2] === 0 && tablero[posX][3] === 0)
+                comprobarEnroqueLargo = true;
+
+        if (comprobarEnroqueCorto || comprobarEnroqueLargo) {
+            let enroqueCortoAmenazado = false;
+            let enroqueLargoAmenazado = false;
+            let movPosiblesAux = movPosibles;
+            let numPiezasAmenazantes = piezasAmenazantes.length;
+            let i = 0;
+
+            do {
+                movPosibles = [];
+                calcularMovSegunPieza(piezasAmenazantes[i].posX, piezasAmenazantes[i].posY);
+                for (let j = 0, fin = movPosibles.length; j < fin; j++) {
+                    if (movPosibles[j].posX === posX) {
+                        if (movPosibles[j].posY === 4) {
+                            enroqueCortoAmenazado = true;
+                            enroqueLargoAmenazado = true;
+                            break;
+                        }
+                        if (comprobarEnroqueCorto && !enroqueCortoAmenazado)
+                            if (movPosibles[j].posY === 5 || movPosibles[j].posY === 6)
+                                enroqueCortoAmenazado = true;
+                        if (comprobarEnroqueLargo && !enroqueLargoAmenazado)
+                            if (movPosibles[j].posY === 3 || movPosibles[j].posY === 2 || movPosibles[j].posY === 1)
+                                enroqueLargoAmenazado = true;
+                    }
+                    if (enroqueCortoAmenazado && enroqueLargoAmenazado)
+                        break;
+                }
+                i++;
+            } while (i < numPiezasAmenazantes && (!enroqueCortoAmenazado || !enroqueLargoAmenazado));
+
+            movPosibles = movPosiblesAux;
+
+            if (comprobarEnroqueCorto && !enroqueCortoAmenazado)
+                movPosibles.push({posX: posX, posY: 6});
+
+            if (comprobarEnroqueLargo && !enroqueLargoAmenazado)
+                movPosibles.push({posX: posX, posY: 2});
         }
     }
 }
@@ -1046,16 +1117,6 @@ function calcularMovReyBlanco(x, y) {
     if (y - 1 >= 0)
         if (tablero[x][y - 1] <= 0)
             movPosibles.push({posX: x, posY: y - 1});
-
-    // Enroque corto
-    if (!movidaEnroqueCortoBlanco)
-        if (tablero[7][5] === 0 && tablero[7][6] === 0)
-            movPosibles.push({posX: x, posY: y + 2});
-
-    // Enroque largo
-    if (!movidaEnroqueLargoBlanco)
-        if (tablero[7][1] === 0 && tablero[7][2] === 0 && tablero[7][3] === 0)
-            movPosibles.push({posX: x, posY: y - 2});
 }
 
 function calcularMovReyNegro(x, y) {
@@ -1098,14 +1159,4 @@ function calcularMovReyNegro(x, y) {
     if (y - 1 >= 0)
         if (tablero[x][y - 1] >= 0)
             movPosibles.push({posX: x, posY: y - 1});
-
-    // Enroque corto
-    if (!movidaEnroqueCortoNegro)
-        if (tablero[0][5] === 0 && tablero[0][6] === 0)
-            movPosibles.push({posX: x, posY: y + 2});
-
-    // Enroque largo
-    if (!movidaEnroqueLargoNegro)
-        if (tablero[0][1] === 0 && tablero[0][2] === 0 && tablero[0][3] === 0)
-            movPosibles.push({posX: x, posY: y - 2});
 }
