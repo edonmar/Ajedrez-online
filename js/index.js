@@ -275,25 +275,10 @@ function clickEnCasilla(i, j) {
         }
     } else {
         if (esMovValido(i, j)) {
-            eliminarEstiloJaque();
-            moverPieza(i, j);
-            comerAlPaso(i, j);
-            enroque(i, j);
-            eliminarEstiloMovPosibles();
-            deseleccionarPieza();
-            if (tieneMovimientos()) {
-                if (esJaque(turno)) {    // Jaque
-                    annadirEstiloJaque();
-                }
-            } else {
-                if (esJaque(turno)) {    // Jaque mate
-                    annadirEstiloJaque();
-                } else {    // Rey ahogado
-
-                }
-            }
-            movPosibles = [];
-            turno = !turno;
+            if (siPeonPromociona(i))
+                modalPromocionPeon(i, j);
+            else
+                realizarMovimientoYComprobaciones(i, j);
         } else {
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
             if (i !== piezaSelec.posX || j !== piezaSelec.posY) {
@@ -313,6 +298,28 @@ function clickEnCasilla(i, j) {
             }
         }
     }
+}
+
+function realizarMovimientoYComprobaciones(i, j) {
+    eliminarEstiloJaque();
+    moverPieza(i, j);
+    comerAlPaso(i, j);
+    enroque(i, j);
+    eliminarEstiloMovPosibles();
+    deseleccionarPieza();
+    if (tieneMovimientos()) {
+        if (esJaque(turno)) {    // Jaque
+            annadirEstiloJaque();
+        }
+    } else {
+        if (esJaque(turno)) {    // Jaque mate
+            annadirEstiloJaque();
+        } else {    // Rey ahogado
+
+        }
+    }
+    movPosibles = [];
+    turno = !turno;
 }
 
 function seleccionarPieza(i, j) {
@@ -653,6 +660,105 @@ function annadirEnroquesPosibles() {
             if (comprobarEnroqueLargo && !enroqueLargoAmenazado)
                 movPosibles.push({posX: posX, posY: 2});
         }
+    }
+}
+
+function siPeonPromociona(i) {
+    let promociona = false;
+
+    if (i === 0 && tablero[piezaSelec.posX][piezaSelec.posY] === 1 ||
+        i === 7 && tablero[piezaSelec.posX][piezaSelec.posY] === -1)
+        promociona = true;
+
+    return promociona;
+}
+
+function modalPromocionPeon(i, j) {
+    let modal = document.getElementById("miModal");
+    let cerrar = document.getElementById("modalCerrar");
+    let titulo = document.getElementById("modalTitulo");
+    let body = document.getElementById("modalBody");
+
+    titulo.innerHTML = "Selecciona una pieza";
+    body.innerHTML = "";
+
+    // Boton de cerrar el modal sin promocionar
+    cerrar.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // Boton reina
+    let btnReina = document.createElement("button");
+    btnReina.classList.add("btnModal");
+    if (turno)
+        btnReina.classList.add("reinaBlanco");
+    else
+        btnReina.classList.add("reinaNegro");
+
+    btnReina.onclick = function () {
+        if (turno)
+            promocionarPeon(i, j, 5);
+        else
+            promocionarPeon(i, j, -5);
+    }
+    body.appendChild(btnReina);
+
+    // Boton torre
+    let btnTorre = document.createElement("button");
+    btnTorre.classList.add("btnModal");
+    if (turno)
+        btnTorre.classList.add("torreBlanco");
+    else
+        btnTorre.classList.add("torreNegro");
+
+    btnTorre.onclick = function () {
+        if (turno)
+            promocionarPeon(i, j, 2);
+        else
+            promocionarPeon(i, j, -2);
+    }
+    body.appendChild(btnTorre);
+
+    // Boton alfil
+    let btnAlfil = document.createElement("button");
+    btnAlfil.classList.add("btnModal");
+    if (turno)
+        btnAlfil.classList.add("alfilBlanco");
+    else
+        btnAlfil.classList.add("alfilNegro");
+
+    btnAlfil.onclick = function () {
+        if (turno)
+            promocionarPeon(i, j, 4);
+        else
+            promocionarPeon(i, j, -4);
+    }
+    body.appendChild(btnAlfil);
+
+    // Boton caballo
+    let btnCaballo = document.createElement("button");
+    btnCaballo.classList.add("btnModal");
+    if (turno)
+        btnCaballo.classList.add("caballoBlanco");
+    else
+        btnCaballo.classList.add("caballoNegro");
+
+    btnCaballo.onclick = function () {
+        if (turno)
+            promocionarPeon(i, j, 3);
+        else
+            promocionarPeon(i, j, -3);
+    }
+    body.appendChild(btnCaballo);
+
+    // Mostrar el modal
+    modal.style.display = "block";
+
+    function promocionarPeon(i, j, nuevaPieza) {
+        modal.style.display = "none";
+        eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
+        tablero[piezaSelec.posX][piezaSelec.posY] = nuevaPieza;
+        realizarMovimientoYComprobaciones(i, j, true);
     }
 }
 
