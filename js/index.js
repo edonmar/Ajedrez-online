@@ -254,9 +254,15 @@ function eliminarEstiloJaque() {
 function iniciarEventosTablero() {
     for (let i = 0; i < 8; i++)
         for (let j = 0; j < 8; j++)
-            tableroHTML[i][j].addEventListener("click", function () {
+            tableroHTML[i][j].onclick = function () {
                 clickEnCasilla(i, j);
-            });
+            }
+}
+
+function eliminarEventosTablero() {
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            tableroHTML[i][j].onclick = null;
 }
 
 // Al pulsar una pieza, la selecciono
@@ -301,6 +307,10 @@ function clickEnCasilla(i, j) {
 }
 
 function realizarMovimientoYComprobaciones(i, j) {
+    let finDePartida = false;
+    let cabecera;
+    let parrafo;
+
     eliminarEstiloJaque();
     moverPieza(i, j);
     comerAlPaso(i, j);
@@ -308,18 +318,34 @@ function realizarMovimientoYComprobaciones(i, j) {
     eliminarEstiloMovPosibles();
     deseleccionarPieza();
     if (tieneMovimientos()) {
-        if (esJaque(turno)) {    // Jaque
+        if (esJaque(turno))    // Jaque
             annadirEstiloJaque();
-        }
     } else {
         if (esJaque(turno)) {    // Jaque mate
             annadirEstiloJaque();
+            finDePartida = true;
+            if (turno)
+                cabecera = "Ganan las blancas";
+            else
+                cabecera = "Ganan las negras";
+            parrafo = "Jaque mate";
         } else {    // Rey ahogado
-
+            finDePartida = true;
+            cabecera = "Tablas"
+            parrafo = "Rey agohado";
         }
     }
     movPosibles = [];
     turno = !turno;
+
+    if (finDePartida) {
+        terminarPartida(cabecera, parrafo);
+    }
+}
+
+function terminarPartida(cabecera, parrafo){
+    eliminarEventosTablero();
+    modalFinDePartida(cabecera, parrafo);
 }
 
 function seleccionarPieza(i, j) {
@@ -760,6 +786,24 @@ function modalPromocionPeon(i, j) {
         tablero[piezaSelec.posX][piezaSelec.posY] = nuevaPieza;
         realizarMovimientoYComprobaciones(i, j, true);
     }
+}
+
+function modalFinDePartida(cabecera, parrafo) {
+    let modal = document.getElementById("miModal");
+    let cerrar = document.getElementById("modalCerrar");
+    let titulo = document.getElementById("modalTitulo");
+    let body = document.getElementById("modalBody");
+
+    titulo.innerHTML = cabecera;
+    body.innerHTML = "<p>" + parrafo + "</p>";
+
+    // Boton de cerrar el modal
+    cerrar.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // Mostrar el modal
+    modal.style.display = "block";
 }
 
 // Cambia las coordenadas de la pieza en el array de objetos
