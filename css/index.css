@@ -1,14 +1,14 @@
-*{
+* {
     margin: 0;
     padding: 0;
     font-family: Arial, Helvetica, sans-serif;
 }
 
-body{
+body {
     background-color: #ccffcc;
 }
 
-#tablero{
+#tablero {
     display: inline-block;
     margin: 3em;
     padding-top: 1.5em;
@@ -16,36 +16,36 @@ body{
     background-color: #1a0d00;
 }
 
-#numeros{
+#numeros {
     float: left;
     display: flex;
     flex-direction: column;
 }
 
-#numeros span{
+#numeros span {
     width: 1.5em;
     line-height: 4.5em;
     text-align: center;
     color: #ff9933;
 }
 
-#letras{
+#letras {
     display: flex;
     margin-left: 1.5em;
 }
 
-#letras span{
+#letras span {
     flex-basis: 4.5em;
     line-height: 1.5em;
     text-align: center;
     color: #ff9933;
 }
 
-#casillasTablero{
+#casillasTablero {
     border-collapse: collapse;
 }
 
-#casillasTablero td{
+#casillasTablero td {
     width: 4.5em;
     height: 4.5em;
     border: none;
@@ -53,15 +53,15 @@ body{
     background-repeat: no-repeat;
 }
 
-.blanco{
+.blanco {
     background-color: #ffdf80;
 }
 
-.negro{
+.negro {
     background-color: #996633;
 }
 
-.movPosible{
+.movPosible {
     position: relative;
     left: 35%;
     box-sizing: border-box;
@@ -72,15 +72,15 @@ body{
     background-color: #57cbcb;
 }
 
-.reyAmenazado{
+.reyAmenazado {
     background-color: #ff2424;
 }
 
-.piezaSeleccionada{
+.piezaSeleccionada {
     background-color: #57cbcb;
 }
 
-.piezaResaltadaBorde{
+.piezaResaltadaBorde {
     position: relative;
     box-sizing: border-box;
     width: 100%;
@@ -88,7 +88,7 @@ body{
     border: 1px solid black;
 }
 
-#miModal{
+#miModal {
     display: none;
     position: fixed;
     z-index: 1;
@@ -102,7 +102,7 @@ body{
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-#modalContenido{
+#modalContenido {
     position: relative;
     margin: auto;
     padding: 0;
@@ -112,26 +112,27 @@ body{
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#modalCerrar{
+#modalCerrar {
     float: right;
     color: white;
     font-size: 1.7em;
     font-weight: bold;
 }
 
-#modalCerrar:hover, #modalCerrar:focus{
+#modalCerrar:hover,
+#modalCerrar:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
 }
 
-#modalHeader{
+#modalHeader {
     padding: 0.5em 0.7em;
     color: white;
     background-color: #9c3030;
 }
 
-#modalBody{
+#modalBody {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
@@ -139,7 +140,7 @@ body{
     padding-bottom: 1em;
 }
 
-.btnModal{
+.btnModal {
     box-sizing: content-box;
     width: 4.5em;
     height: 4.5em;
@@ -148,50 +149,50 @@ body{
     background-repeat: no-repeat;
 }
 
-.peonNegro{
-    background-image: url("../img/peon_negro.svg");
-}
-
-.torreNegro{
-    background-image: url("../img/torre_negro.svg");
-}
-
-.caballoNegro{
-    background-image: url("../img/caballo_negro.svg");
-}
-
-.alfilNegro{
-    background-image: url("../img/alfil_negro.svg");
-}
-
-.reinaNegro{
-    background-image: url("../img/reina_negro.svg");
-}
-
-.reyNegro{
-    background-image: url("../img/rey_negro.svg");
-}
-
-.peonBlanco{
+.peonBlanco {
     background-image: url("../img/peon_blanco.svg");
 }
 
-.torreBlanco{
+.torreBlanco {
     background-image: url("../img/torre_blanco.svg");
 }
 
-.caballoBlanco{
+.caballoBlanco {
     background-image: url("../img/caballo_blanco.svg");
 }
 
-.alfilBlanco{
+.alfilBlanco {
     background-image: url("../img/alfil_blanco.svg");
 }
 
-.reinaBlanco{
+.reinaBlanco {
     background-image: url("../img/reina_blanco.svg");
 }
 
-.reyBlanco{
+.reyBlanco {
     background-image: url("../img/rey_blanco.svg");
+}
+
+.peonNegro {
+    background-image: url("../img/peon_negro.svg");
+}
+
+.torreNegro {
+    background-image: url("../img/torre_negro.svg");
+}
+
+.caballoNegro {
+    background-image: url("../img/caballo_negro.svg");
+}
+
+.alfilNegro {
+    background-image: url("../img/alfil_negro.svg");
+}
+
+.reinaNegro {
+    background-image: url("../img/reina_negro.svg");
+}
+
+.reyNegro {
+    background-image: url("../img/rey_negro.svg");
 }
