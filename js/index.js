@@ -345,6 +345,14 @@ function realizarMovimientoYComprobaciones(x, y) {
             parrafo = "Rey agohado";
         }
     }
+    if (!finDePartida) {
+        if (piezasInsuficientes(piezasBlancas) && piezasInsuficientes(piezasNegras)) {
+            finDePartida = true;
+            cabecera = "Tablas"
+            parrafo = "Falta de material para dar mate";
+        }
+    }
+
     movPosibles = [];
     turno = !turno;
 
@@ -817,6 +825,61 @@ function modalPromocionPeon(x, y) {
         tablero[piezaSelec.posX][piezaSelec.posY] = nuevaPieza;
         realizarMovimientoYComprobaciones(x, y, true);
     }
+}
+
+// Si se da uno de estos casos, devuelve true. Significa que un color no tiene piezas suficientes para ganar
+function piezasInsuficientes(piezasColor) {
+    let piezasInsuficientes = false;
+    let longPiezas = piezasColor.length;
+
+    if (longPiezas === 1)    // Rey solo
+        piezasInsuficientes = true;
+    else if (longPiezas === 2) {
+        if (tablero[piezasColor[1].posX][piezasColor[1].posY].toUpperCase() === "C")    // Rey y caballo
+            piezasInsuficientes = true;
+        else if (tablero[piezasColor[1].posX][piezasColor[1].posY].toUpperCase() === "A")    // Rey y alfil
+            piezasInsuficientes = true;
+    } else if (longPiezas === 3) {
+        if (tablero[piezasColor[1].posX][piezasColor[1].posY].toUpperCase() === "C" &&
+            tablero[piezasColor[2].posX][piezasColor[2].posY].toUpperCase() === "C")    // Rey y dos caballos
+            piezasInsuficientes = true;
+    }
+    // Rey y varios alfiles, pero todos los alfiles en casilla del mismo color
+    if (!piezasInsuficientes && longPiezas > 2) {
+        let soloAlfiles = true;
+
+        for (let i = 1; i < longPiezas; i++) {
+            if (tablero[piezasColor[i].posX][piezasColor[i].posY].toUpperCase() !== "A") {
+                soloAlfiles = false;
+                break;
+            }
+        }
+        if (soloAlfiles) {
+            let todosMismoColorCasilla = true;
+            let colorCasilla;
+            let primerColorCasilla = undefined;
+
+            for (let i = 1; i < longPiezas; i++) {
+                if (piezasColor[i].posX % 2 === 0)
+                    colorCasilla = piezasColor[i].posY % 2 === 0;
+                else
+                    colorCasilla = piezasColor[i].posY % 2 !== 0;
+
+                if (i === 1)
+                    primerColorCasilla = colorCasilla;
+                else {
+                    if (primerColorCasilla !== colorCasilla) {
+                        todosMismoColorCasilla = false;
+                        break;
+                    }
+                }
+            }
+            if (todosMismoColorCasilla)
+                piezasInsuficientes = true;
+        }
+    }
+
+    return piezasInsuficientes;
 }
 
 function modalFinDePartida(cabecera, parrafo) {
