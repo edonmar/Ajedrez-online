@@ -165,8 +165,8 @@ body {
     background-image: url("../img/alfil_blanco.svg");
 }
 
-.reinaBlanco {
-    background-image: url("../img/reina_blanco.svg");
+.damaBlanco {
+    background-image: url("../img/dama_blanco.svg");
 }
 
 .reyBlanco {
@@ -189,8 +189,8 @@ body {
     background-image: url("../img/alfil_negro.svg");
 }
 
-.reinaNegro {
-    background-image: url("../img/reina_negro.svg");
+.damaNegro {
+    background-image: url("../img/dama_negro.svg");
 }
 
 .reyNegro {
