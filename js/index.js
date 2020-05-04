@@ -605,14 +605,14 @@ function tieneMovimientos() {
 // Comprueba si el movimiento que se acaba de hacer es un enroque y mueve la torre
 function enroqueYComprobaciones(x, y) {
     if (tablero[x][y] === "T") {    // Si ha movido torre blanca
-        if (y === 0)
+        if (piezaSelec.posY === 0)
             movidaEnroqueLargoBlanco = true;
-        if (y === 7)
+        if (piezaSelec.posY === 7)
             movidaEnroqueCortoBlanco = true;
     } else if (tablero[x][y] === "t") {    // Si ha movido torre negra
-        if (y === 0)
+        if (piezaSelec.posY === 0)
             movidaEnroqueLargoNegro = true;
-        if (y === 7)
+        if (piezaSelec.posY === 7)
             movidaEnroqueCortoNegro = true;
     } else if (tablero[x][y].toUpperCase() === "R") {    // Si ha movido un rey
         if (Math.abs(piezaSelec.posY - y) === 2) {    // Si el movimiento es un enroque (el rey mueve 2 posiciones)
