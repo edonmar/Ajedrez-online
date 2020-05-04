@@ -12,6 +12,8 @@ let movidaEnroqueCortoNegro = false;
 let movidaEnroqueLargoNegro = false;
 let regla50MovBlancas = 0;    // Movimientos consecutivos desde el ultimo movimiento de peon o captura de pieza
 let regla50MovNegras = 0;
+let regla3RepMovimientos = [];    // Posiciones del tablero para comprobar si alguna se repite 3 veces (seria tablas)
+let regla3RepTurnos = [];    // El turno de cada una de las posiciones del array regla3RepMovimientos
 let turno = true;    // true = blancas, false = negras
 
 window.onload = function () {
@@ -322,14 +324,21 @@ function realizarMovimientoYComprobaciones(x, y) {
     let finDePartida = false;
     let cabecera;
     let parrafo;
+    // Las siguientes variables son como estaba el tablero antes de mover la pieza. Las necesito para comprobar tablas
+    let valorAnteriorCasillaOrigen = tablero[piezaSelec.posX][piezaSelec.posY];
+    let valorAnteriorCasillaDestino = tablero[x][y];
+    let anteriorEnrCortoBlanco = movidaEnroqueCortoBlanco;
+    let anteriorEnrLargoBlanco = movidaEnroqueLargoBlanco;
+    let anteriorEnrCortoNegro = movidaEnroqueCortoNegro;
+    let anteriorEnrLargoNegro = movidaEnroqueLargoNegro;
 
-    regla50Movimientos(x, y);
     eliminarEstiloJaque();
     moverPieza(x, y);
     enroqueYComprobaciones(x, y);
     capturaAlPasoYComprobaciones(x, y);
     eliminarEstiloMovPosibles();
     deseleccionarPieza();
+
     if (tieneMovimientos()) {
         if (esJaque(turno))    // Jaque
             annadirEstiloJaque();
@@ -348,12 +357,18 @@ function realizarMovimientoYComprobaciones(x, y) {
             parrafo = "Rey agohado";
         }
     }
+
     if (!finDePartida) {
         if (piezasInsuficientes(piezasBlancas) && piezasInsuficientes(piezasNegras)) {
             finDePartida = true;
             cabecera = "Tablas"
             parrafo = "Falta de material para dar mate";
-        } else if (regla50MovBlancas === 50 && regla50MovNegras === 50) {
+        } else if (tripleRepeticion(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, anteriorEnrCortoBlanco,
+            anteriorEnrLargoBlanco, anteriorEnrCortoNegro, anteriorEnrLargoNegro)) {
+            finDePartida = true;
+            cabecera = "Tablas"
+            parrafo = "Triple repetición de posiciones";
+        } else if (regla50Movimientos(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino)) {
             finDePartida = true;
             cabecera = "Tablas"
             parrafo = "50 turnos sin mover peón ni realizar capturas";
@@ -889,9 +904,52 @@ function piezasInsuficientes(piezasColor) {
     return piezasInsuficientes;
 }
 
-function regla50Movimientos(x, y) {
+function tripleRepeticion(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, anteriorEnrCortoBlanco,
+                          anteriorEnrLargoBlanco, anteriorEnrCortoNegro, anteriorEnrLargoNegro) {
+    let tablas = false;
+    let cadena = "";
+
+    // Si el movimiento mueve peon, captura pieza o cambia los enroques posibles, vacio los arrays
+    if (valorAnteriorCasillaOrigen.toUpperCase() === "P" || valorAnteriorCasillaDestino !== "0" ||
+        anteriorEnrCortoBlanco !== movidaEnroqueCortoBlanco || anteriorEnrLargoBlanco !== movidaEnroqueLargoBlanco ||
+        anteriorEnrCortoNegro !== movidaEnroqueCortoNegro || anteriorEnrLargoNegro !== movidaEnroqueLargoNegro) {
+        regla3RepMovimientos = [];
+        regla3RepTurnos = [];
+    }
+
+    // Creo una cadena con el valor de todas las casillas del tablero
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            cadena += tablero[i][j];
+
+    // Guarda en los arrays la cadena actual y el turno actual
+    regla3RepMovimientos.push(cadena);
+    regla3RepTurnos.push(turno);
+
+    // Comprueba si alguna cadena del array aparece 3 veces (el turno tambien tiene que repetirse)
+    if (regla3RepMovimientos.length >= 3) {
+        let veces = 1;
+
+        for (let i = 0; i < regla3RepMovimientos.length - 1; i++) {
+            veces = 1;
+            for (let j = i + 1; j < regla3RepMovimientos.length; j++) {
+                if (regla3RepMovimientos[i].localeCompare(regla3RepMovimientos[j]) === 0 &&
+                    regla3RepTurnos[i] === regla3RepTurnos[j])
+                    veces++;
+            }
+            if (veces >= 3) {
+                tablas = true;
+                break;
+            }
+        }
+    }
+
+    return tablas;
+}
+
+function regla50Movimientos(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino) {
     // Si cualquiera de los colores captura una pieza o mueve un peon, pone los dos contadores a 0
-    if (tablero[piezaSelec.posX][piezaSelec.posY].toUpperCase() === "P" || tablero[x][y] !== "0") {
+    if (valorAnteriorCasillaOrigen.toUpperCase() === "P" || valorAnteriorCasillaDestino !== "0") {
         regla50MovBlancas = 0;
         regla50MovNegras = 0;
     } else {
@@ -900,6 +958,8 @@ function regla50Movimientos(x, y) {
         else
             regla50MovNegras++;
     }
+
+    return regla50MovBlancas === 50 && regla50MovNegras === 50;
 }
 
 function modalFinDePartida(cabecera, parrafo) {
