@@ -10,6 +10,8 @@ let movidaEnroqueCortoBlanco = false;    // Si una de las piezas implicadas en e
 let movidaEnroqueLargoBlanco = false;
 let movidaEnroqueCortoNegro = false;
 let movidaEnroqueLargoNegro = false;
+let regla50MovBlancas = 0;    // Movimientos consecutivos desde el ultimo movimiento de peon o captura de pieza
+let regla50MovNegras = 0;
 let turno = true;    // true = blancas, false = negras
 
 window.onload = function () {
@@ -321,6 +323,7 @@ function realizarMovimientoYComprobaciones(x, y) {
     let cabecera;
     let parrafo;
 
+    regla50Movimientos(x, y);
     eliminarEstiloJaque();
     moverPieza(x, y);
     enroqueYComprobaciones(x, y);
@@ -350,6 +353,10 @@ function realizarMovimientoYComprobaciones(x, y) {
             finDePartida = true;
             cabecera = "Tablas"
             parrafo = "Falta de material para dar mate";
+        } else if (regla50MovBlancas === 50 && regla50MovNegras === 50) {
+            finDePartida = true;
+            cabecera = "Tablas"
+            parrafo = "50 turnos sin mover peón ni realizar capturas";
         }
     }
 
@@ -880,6 +887,19 @@ function piezasInsuficientes(piezasColor) {
     }
 
     return piezasInsuficientes;
+}
+
+function regla50Movimientos(x, y) {
+    // Si cualquiera de los colores captura una pieza o mueve un peon, pone los dos contadores a 0
+    if (tablero[piezaSelec.posX][piezaSelec.posY].toUpperCase() === "P" || tablero[x][y] !== "0") {
+        regla50MovBlancas = 0;
+        regla50MovNegras = 0;
+    } else {
+        if (turno)
+            regla50MovBlancas++;
+        else
+            regla50MovNegras++;
+    }
 }
 
 function modalFinDePartida(cabecera, parrafo) {
