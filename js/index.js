@@ -15,6 +15,7 @@ let regla50MovNegras = 0;
 let regla3RepMovimientos = [];    // Posiciones del tablero para comprobar si alguna se repite 3 veces (seria tablas)
 let regla3RepTurnos = [];    // El turno de cada una de las posiciones del array regla3RepMovimientos
 let turno = true;    // true = blancas, false = negras
+let tableroGirado = false;
 
 window.onload = function () {
     inicializarTablero();
@@ -23,6 +24,7 @@ window.onload = function () {
     inicializarTableroHTML();
     annadirImgPiezasIniciales();
     iniciarEventosTablero();
+    iniciarEventosBotones();
 };
 
 // Asigna a la variable Tablero un array 8x8 vacio
@@ -113,8 +115,12 @@ function annadirImgPiezasIniciales() {
 }
 
 function annadirImgPieza(x, y) {
-    let piezaHTML = tableroHTML[x][y];
     let tipo = tablero[x][y];
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let piezaHTML = tableroHTML[x][y];
 
     if (tipo === tipo.toUpperCase()) {
         switch (tipo) {
@@ -162,8 +168,12 @@ function annadirImgPieza(x, y) {
 }
 
 function eliminarImgPieza(x, y) {
-    let piezaHTML = tableroHTML[x][y];
     let tipo = tablero[x][y];
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let piezaHTML = tableroHTML[x][y];
 
     if (tipo === tipo.toUpperCase()) {
         switch (tipo) {
@@ -211,24 +221,54 @@ function eliminarImgPieza(x, y) {
 }
 
 function annadirEstiloMovPosibles() {
+    let x = piezaSelec.posX;
+    let y = piezaSelec.posY;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
     // Pieza seleccionada
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.add("piezaSeleccionada");
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "<div class='piezaResaltadaBorde'></div>";
+    casillaHTML.classList.add("piezaSeleccionada");
+    casillaHTML.innerHTML = "<div class='piezaResaltadaBorde'></div>";
 
     // Movimientos posibles
-    for (let i = 0, fin = movPosibles.length; i < fin; i++)
-        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "<div class='movPosible'></div>";
+    for (let i = 0, fin = movPosibles.length; i < fin; i++) {
+        x = movPosibles[i].posX;
+        y = movPosibles[i].posY;
+        if (tableroGirado) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        tableroHTML[x][y].innerHTML = "<div class='movPosible'></div>";
+    }
 }
 
 function eliminarEstiloMovPosibles() {
+    let x = piezaSelec.posX;
+    let y = piezaSelec.posY;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
     // Pieza seleccionada
-    tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.remove("piezaSeleccionada");
-    if (!tableroHTML[piezaSelec.posX][piezaSelec.posY].classList.contains("reyAmenazado"))
-        tableroHTML[piezaSelec.posX][piezaSelec.posY].innerHTML = "";
+    casillaHTML.classList.remove("piezaSeleccionada");
+    if (!casillaHTML.classList.contains("reyAmenazado"))
+        casillaHTML.innerHTML = "";
 
     // Movimientos posibles
-    for (let i = 0, fin = movPosibles.length; i < fin; i++)
-        tableroHTML[movPosibles[i].posX][movPosibles[i].posY].innerHTML = "";
+    for (let i = 0, fin = movPosibles.length; i < fin; i++) {
+        x = movPosibles[i].posX;
+        y = movPosibles[i].posY;
+        if (tableroGirado) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        tableroHTML[x][y].innerHTML = "";
+    }
 }
 
 function annadirEstiloJaque() {
@@ -239,8 +279,16 @@ function annadirEstiloJaque() {
     else
         piezasColor = piezasBlancas;
 
-    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].classList.add("reyAmenazado");
-    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].innerHTML = "<div class='piezaResaltadaBorde'></div>";
+    let x = piezasColor[0].posX;
+    let y = piezasColor[0].posY;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
+    casillaHTML.classList.add("reyAmenazado");
+    casillaHTML.innerHTML = "<div class='piezaResaltadaBorde'></div>";
 }
 
 function eliminarEstiloJaque() {
@@ -251,8 +299,16 @@ function eliminarEstiloJaque() {
     else
         piezasColor = piezasNegras;
 
-    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].classList.remove("reyAmenazado");
-    tableroHTML[piezasColor[0].posX][piezasColor[0].posY].innerHTML = "";
+    let x = piezasColor[0].posX;
+    let y = piezasColor[0].posY;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
+    casillaHTML.classList.remove("reyAmenazado");
+    casillaHTML.innerHTML = "";
 }
 
 function iniciarEventosTablero() {
@@ -269,11 +325,23 @@ function eliminarEventosTablero() {
             tableroHTML[i][j].onclick = null;
 }
 
+function iniciarEventosBotones() {
+    let btnGirar = document.getElementById("btnGirar");
+    btnGirar.onclick = function () {
+        girar();
+    }
+}
+
 // Al pulsar una pieza, la selecciono
 // Si pulso una casilla a la que no me puedo mover, no pasa nada
 // Si pulso una pieza y luego otra, selecciono la segunda
 // Si pulso la misma pieza que ya esta seleccionada, la deselecciono
 function clickEnCasilla(x, y) {
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+
     let blanca = esBlanca(tablero[x][y]);
     let negra = esNegra(tablero[x][y]);
 
@@ -978,6 +1046,53 @@ function modalFinDePartida(cabecera, parrafo) {
 
     // Mostrar el modal
     modal.style.display = "block";
+}
+
+function girar() {
+    let numeros = document.querySelectorAll("#numeros span");
+    let letras = document.querySelectorAll("#letras span");
+
+    girarTablero();
+    girarSpans(numeros);
+    girarSpans(letras);
+    tableroGirado = !tableroGirado;
+}
+
+function girarTablero() {
+    let casillaA;
+    let casillaB;
+    let htmlAux;
+    let classAux;
+
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 8; j++) {
+            casillaA = tableroHTML[i][j];
+            htmlAux = casillaA.innerHTML;
+            classAux = casillaA.className;
+            casillaB = tableroHTML[7 - i][7 - j];
+
+            casillaA.innerHTML = casillaB.innerHTML;
+            casillaA.className = casillaB.className;
+
+            casillaB.innerHTML = htmlAux;
+            casillaB.className = classAux;
+        }
+    }
+}
+
+function girarSpans(spans) {
+    let spanA;
+    let spanB;
+    let htmlAux;
+
+    for (let i = 0; i < 4; i++) {
+        spanA = spans[i];
+        htmlAux = spanA.innerHTML;
+        spanB = spans[7 - i];
+
+        spanA.innerHTML = spanB.innerHTML;
+        spanB.innerHTML = htmlAux;
+    }
 }
 
 function calcularMovSegunPieza(x, y) {

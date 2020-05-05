@@ -41,6 +41,17 @@ body {
     color: #ff9933;
 }
 
+#btnGirar {
+    float: left;
+    width: 1.5em;
+    height: 1.5em;
+    fill: white;
+}
+
+#btnGirar:hover {
+    fill: #ff9933;
+}
+
 #casillasTablero {
     border-collapse: collapse;
 }
