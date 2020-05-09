@@ -9,8 +9,9 @@ body {
 }
 
 #tablero {
-    display: inline-block;
-    margin: 3em;
+    float: left;
+    margin-top: 3em;
+    margin-left: 3em;
     padding-top: 1.5em;
     padding-right: 1.5em;
     background-color: #1a0d00;
@@ -158,6 +159,44 @@ body {
     border: 1px solid black;
     background-size: 4.5em;
     background-repeat: no-repeat;
+}
+
+#contenedorMov {
+    display: inline-block;
+    overflow-y: scroll;
+    width: 16em;
+    height: 38em;
+    margin-top: 3em;
+    margin-left: 3em;
+    border: 2px solid gray;
+    background-color: papayawhip;
+}
+
+#contenedorMov div {
+    height: 2em;
+}
+
+#contenedorMov div:nth-child(even) {
+    background-color: #fad7a0;
+}
+
+#contenedorMov div:nth-child(odd) {
+    background-color: papayawhip;
+}
+
+.filaMov span {
+    display: inline-block;
+    line-height: 2em;
+}
+
+.filaMov span:first-child {
+    width: 1.5em;
+    margin-left: 0.5em;
+}
+
+.filaMov span:not(:first-child) {
+    width: 3.5em;
+    margin-left: 2em;
 }
 
 .peonBlanco {

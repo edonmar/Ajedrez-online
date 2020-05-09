@@ -406,6 +406,7 @@ function realizarMovimientoYComprobaciones(x, y) {
     capturaAlPasoYComprobaciones(x, y);
     eliminarEstiloMovPosibles();
     deseleccionarPieza();
+    escribirMovEnTabla("mov");
 
     if (tieneMovimientos()) {
         if (esJaque(turno))    // Jaque
@@ -1093,6 +1094,33 @@ function girarSpans(spans) {
         spanA.innerHTML = spanB.innerHTML;
         spanB.innerHTML = htmlAux;
     }
+}
+
+function escribirMovEnTabla(notacionMov) {
+    let contenedorMov = document.getElementById("contenedorMov");
+    let filas = contenedorMov.querySelectorAll(".filaMov");
+    let numFilas = filas.length;
+
+    if (turno) {    // Movimiento de las blancas: crea una nuevo div con 3 span y rellena los 2 primeros
+        let nuevaFila = document.createElement("div");
+        nuevaFila.className = "filaMov";
+
+        let spanNum = document.createElement("span");
+        let spanBlancas = document.createElement("span");
+        let spanNegras = document.createElement("span");
+
+        spanNum.innerHTML = (numFilas + 1) + ".";
+        spanBlancas.innerHTML = notacionMov;
+
+        nuevaFila.appendChild(spanNum);
+        nuevaFila.appendChild(spanBlancas);
+        nuevaFila.appendChild(spanNegras);
+        contenedorMov.appendChild(nuevaFila);
+    } else    // Movimiento de las negras: rellena el tercer span del ultimo div
+        filas[numFilas - 1].lastChild.innerHTML = notacionMov;
+
+    // Mueve el scroll hacia abajo
+    contenedorMov.scrollTop = contenedorMov.scrollHeight;
 }
 
 function calcularMovSegunPieza(x, y) {
