@@ -353,7 +353,7 @@ function clickEnCasilla(x, y) {
             if (siPeonPromociona(x))
                 modalPromocionPeon(x, y);
             else
-                realizarMovimientoYComprobaciones(x, y);
+                realizarMovimientoYComprobaciones(x, y, false);
         } else {
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
             if (x !== piezaSelec.posX || y !== piezaSelec.posY) {
@@ -388,12 +388,23 @@ function realizarSeleccionPieza(x, y) {
     annadirEstiloMovPosibles();
 }
 
-function realizarMovimientoYComprobaciones(x, y) {
+function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let finDePartida = false;
     let cabecera;
     let parrafo;
+    let haEnrocado;
+    let haCapturadoAlPAso;
+    let jaque = false;
+    let mate = false;
     // Las siguientes variables son como estaba el tablero antes de mover la pieza. Las necesito para comprobar tablas
-    let valorAnteriorCasillaOrigen = tablero[piezaSelec.posX][piezaSelec.posY];
+    let valorAnteriorCasillaOrigen;
+    if (esPromocionPeon) {
+        if (turno)
+            valorAnteriorCasillaOrigen = "P";
+        else
+            valorAnteriorCasillaOrigen = "p";
+    } else
+        valorAnteriorCasillaOrigen = tablero[piezaSelec.posX][piezaSelec.posY];
     let valorAnteriorCasillaDestino = tablero[x][y];
     let anteriorEnrCortoBlanco = movidaEnroqueCortoBlanco;
     let anteriorEnrLargoBlanco = movidaEnroqueLargoBlanco;
@@ -402,18 +413,19 @@ function realizarMovimientoYComprobaciones(x, y) {
 
     eliminarEstiloJaque();
     moverPieza(x, y);
-    enroqueYComprobaciones(x, y);
-    capturaAlPasoYComprobaciones(x, y);
+    haEnrocado = enroqueYComprobaciones(x, y);
+    haCapturadoAlPAso = capturaAlPasoYComprobaciones(x, y);
     eliminarEstiloMovPosibles();
-    deseleccionarPieza();
-    escribirMovEnTabla("mov");
 
     if (tieneMovimientos()) {
-        if (esJaque(turno))    // Jaque
+        if (esJaque(turno)) {    // Jaque
             annadirEstiloJaque();
+            jaque = true;
+        }
     } else {
         if (esJaque(turno)) {    // Jaque mate
             annadirEstiloJaque();
+            mate = true;
             finDePartida = true;
             if (turno)
                 cabecera = "Ganan las blancas";
@@ -426,6 +438,10 @@ function realizarMovimientoYComprobaciones(x, y) {
             parrafo = "Rey agohado";
         }
     }
+
+    escribirMovEnTabla(notacionMov(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, x, y, haEnrocado,
+        haCapturadoAlPAso, jaque, mate));
+    deseleccionarPieza();
 
     if (!finDePartida) {
         if (piezasInsuficientes(piezasBlancas) && piezasInsuficientes(piezasNegras)) {
@@ -673,6 +689,8 @@ function tieneMovimientos() {
 // Comprueba cuando se mueve el rey o la torre. Ese color no podra hacer enroque
 // Comprueba si el movimiento que se acaba de hacer es un enroque y mueve la torre
 function enroqueYComprobaciones(x, y) {
+    let haEnrocado = {corto: false, largo: false};
+
     if (tablero[x][y] === "T") {    // Si ha movido torre blanca
         if (piezaSelec.posY === 0)
             movidaEnroqueLargoBlanco = true;
@@ -697,9 +715,11 @@ function enroqueYComprobaciones(x, y) {
             if (y === 6) {    // Enroque corto
                 posYOrigenTorre = 7;
                 posYDestinoTorre = 5;
+                haEnrocado.corto = true;
             } else {    // Enroque largo
                 posYOrigenTorre = 0;
                 posYDestinoTorre = 3;
+                haEnrocado.largo = true;
             }
 
             // Selecciono la torre y la muevo
@@ -717,6 +737,8 @@ function enroqueYComprobaciones(x, y) {
             movidaEnroqueCortoNegro = true;
         }
     }
+
+    return haEnrocado;
 }
 
 // Comprueba si se ha seleccionado un rey y si tiene algun enroque disponible
@@ -789,6 +811,8 @@ function annadirEnroquesPosibles() {
 // Comprueba cuando un peon mueve dos casillas y lo guarda para que pueda ser capturado al paso
 // Comprueba si el movimiento que se acaba de hacer es una captura al paso y elimina el peon capturado
 function capturaAlPasoYComprobaciones(x, y) {
+    let haCapturadoAlPAso = false;
+
     // Si la pieza movida es un peon
     if (tablero[x][y].toUpperCase() === "P") {
         // Si ha avanzado dos casillas
@@ -796,18 +820,19 @@ function capturaAlPasoYComprobaciones(x, y) {
             peonAlPaso.posX = x;
             peonAlPaso.posY = y;
         } else {
-            // Si ha comido al paso
             if (turno) {
-                if (x === peonAlPaso.posX - 1) {    // Si comen las blancas
+                if (x === peonAlPaso.posX - 1) {    // Si las blancas han capturado al paso
                     eliminarImgPieza(x + 1, y);
                     tablero[x + 1][y] = "0";
                     eliminarObjetoPiezaComida(piezasNegras, x + 1, y);
+                    haCapturadoAlPAso = true;
                 }
             } else {    // Si comen las negras
-                if (x === peonAlPaso.posX + 1) {
+                if (x === peonAlPaso.posX + 1) {    // Si las negras han capturado al paso
                     eliminarImgPieza(x - 1, y);
                     tablero[x - 1][y] = "0";
                     eliminarObjetoPiezaComida(piezasBlancas, x - 1, y);
+                    haCapturadoAlPAso = true;
                 }
             }
             peonAlPaso.posX = undefined;
@@ -817,6 +842,8 @@ function capturaAlPasoYComprobaciones(x, y) {
         peonAlPaso.posX = undefined;
         peonAlPaso.posY = undefined;
     }
+
+    return haCapturadoAlPAso;
 }
 
 function siPeonPromociona(x) {
@@ -1107,20 +1134,92 @@ function escribirMovEnTabla(notacionMov) {
 
         let spanNum = document.createElement("span");
         let spanBlancas = document.createElement("span");
-        let spanNegras = document.createElement("span");
 
         spanNum.innerHTML = (numFilas + 1) + ".";
         spanBlancas.innerHTML = notacionMov;
 
         nuevaFila.appendChild(spanNum);
         nuevaFila.appendChild(spanBlancas);
-        nuevaFila.appendChild(spanNegras);
         contenedorMov.appendChild(nuevaFila);
-    } else    // Movimiento de las negras: rellena el tercer span del ultimo div
-        filas[numFilas - 1].lastChild.innerHTML = notacionMov;
+    } else {    // Movimiento de las negras: rellena el tercer span del ultimo div
+        let spanNegras = document.createElement("span");
+        spanNegras.innerHTML = notacionMov;
+        filas[numFilas - 1].appendChild(spanNegras);
+    }
 
     // Mueve el scroll hacia abajo
     contenedorMov.scrollTop = contenedorMov.scrollHeight;
+}
+
+// Notacion algebraica
+function notacionMov(tipoOrigen, tipoDestino, x, y, haEnrocado, haCapturadoAlPAso, jaque, mate) {
+    let notacion = "";
+    tipoOrigen = tipoOrigen.toUpperCase();
+
+    if (haEnrocado.corto)
+        notacion = "O-O";
+    else if (haEnrocado.largo)
+        notacion = "O-O-O";
+    else {
+        // Si no es un peon, annade el tipo de pieza
+        if (tipoOrigen !== "P")
+            notacion += tipoOrigen;
+
+        // Si captura, annade una x
+        if (tipoDestino !== "0" || haCapturadoAlPAso) {
+            if (tipoOrigen === "P")    // Si la pieza que captura es peon, annade su letra de origen antes de la x
+                notacion += letraPosicion(piezaSelec.posY);
+            notacion += "x";
+        }
+
+        // Annade la nueva casilla
+        notacion += letraPosicion(y);
+        notacion += (8 - x);
+
+        // Si peon promociona
+        if (tipoOrigen === "P" && (x === 0 || x === 7))
+            notacion += "=" + tablero[x][y].toUpperCase();
+    }
+    // Annade si es jaque o mate
+    if (jaque)
+        notacion += "+";
+    else if (mate)
+        notacion += "#";
+
+    return notacion;
+}
+
+function letraPosicion(y) {
+    let letra;
+
+    switch (y) {
+        case 0:
+            letra = "a";
+            break;
+        case 1:
+            letra = "b";
+            break;
+        case 2:
+            letra = "c";
+            break;
+        case 3:
+            letra = "d";
+            break;
+        case 4:
+            letra = "e";
+            break;
+        case 5:
+            letra = "f";
+            break;
+        case 6:
+            letra = "g";
+            break;
+        case 7:
+            letra = "h";
+            break;
+    }
+
+    return letra;
 }
 
 function calcularMovSegunPieza(x, y) {
