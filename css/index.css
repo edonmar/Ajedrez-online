@@ -199,6 +199,12 @@ body {
     margin-left: 2em;
 }
 
+.filaResultado span {
+    margin-left: 0.5em;
+    line-height: 2em;
+    font-weight: bold;
+}
+
 .peonBlanco {
     background-image: url("../img/peon_blanco.svg");
 }

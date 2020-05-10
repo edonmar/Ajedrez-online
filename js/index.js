@@ -390,6 +390,7 @@ function realizarSeleccionPieza(x, y) {
 
 function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let finDePartida = false;
+    let resultado;
     let cabecera;
     let parrafo;
     let haEnrocado;
@@ -427,13 +428,17 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
             annadirEstiloJaque();
             mate = true;
             finDePartida = true;
-            if (turno)
+            if (turno) {
+                resultado = "1-0";
                 cabecera = "Ganan las blancas";
-            else
+            } else {
+                resultado = "0-1";
                 cabecera = "Ganan las negras";
+            }
             parrafo = "Jaque mate";
         } else {    // Rey ahogado
             finDePartida = true;
+            resultado = "1/2-1/2";
             cabecera = "Tablas"
             parrafo = "Rey agohado";
         }
@@ -446,15 +451,18 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     if (!finDePartida) {
         if (piezasInsuficientes(piezasBlancas) && piezasInsuficientes(piezasNegras)) {
             finDePartida = true;
+            resultado = "1/2-1/2";
             cabecera = "Tablas"
             parrafo = "Falta de material para dar mate";
         } else if (tripleRepeticion(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, anteriorEnrCortoBlanco,
             anteriorEnrLargoBlanco, anteriorEnrCortoNegro, anteriorEnrLargoNegro)) {
             finDePartida = true;
+            resultado = "1/2-1/2";
             cabecera = "Tablas"
             parrafo = "Triple repetición de posiciones";
         } else if (regla50Movimientos(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino)) {
             finDePartida = true;
+            resultado = "1/2-1/2";
             cabecera = "Tablas"
             parrafo = "50 turnos sin mover peón ni realizar capturas";
         }
@@ -463,13 +471,13 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     movPosibles = [];
     turno = !turno;
 
-    if (finDePartida) {
-        terminarPartida(cabecera, parrafo);
-    }
+    if (finDePartida)
+        terminarPartida(resultado, cabecera, parrafo);
 }
 
-function terminarPartida(cabecera, parrafo) {
+function terminarPartida(resultado, cabecera, parrafo) {
     eliminarEventosTablero();
+    escribirResultado(resultado);
     modalFinDePartida(cabecera, parrafo);
 }
 
@@ -1146,6 +1154,22 @@ function escribirMovEnTabla(notacionMov) {
         spanNegras.innerHTML = notacionMov;
         filas[numFilas - 1].appendChild(spanNegras);
     }
+
+    // Mueve el scroll hacia abajo
+    contenedorMov.scrollTop = contenedorMov.scrollHeight;
+}
+
+function escribirResultado(resultado) {
+    let contenedorMov = document.getElementById("contenedorMov");
+
+    let nuevaFila = document.createElement("div");
+    nuevaFila.className = "filaResultado";
+
+    let spanResultado = document.createElement("span");
+    spanResultado.innerHTML = resultado;
+
+    nuevaFila.appendChild(spanResultado);
+    contenedorMov.appendChild(nuevaFila);
 
     // Mueve el scroll hacia abajo
     contenedorMov.scrollTop = contenedorMov.scrollHeight;
