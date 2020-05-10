@@ -393,8 +393,6 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let resultado;
     let cabecera;
     let parrafo;
-    let haEnrocado;
-    let haCapturadoAlPAso;
     let jaque = false;
     let mate = false;
     // Las siguientes variables son como estaba el tablero antes de mover la pieza. Las necesito para comprobar tablas
@@ -412,10 +410,11 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let anteriorEnrCortoNegro = movidaEnroqueCortoNegro;
     let anteriorEnrLargoNegro = movidaEnroqueLargoNegro;
 
+    let piezasAmbiguedad = obtenerPiezasAmbiguedad(x, y, valorAnteriorCasillaOrigen);
     eliminarEstiloJaque();
     moverPieza(x, y);
-    haEnrocado = enroqueYComprobaciones(x, y);
-    haCapturadoAlPAso = capturaAlPasoYComprobaciones(x, y);
+    let haEnrocado = enroqueYComprobaciones(x, y);
+    let haCapturadoAlPAso = capturaAlPasoYComprobaciones(x, y);
     eliminarEstiloMovPosibles();
 
     if (tieneMovimientos()) {
@@ -444,8 +443,8 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
         }
     }
 
-    escribirMovEnTabla(notacionMov(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, x, y, haEnrocado,
-        haCapturadoAlPAso, jaque, mate));
+    escribirMovEnTabla(notacionMov(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, x, y, piezasAmbiguedad,
+        haEnrocado, haCapturadoAlPAso, jaque, mate));
     deseleccionarPieza();
 
     if (!finDePartida) {
@@ -587,6 +586,7 @@ function eliminarMovQueAmenazanAMiRey() {
     if (movPosibles.length > 0) {
         let valorCasillaOrigen = tablero[piezaSelec.posX][piezaSelec.posY];
         let i = 0;
+
         do {
             if (movAmenazaReyPropio(i, !turno, piezaSelec, valorCasillaOrigen))
                 movPosibles.splice(i, 1);
@@ -597,14 +597,14 @@ function eliminarMovQueAmenazanAMiRey() {
 }
 
 // Llamando a la funcion esJaque, compruebo si al hacer un movimiento el rey del color movido quedaria en jaque
-function movAmenazaReyPropio(x, color, casillaOrigen, valorCasillaOrigen) {
+function movAmenazaReyPropio(i, colorAmenazante, casillaOrigen, valorCasillaOrigen) {
     let jaque = false;
     let comeNormal = false;
     let comeAlPaso = false;
     let colorComida;
     let posComida;
-    let casillaDestinoX = movPosibles[x].posX;
-    let casillaDestinoY = movPosibles[x].posY;
+    let casillaDestinoX = movPosibles[i].posX;
+    let casillaDestinoY = movPosibles[i].posY;
     let valorCasillaDestino = tablero[casillaDestinoX][casillaDestinoY];
 
     // Compruebo si ha comido de manera normal
@@ -639,7 +639,7 @@ function movAmenazaReyPropio(x, color, casillaOrigen, valorCasillaOrigen) {
         tablero[peonAlPaso.posX][peonAlPaso.posY] = "0";
 
     // Realizo la comprobacion
-    if (esJaque(color))
+    if (esJaque(colorAmenazante))
         jaque = true;
 
     // Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
@@ -1176,7 +1176,7 @@ function escribirResultado(resultado) {
 }
 
 // Notacion algebraica
-function notacionMov(tipoOrigen, tipoDestino, x, y, haEnrocado, haCapturadoAlPAso, jaque, mate) {
+function notacionMov(tipoOrigen, tipoDestino, x, y, piezasAmbiguedad, haEnrocado, haCapturadoAlPAso, jaque, mate) {
     let notacion = "";
     tipoOrigen = tipoOrigen.toUpperCase();
 
@@ -1189,6 +1189,28 @@ function notacionMov(tipoOrigen, tipoDestino, x, y, haEnrocado, haCapturadoAlPAs
         if (tipoOrigen !== "P")
             notacion += tipoOrigen;
 
+        // Desambiguacion (annado letra y/o numero para especificar cual de las piezas se mueve)
+        if (piezasAmbiguedad.length > 0) {
+            let coincideMismaLetra = false;
+            let coincideMismoNumero = false;
+
+            for (let i = 0, fin = piezasAmbiguedad.length; i < fin; i++) {
+                if (piezaSelec.posY === piezasAmbiguedad[i].posY)
+                    coincideMismaLetra = true;
+                if (piezaSelec.posX === piezasAmbiguedad[i].posX)
+                    coincideMismoNumero = true;
+            }
+
+            if (!coincideMismaLetra)
+                notacion += letraPosicion(piezaSelec.posY);
+            else {
+                if (!coincideMismoNumero)
+                    notacion += numeroPosicion(piezaSelec.posX);
+                else
+                    notacion += letraPosicion(piezaSelec.posY) + numeroPosicion(piezaSelec.posX);
+            }
+        }
+
         // Si captura, annade una x
         if (tipoDestino !== "0" || haCapturadoAlPAso) {
             if (tipoOrigen === "P")    // Si la pieza que captura es peon, annade su letra de origen antes de la x
@@ -1198,7 +1220,7 @@ function notacionMov(tipoOrigen, tipoDestino, x, y, haEnrocado, haCapturadoAlPAs
 
         // Annade la nueva casilla
         notacion += letraPosicion(y);
-        notacion += (8 - x);
+        notacion += numeroPosicion(x);
 
         // Si peon promociona
         if (tipoOrigen === "P" && (x === 0 || x === 7))
@@ -1211,6 +1233,54 @@ function notacionMov(tipoOrigen, tipoDestino, x, y, haEnrocado, haCapturadoAlPAs
         notacion += "#";
 
     return notacion;
+}
+
+// Compruebo si, aparte de la pieza movida, hay otra pieza del mismo tipo que pueda realizar el mismo movimiento
+// Necesito saberlo a la hora de escribir la notacion del movimiento
+function obtenerPiezasAmbiguedad(x, y, tipoOrigen) {
+    let piezasMismoTipo = [];
+    let piezasAmbiguedad = [];
+
+    // Si no es peon ni rey
+    if (tipoOrigen.toUpperCase() !== "P" && tipoOrigen.toUpperCase() !== "R") {
+        let piezasColor;
+
+        if (turno)
+            piezasColor = piezasBlancas;
+        else
+            piezasColor = piezasNegras;
+
+        // Obtiene las piezas del mismo tipo
+        for (let i = 0, fin = piezasColor.length; i < fin; i++) {
+            if (tablero[piezasColor[i].posX][piezasColor[i].posY] === tipoOrigen)
+                if (piezaSelec.posX !== piezasColor[i].posX || piezaSelec.posY !== piezasColor[i].posY)
+                    piezasMismoTipo.push({posX: piezasColor[i].posX, posY: piezasColor[i].posY});
+        }
+
+        // Obtiene las piezas del mismo tipo que provocan anbiguedad
+        if (piezasMismoTipo.length > 0) {
+            let movPosiblesAux = movPosibles;
+
+            for (let i = 0, fin = piezasMismoTipo.length; i < fin; i++) {
+                movPosibles = [];
+                calcularMovSegunPieza(piezasMismoTipo[i].posX, piezasMismoTipo[i].posY);
+                for (let j = 0, fin = movPosibles.length; j < fin; j++) {
+                    if (x === movPosibles[j].posX && y === movPosibles[j].posY) {
+                        if (!movAmenazaReyPropio(j, !turno, piezasMismoTipo[i], tipoOrigen))
+                            piezasAmbiguedad.push(piezasMismoTipo[i]);
+                    }
+                }
+            }
+
+            movPosibles = movPosiblesAux;
+        }
+    }
+
+    return piezasAmbiguedad;
+}
+
+function numeroPosicion(x) {
+    return (8 - x);
 }
 
 function letraPosicion(y) {
