@@ -879,8 +879,9 @@ function modalPromocionPeon(x, y) {
     }
 
     // Boton dama
-    let btnDama = document.createElement("button");
+    let btnDama = document.createElement("div");
     btnDama.classList.add("btnModal");
+    btnDama.innerHTML = "<div class='btnModalBorde'></div>";
     if (turno)
         btnDama.classList.add("damaBlanco");
     else
@@ -895,8 +896,9 @@ function modalPromocionPeon(x, y) {
     body.appendChild(btnDama);
 
     // Boton torre
-    let btnTorre = document.createElement("button");
+    let btnTorre = document.createElement("div");
     btnTorre.classList.add("btnModal");
+    btnTorre.innerHTML = "<div class='btnModalBorde'></div>";
     if (turno)
         btnTorre.classList.add("torreBlanco");
     else
@@ -911,8 +913,9 @@ function modalPromocionPeon(x, y) {
     body.appendChild(btnTorre);
 
     // Boton alfil
-    let btnAlfil = document.createElement("button");
+    let btnAlfil = document.createElement("div");
     btnAlfil.classList.add("btnModal");
+    btnAlfil.innerHTML = "<div class='btnModalBorde'></div>";
     if (turno)
         btnAlfil.classList.add("alfilBlanco");
     else
@@ -927,8 +930,9 @@ function modalPromocionPeon(x, y) {
     body.appendChild(btnAlfil);
 
     // Boton caballo
-    let btnCaballo = document.createElement("button");
+    let btnCaballo = document.createElement("div");
     btnCaballo.classList.add("btnModal");
+    btnCaballo.innerHTML = "<div class='btnModalBorde'></div>";
     if (turno)
         btnCaballo.classList.add("caballoBlanco");
     else
@@ -947,6 +951,8 @@ function modalPromocionPeon(x, y) {
 
     function promocionarPeon(x, y, nuevaPieza) {
         modal.style.display = "none";
+        titulo.innerHTML = "";
+        body.innerHTML = "";
         eliminarImgPieza(piezaSelec.posX, piezaSelec.posY);
         tablero[piezaSelec.posX][piezaSelec.posY] = nuevaPieza;
         realizarMovimientoYComprobaciones(x, y, true);
@@ -1078,6 +1084,8 @@ function modalFinDePartida(cabecera, parrafo) {
     // Boton de cerrar el modal
     cerrar.onclick = function () {
         modal.style.display = "none";
+        titulo.innerHTML = "";
+        body.innerHTML = "";
     }
 
     // Mostrar el modal

@@ -5,52 +5,20 @@
 }
 
 body {
-    background-color: #ccffcc;
+    background-color: #222831;
 }
 
-#tablero {
-    float: left;
-    margin-top: 3em;
-    margin-left: 3em;
-    padding-top: 1.5em;
-    padding-right: 1.5em;
-    background-color: #1a0d00;
-}
-
-#numeros {
-    float: left;
+#contenido {
+    height: 100%;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#numeros span {
-    width: 1.5em;
-    line-height: 4.5em;
-    text-align: center;
-    color: #ff9933;
-}
-
-#letras {
-    display: flex;
-    margin-left: 1.5em;
-}
-
-#letras span {
-    flex-basis: 4.5em;
-    line-height: 1.5em;
-    text-align: center;
-    color: #ff9933;
-}
-
-#btnGirar {
+#tablero { /* Contiene las casillas, numeros, letras y boton de girar */
     float: left;
-    width: 1.5em;
-    height: 1.5em;
-    fill: white;
-}
-
-#btnGirar:hover {
-    fill: #ff9933;
+    margin-top: 3vh;
+    margin-left: 3vh;
 }
 
 #casillasTablero {
@@ -58,19 +26,27 @@ body {
 }
 
 #casillasTablero td {
-    width: 4.5em;
-    height: 4.5em;
+    min-width: 11.5vh;
+    height: 11.5vh;
     border: none;
-    background-size: 4.5em;
+    background-size: 100%;
     background-repeat: no-repeat;
 }
 
 .blanco {
-    background-color: #ffdf80;
+    background-color: #f7e8ba;
 }
 
 .negro {
-    background-color: #996633;
+    background-color: #cc9966;
+}
+
+.reyAmenazado {
+    background-color: #ff6666;
+}
+
+.piezaSeleccionada {
+    background-color: #a2d8cc;
 }
 
 .movPosible {
@@ -81,15 +57,7 @@ body {
     height: 30%;
     border: 1px solid black;
     border-radius: 50%;
-    background-color: #57cbcb;
-}
-
-.reyAmenazado {
-    background-color: #ff2424;
-}
-
-.piezaSeleccionada {
-    background-color: #57cbcb;
+    background-color: #a2d8cc;
 }
 
 .piezaResaltadaBorde {
@@ -100,11 +68,55 @@ body {
     border: 1px solid black;
 }
 
+#numeros {
+    float: left;
+    display: flex;
+    flex-direction: column;
+}
+
+#numeros span {
+    width: 3vh;
+    line-height: 11.5vh;
+}
+
+#letras {
+    display: flex;
+    margin-left: 3vh;
+}
+
+#letras span {
+    flex-basis: 11.5vh;
+    line-height: 3vh;
+}
+
+#numeros span,
+#letras span {
+    text-align: center;
+    color: white;
+    font-size: 2vh;
+    font-weight: bold;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#btnGirar {
+    float: left;
+    width: 3vh;
+    height: 3vh;
+    fill: white;
+}
+
+#btnGirar:hover {
+    fill: #ffac80;
+}
+
 #miModal {
     display: none;
     position: fixed;
     z-index: 1;
-    padding-top: 10em;
+    padding-top: 15em;
     left: 0;
     top: 0;
     width: 100%;
@@ -118,8 +130,7 @@ body {
     position: relative;
     margin: auto;
     padding: 0;
-    width: 22em;
-    border: 1px solid #888;
+    width: 23em;
     background-color: white;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
@@ -156,20 +167,36 @@ body {
     box-sizing: content-box;
     width: 4.5em;
     height: 4.5em;
-    border: 1px solid black;
-    background-size: 4.5em;
+    background-color: #e6e6e6;
+    background-size: 100%;
     background-repeat: no-repeat;
+}
+
+.btnModal:hover {
+    background-color: #a2d8cc;
+}
+
+.btnModalBorde {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+}
+
+.btnModalBorde:hover {
+    border: 2px solid black;
 }
 
 #contenedorMov {
     display: inline-block;
     overflow-y: scroll;
     width: 16em;
-    height: 38em;
-    margin-top: 3em;
-    margin-left: 3em;
-    border: 2px solid gray;
-    background-color: papayawhip;
+    height: 92vh;
+    margin-top: 3vh;
+    margin-right: 3vh;
+    margin-left: 3vh;
+    background-color: #f2f2f2;
 }
 
 #contenedorMov div {
@@ -177,11 +204,11 @@ body {
 }
 
 #contenedorMov div:nth-child(even) {
-    background-color: #fad7a0;
+    background-color: #e6e6e6;
 }
 
 #contenedorMov div:nth-child(odd) {
-    background-color: papayawhip;
+    background-color: #f2f2f2;
 }
 
 .filaMov span {
