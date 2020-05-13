@@ -271,6 +271,29 @@ function eliminarEstiloMovPosibles() {
     }
 }
 
+function annadirEstiloMovAnterior(x, y) {
+    let posX = piezaSelec.posX;
+    let posY = piezaSelec.posY;
+    if (tableroGirado) {
+        posX = 7 - posX;
+        posY = 7 - posY;
+    }
+    tableroHTML[posX][posY].classList.add("casillasMovAnterior");
+
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    tableroHTML[x][y].classList.add("casillasMovAnterior");
+}
+
+function eliminarEstiloMovAnterior() {
+    let casillasMovAnterior = document.querySelectorAll(".casillasMovAnterior");
+
+    for (let i = 0, fin = casillasMovAnterior.length; i < fin; i++)
+        casillasMovAnterior[i].classList.remove("casillasMovAnterior");
+}
+
 function annadirEstiloJaque() {
     let piezasColor;
 
@@ -411,11 +434,13 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let anteriorEnrLargoNegro = movidaEnroqueLargoNegro;
 
     let piezasAmbiguedad = obtenerPiezasAmbiguedad(x, y, valorAnteriorCasillaOrigen);
+    eliminarEstiloMovAnterior();
     eliminarEstiloJaque();
     moverPieza(x, y);
     let haEnrocado = enroqueYComprobaciones(x, y);
     let haCapturadoAlPAso = capturaAlPasoYComprobaciones(x, y);
     eliminarEstiloMovPosibles();
+    annadirEstiloMovAnterior(x, y);
 
     if (tieneMovimientos()) {
         if (esJaque(turno)) {    // Jaque

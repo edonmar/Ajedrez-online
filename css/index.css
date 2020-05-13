@@ -41,6 +41,14 @@ body {
     background-color: #cc9966;
 }
 
+.casillasMovAnterior.blanco {
+    background-color: #d9efba;
+}
+
+.casillasMovAnterior.negro {
+    background-color: #a0ab6d;
+}
+
 .reyAmenazado {
     background-color: #ff6666;
 }
