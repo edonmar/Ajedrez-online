@@ -24,7 +24,7 @@ window.onload = function () {
     inicializarTableroHTML();
     annadirImgPiezasIniciales();
     iniciarEventosTablero();
-    iniciarEventosBotones();
+    iniciarEventoBtnGirar();
 };
 
 // Asigna a la variable Tablero un array 8x8 vacio
@@ -348,7 +348,7 @@ function eliminarEventosTablero() {
             tableroHTML[i][j].onclick = null;
 }
 
-function iniciarEventosBotones() {
+function iniciarEventoBtnGirar() {
     let btnGirar = document.getElementById("btnGirar");
     btnGirar.onclick = function () {
         girar();
@@ -903,6 +903,8 @@ function modalPromocionPeon(x, y) {
         modal.style.display = "none";
     }
 
+    let contenedorBtn = document.createElement("div");
+
     // Boton dama
     let btnDama = document.createElement("div");
     btnDama.classList.add("btnModal");
@@ -918,7 +920,7 @@ function modalPromocionPeon(x, y) {
         else
             promocionarPeon(x, y, "d");
     }
-    body.appendChild(btnDama);
+    contenedorBtn.appendChild(btnDama);
 
     // Boton torre
     let btnTorre = document.createElement("div");
@@ -935,7 +937,7 @@ function modalPromocionPeon(x, y) {
         else
             promocionarPeon(x, y, "t");
     }
-    body.appendChild(btnTorre);
+    contenedorBtn.appendChild(btnTorre);
 
     // Boton alfil
     let btnAlfil = document.createElement("div");
@@ -952,7 +954,7 @@ function modalPromocionPeon(x, y) {
         else
             promocionarPeon(x, y, "a");
     }
-    body.appendChild(btnAlfil);
+    contenedorBtn.appendChild(btnAlfil);
 
     // Boton caballo
     let btnCaballo = document.createElement("div");
@@ -969,7 +971,9 @@ function modalPromocionPeon(x, y) {
         else
             promocionarPeon(x, y, "c");
     }
-    body.appendChild(btnCaballo);
+    contenedorBtn.appendChild(btnCaballo);
+
+    body.appendChild(contenedorBtn);
 
     // Mostrar el modal
     modal.style.display = "block";
@@ -1104,7 +1108,23 @@ function modalFinDePartida(cabecera, parrafo) {
     let body = document.getElementById("modalBody");
 
     titulo.innerHTML = cabecera;
-    body.innerHTML = "<p>" + parrafo + "</p>";
+
+    let parr = document.createElement("P");
+    parr.innerHTML = parrafo;
+
+    let btnNuevaPartida = document.createElement("BUTTON");
+    btnNuevaPartida.innerHTML = "Nueva partida";
+    btnNuevaPartida.classList.add("btnBodyModal");
+
+    btnNuevaPartida.onclick = function () {
+        modal.style.display = "none";
+        titulo.innerHTML = "";
+        body.innerHTML = "";
+        reiniciarPartida();
+    }
+
+    body.appendChild(parr);
+    body.appendChild(btnNuevaPartida);
 
     // Boton de cerrar el modal
     cerrar.onclick = function () {
@@ -1115,6 +1135,48 @@ function modalFinDePartida(cabecera, parrafo) {
 
     // Mostrar el modal
     modal.style.display = "block";
+}
+
+function reiniciarPartida() {
+    // Elimino todas las imagenes y estilos del tablero
+    if (hayPiezaSelec)
+        eliminarEstiloMovPosibles();
+    eliminarEstiloJaque();
+    eliminarEstiloMovAnterior();
+    for (let i = 0, fin = piezasBlancas.length; i < fin; i++)
+        eliminarImgPieza(piezasBlancas[i].posX, piezasBlancas[i].posY);
+    for (let i = 0, fin = piezasNegras.length; i < fin; i++)
+        eliminarImgPieza(piezasNegras[i].posX, piezasNegras[i].posY);
+    document.getElementById("contenedorMov").innerHTML = "";
+
+    if (tableroGirado) {
+        girarSpans(document.querySelectorAll("#numeros span"));
+        girarSpans(document.querySelectorAll("#letras span"));
+    }
+
+    // Vuelvo a poner las variables globales en su valor inicial
+    hayPiezaSelec = false;
+    piezaSelec = {posX: undefined, posY: undefined};
+    peonAlPaso = {posX: undefined, posY: undefined};
+    piezasBlancas = [];
+    piezasNegras = [];
+    movPosibles = [];
+    movidaEnroqueCortoBlanco = false;
+    movidaEnroqueLargoBlanco = false;
+    movidaEnroqueCortoNegro = false;
+    movidaEnroqueLargoNegro = false;
+    regla50MovBlancas = 0;
+    regla50MovNegras = 0;
+    regla3RepMovimientos = [];
+    regla3RepTurnos = [];
+    turno = true;
+    tableroGirado = false;
+
+    // Coloco el tablero, piezas e imagenes e inicio la partida
+    colocarPiezasIniciales();
+    inicializarArraysPiezas();
+    annadirImgPiezasIniciales();
+    iniciarEventosTablero();
 }
 
 function girar() {

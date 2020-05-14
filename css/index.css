@@ -99,10 +99,10 @@ body {
 
 #numeros span,
 #letras span {
-    text-align: center;
     color: white;
     font-size: 2vh;
     font-weight: bold;
+    text-align: center;
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -132,13 +132,17 @@ body {
     overflow: auto;
     background-color: rgb(0, 0, 0);
     background-color: rgba(0, 0, 0, 0.4);
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #modalContenido {
     position: relative;
     margin: auto;
     padding: 0;
-    width: 23em;
+    width: 24em;
     background-color: white;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
@@ -164,11 +168,15 @@ body {
 }
 
 #modalBody {
+    padding-top: 1em;
+    padding-bottom: 1em;
+    text-align: center;
+}
+
+#modalBody div {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    padding-top: 1em;
-    padding-bottom: 1em;
 }
 
 .btnModal {
@@ -194,6 +202,29 @@ body {
 
 .btnModalBorde:hover {
     border: 2px solid black;
+}
+
+#modalBody p {
+    margin-bottom: 0.6em;
+}
+
+.btnBodyModal {
+    width: 11em;
+    margin: 4px 2px;
+    padding: 15px 32px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    background-color: #389438;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btnBodyModal:hover {
+    background-color: #2a6f2a;
 }
 
 #contenedorMov {
