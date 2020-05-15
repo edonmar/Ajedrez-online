@@ -215,7 +215,7 @@ body {
     border: none;
     border-radius: 4px;
     color: white;
-    background-color: #389438;
+    background-color: #428a42;
     text-align: center;
     text-decoration: none;
     font-size: 1em;
@@ -224,7 +224,7 @@ body {
 }
 
 .btnBodyModal:hover {
-    background-color: #2a6f2a;
+    background-color: #326732;
 }
 
 #contenedorMov {
@@ -242,33 +242,51 @@ body {
     height: 2em;
 }
 
-#contenedorMov div:nth-child(even) {
+#contenedorMov div.filaMov:nth-child(even) {
     background-color: #e6e6e6;
 }
 
-#contenedorMov div:nth-child(odd) {
+#contenedorMov div.filaMov:nth-child(odd) {
     background-color: #f2f2f2;
 }
 
-.filaMov span {
+.filaMov div {
     display: inline-block;
+}
+
+.filaMov span {
     line-height: 2em;
 }
 
-.filaMov span:first-child {
+.filaMov .divNumMov { /* El numero del turno */
     width: 1.5em;
     margin-left: 0.5em;
 }
 
-.filaMov span:not(:first-child) {
+.filaMov .divMov { /* Los movimientos del turno */
     width: 3.5em;
     margin-left: 2em;
+}
+
+.divMov span {
+    padding-right: 0.3em;
+    padding-left: 0.3em;
 }
 
 .filaResultado span {
     margin-left: 0.5em;
     line-height: 2em;
     font-weight: bold;
+}
+
+.spanMovRepeticion {
+    padding-top: 0.45em;
+    padding-bottom: 0.45em;
+    cursor: pointer;
+}
+
+.movActualRepeticion {
+    background-color: #ffac80;
 }
 
 .peonBlanco {

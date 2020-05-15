@@ -16,6 +16,12 @@ let regla3RepMovimientos = [];    // Posiciones del tablero para comprobar si al
 let regla3RepTurnos = [];    // El turno de cada una de las posiciones del array regla3RepMovimientos
 let turno = true;    // true = blancas, false = negras
 let tableroGirado = false;
+let cadenaMovimientos = "";
+let resultado = "";
+let cadenasTableros = [];    // Array de strings con todas las posiciones de cada turno de la repeticion
+let movAnteriorTableros = [];    // Array de coordenadas con todos los movimientos de la repeticion
+let jaquesTableros = [];    // Array de booleans con todos los jaques de la repeticion y sus coordenadas
+let movActualRepeticion = undefined;    // El movimiento de la repeticion que estoy viendo en este momento
 
 window.onload = function () {
     inicializarTablero();
@@ -413,7 +419,6 @@ function realizarSeleccionPieza(x, y) {
 
 function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let finDePartida = false;
-    let resultado;
     let cabecera;
     let parrafo;
     let jaque = false;
@@ -468,7 +473,7 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
         }
     }
 
-    escribirMovEnTabla(notacionMov(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, x, y, piezasAmbiguedad,
+    escribirMovEnTabla(movANotacion(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, x, y, piezasAmbiguedad,
         haEnrocado, haCapturadoAlPAso, jaque, mate));
     deseleccionarPieza();
 
@@ -496,12 +501,12 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     turno = !turno;
 
     if (finDePartida)
-        terminarPartida(resultado, cabecera, parrafo);
+        terminarPartida(cabecera, parrafo);
 }
 
-function terminarPartida(resultado, cabecera, parrafo) {
+function terminarPartida(cabecera, parrafo) {
     eliminarEventosTablero();
-    escribirResultado(resultado);
+    escribirResultado();
     modalFinDePartida(cabecera, parrafo);
 }
 
@@ -1109,8 +1114,8 @@ function modalFinDePartida(cabecera, parrafo) {
 
     titulo.innerHTML = cabecera;
 
-    let parr = document.createElement("P");
-    parr.innerHTML = parrafo;
+    let p = document.createElement("P");
+    p.innerHTML = parrafo;
 
     let btnNuevaPartida = document.createElement("BUTTON");
     btnNuevaPartida.innerHTML = "Nueva partida";
@@ -1120,11 +1125,23 @@ function modalFinDePartida(cabecera, parrafo) {
         modal.style.display = "none";
         titulo.innerHTML = "";
         body.innerHTML = "";
-        reiniciarPartida();
+        reiniciarPartida(false);
     }
 
-    body.appendChild(parr);
+    let btnVerRepeticion = document.createElement("BUTTON");
+    btnVerRepeticion.innerHTML = "Ver repetici&oacute;n";
+    btnVerRepeticion.classList.add("btnBodyModal");
+
+    btnVerRepeticion.onclick = function () {
+        modal.style.display = "none";
+        titulo.innerHTML = "";
+        body.innerHTML = "";
+        verRepeticion(cadenaMovimientos);
+    }
+
+    body.appendChild(p);
     body.appendChild(btnNuevaPartida);
+    body.appendChild(btnVerRepeticion);
 
     // Boton de cerrar el modal
     cerrar.onclick = function () {
@@ -1137,7 +1154,9 @@ function modalFinDePartida(cabecera, parrafo) {
     modal.style.display = "block";
 }
 
-function reiniciarPartida() {
+// Si le paso true, resetea el tablero y lo prepara para ver la repeticion
+// Si le paso false, resetea el tablero y lo prepara para jugar de nuevo
+function reiniciarPartida(repeticion) {
     // Elimino todas las imagenes y estilos del tablero
     if (hayPiezaSelec)
         eliminarEstiloMovPosibles();
@@ -1147,7 +1166,8 @@ function reiniciarPartida() {
         eliminarImgPieza(piezasBlancas[i].posX, piezasBlancas[i].posY);
     for (let i = 0, fin = piezasNegras.length; i < fin; i++)
         eliminarImgPieza(piezasNegras[i].posX, piezasNegras[i].posY);
-    document.getElementById("contenedorMov").innerHTML = "";
+    if (!repeticion)
+        document.getElementById("contenedorMov").innerHTML = "";
 
     if (tableroGirado) {
         girarSpans(document.querySelectorAll("#numeros span"));
@@ -1171,12 +1191,21 @@ function reiniciarPartida() {
     regla3RepTurnos = [];
     turno = true;
     tableroGirado = false;
+    if (!repeticion) {
+        cadenaMovimientos = "";
+        resultado = "";
+    }
+    cadenasTableros = [];
+    movAnteriorTableros = [];
+    jaquesTableros = [];
+    movActualRepeticion = undefined;
 
     // Coloco el tablero, piezas e imagenes e inicio la partida
     colocarPiezasIniciales();
     inicializarArraysPiezas();
     annadirImgPiezasIniciales();
-    iniciarEventosTablero();
+    if (!repeticion)
+        iniciarEventosTablero();
 }
 
 function girar() {
@@ -1233,28 +1262,45 @@ function escribirMovEnTabla(notacionMov) {
 
     if (turno) {    // Movimiento de las blancas: crea una nuevo div con 3 span y rellena los 2 primeros
         let nuevaFila = document.createElement("div");
-        nuevaFila.className = "filaMov";
-
+        let divNum = document.createElement("div");
         let spanNum = document.createElement("span");
+        let divBlancas = document.createElement("div");
         let spanBlancas = document.createElement("span");
 
+        nuevaFila.className = "filaMov";
+        divNum.classList.add("divNumMov");
+        spanNum.classList.add("spanNumMov");
         spanNum.innerHTML = (numFilas + 1) + ".";
+        divBlancas.classList.add("divMov");
         spanBlancas.innerHTML = notacionMov;
 
-        nuevaFila.appendChild(spanNum);
-        nuevaFila.appendChild(spanBlancas);
+        divNum.appendChild(spanNum);
+        nuevaFila.appendChild(divNum);
+        divBlancas.appendChild(spanBlancas);
+        nuevaFila.appendChild(divBlancas);
         contenedorMov.appendChild(nuevaFila);
+
+        if (numFilas > 0)
+            cadenaMovimientos += " ";
+        cadenaMovimientos += (numFilas + 1) + ". " + notacionMov;
     } else {    // Movimiento de las negras: rellena el tercer span del ultimo div
+        let divNegras = document.createElement("div");
         let spanNegras = document.createElement("span");
+
         spanNegras.innerHTML = notacionMov;
-        filas[numFilas - 1].appendChild(spanNegras);
+        divNegras.classList.add("divMov");
+
+        divNegras.appendChild(spanNegras);
+        filas[numFilas - 1].appendChild(divNegras);
+
+        cadenaMovimientos += " " + notacionMov;
     }
 
     // Mueve el scroll hacia abajo
     contenedorMov.scrollTop = contenedorMov.scrollHeight;
 }
 
-function escribirResultado(resultado) {
+function escribirResultado() {
     let contenedorMov = document.getElementById("contenedorMov");
 
     let nuevaFila = document.createElement("div");
@@ -1270,8 +1316,8 @@ function escribirResultado(resultado) {
     contenedorMov.scrollTop = contenedorMov.scrollHeight;
 }
 
-// Notacion algebraica
-function notacionMov(tipoOrigen, tipoDestino, x, y, piezasAmbiguedad, haEnrocado, haCapturadoAlPAso, jaque, mate) {
+// Obtiene la notacion en texto de un movimiento, usando la notacion algebraica
+function movANotacion(tipoOrigen, tipoDestino, x, y, piezasAmbiguedad, haEnrocado, haCapturadoAlPAso, jaque, mate) {
     let notacion = "";
     tipoOrigen = tipoOrigen.toUpperCase();
 
@@ -1297,25 +1343,25 @@ function notacionMov(tipoOrigen, tipoDestino, x, y, piezasAmbiguedad, haEnrocado
             }
 
             if (!coincideMismaLetra)
-                notacion += letraPosicion(piezaSelec.posY);
+                notacion += posicionALetra(piezaSelec.posY);
             else {
                 if (!coincideMismoNumero)
-                    notacion += numeroPosicion(piezaSelec.posX);
+                    notacion += posicionANumero(piezaSelec.posX);
                 else
-                    notacion += letraPosicion(piezaSelec.posY) + numeroPosicion(piezaSelec.posX);
+                    notacion += posicionALetra(piezaSelec.posY) + posicionANumero(piezaSelec.posX);
             }
         }
 
         // Si captura, annade una x
         if (tipoDestino !== "0" || haCapturadoAlPAso) {
             if (tipoOrigen === "P")    // Si la pieza que captura es peon, annade su letra de origen antes de la x
-                notacion += letraPosicion(piezaSelec.posY);
+                notacion += posicionALetra(piezaSelec.posY);
             notacion += "x";
         }
 
         // Annade la nueva casilla
-        notacion += letraPosicion(y);
-        notacion += numeroPosicion(x);
+        notacion += posicionALetra(y);
+        notacion += posicionANumero(x);
 
         // Si peon promociona
         if (tipoOrigen === "P" && (x === 0 || x === 7))
@@ -1374,11 +1420,385 @@ function obtenerPiezasAmbiguedad(x, y, tipoOrigen) {
     return piezasAmbiguedad;
 }
 
-function numeroPosicion(x) {
+// Relleno la tabla de movimientos con la cadena
+// Sin mostrar nada, realizo todos los movimientos, guardando la posicion del tablero en cada turno
+// Al darle clic a un movimiento de la tabla, muestra el tablero que he guardado para ese turno
+function verRepeticion(cadena) {
+    eliminarEventosTablero();
+    reiniciarPartida(true);
+    guardarTablero();
+    movAnteriorTableros.push({origenX: undefined, origenY: undefined, destinoX: undefined, destinoY: undefined});
+    jaquesTableros.push({esJaque: false, posX: undefined, posY: undefined});
+    cargarCadenaMovimientos(cadena);
+    crearEventosMovRepeticion();
+}
+
+function crearEventosMovRepeticion() {
+    let spans = document.querySelectorAll(".spanMovRepeticion");
+
+    for (let i = 0, fin = spans.length; i < fin; i++) {
+        spans[i].onclick = function () {
+            estilosMovActualRepeticion(i);
+            cargarTablero(i + 1);
+        }
+    }
+}
+
+// Colorea el movimiento actual en la tabla, y elimina el coloreado del seleccionado anteriormente
+function estilosMovActualRepeticion(n) {
+    let spans = document.querySelectorAll(".spanMovRepeticion");
+
+    if (movActualRepeticion !== undefined)
+        spans[movActualRepeticion].classList.remove("movActualRepeticion");
+    movActualRepeticion = n;
+    spans[n].classList.add("movActualRepeticion");
+}
+
+// Rellena la tabla de movimientos con el string de los movimientos de la repeticion
+// Y llama a la funcion que realiza los movimientos
+function cargarCadenaMovimientos(cadena) {
+    let contenedorMov = document.getElementById("contenedorMov");
+
+    contenedorMov.innerHTML = "";
+
+    let subCadenas = cadena.split(" ");
+    let fila = undefined;
+    let div;
+    let span;
+
+    for (let i = 0, fin = subCadenas.length; i < fin; i++) {
+        if (i % 3 === 0) {    // Crear fila y rellenar numero
+            fila = document.createElement("div");
+            div = document.createElement("div");
+            span = document.createElement("span");
+
+            fila.className = "filaMov";
+            div.classList.add("divNumMov");
+            span.classList.add("spanNumMov");
+            span.innerHTML = subCadenas[i];
+
+            div.appendChild(span);
+            fila.appendChild(div);
+            contenedorMov.appendChild(fila);
+        } else {
+            // Rellenar los movimientos de la fila
+            div = document.createElement("div");
+            span = document.createElement("span");
+
+            div.classList.add("divMov");
+            span.classList.add("spanMovRepeticion");
+            span.innerHTML = subCadenas[i];
+
+            div.appendChild(span);
+            fila.appendChild(div);
+
+            // Cargo los movimientos realizados
+            turno = (i + 2) % 3 === 0;
+            notacionAMov(subCadenas[i]);
+            guardarTablero();
+        }
+    }
+
+    // Obtengo el resultado y lo anoto
+    fila = document.createElement("div");
+    fila.className = "filaResultado";
+
+    let ultimoMov = subCadenas[subCadenas.length - 1];
+    let ultimoChar = ultimoMov[ultimoMov.length - 1];
+
+    if (ultimoChar === "#") {
+        let penultimoMov = subCadenas[subCadenas.length - 2]
+        let ultimoCharUltimoMov = penultimoMov[penultimoMov.length - 1]
+
+        if (ultimoCharUltimoMov === ".")
+            resultado = "1-0";
+        else
+            resultado = "0-1";
+    } else {
+        resultado = "1/2 - 1/2";
+    }
+
+    span = document.createElement("span");
+    span.innerHTML = resultado;
+
+    fila.appendChild(span);
+    contenedorMov.appendChild(fila);
+
+    // Muestro el primer movimiento de la partida
+    cargarTablero(1);
+    estilosMovActualRepeticion(0);
+}
+
+function guardarTablero() {
+    let cadena = "";
+
+    // Creo una cadena con el valor de todas las casillas del tablero
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            cadena += tablero[i][j];
+
+    cadenasTableros.push(cadena);
+}
+
+function cargarTablero(n) {
+    let pos = 0;
+    let coor = {x: undefined, y: undefined};
+
+    // Rellena el tablero con el valor de la cadena guardada
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+            // Elimino estilos
+            tableroHTML[i][j].classList.remove("casillasMovAnterior");
+            if (tableroHTML[i][j].classList.contains("reyAmenazado")) {
+                tableroHTML[i][j].classList.remove("reyAmenazado");
+                tableroHTML[i][j].innerHTML = "";
+            }
+            // Cambio de pieza
+            if (tablero[i][j] !== cadenasTableros[n][pos]) {
+                eliminarImgPieza(i, j);
+                tablero[i][j] = cadenasTableros[n][pos];
+                annadirImgPieza(i, j);
+            }
+            pos++;
+        }
+    }
+
+    if (n !== 0) {
+        // Annade los estilos del movimiento anterior
+        coor.x = movAnteriorTableros[n].origenX;
+        coor.y = movAnteriorTableros[n].origenY;
+        if (tableroGirado) girarCoorEstilo();
+        tableroHTML[coor.x][coor.y].classList.add("casillasMovAnterior");
+
+        coor.x = movAnteriorTableros[n].destinoX;
+        coor.y = movAnteriorTableros[n].destinoY;
+        if (tableroGirado) girarCoorEstilo();
+        tableroHTML[coor.x][coor.y].classList.add("casillasMovAnterior");
+
+        // Annade el estilo del jaque
+        if (jaquesTableros[n].esJaque === true) {
+            coor.x = jaquesTableros[n].posX;
+            coor.y = jaquesTableros[n].posY;
+            if (tableroGirado) girarCoorEstilo();
+            tableroHTML[coor.x][coor.y].classList.add("reyAmenazado");
+            tableroHTML[coor.x][coor.y].innerHTML = "<div class='piezaResaltadaBorde'></div>";
+        }
+    }
+
+    function girarCoorEstilo() {
+        coor.x = 7 - coor.x;
+        coor.y = 7 - coor.y;
+    }
+}
+
+// Descifra el texto de la notacion y lo convierte en un movimiento en el tablero
+function notacionAMov(notacion) {
+    let origen = {x: undefined, y: undefined};
+    let destino = {x: undefined, y: undefined};
+
+    if (notacion[0] === notacion[0].toLowerCase() && notacion[0] !== notacion[0].toUpperCase()) {    // Peon
+        origen.y = letraAPosicion(notacion[0]);
+
+        if (notacion.length === 2) {
+            destino.x = numeroAPosicion(notacion[1]);
+            destino.y = origen.y;
+            if (turno) {
+                if (tablero[destino.x + 1][destino.y] === "P")
+                    origen.x = destino.x + 1;
+                else if (tablero[destino.x + 2][destino.y] === "P")
+                    origen.x = destino.x + 2;
+            } else {
+                if (tablero[destino.x - 1][destino.y] === "p")
+                    origen.x = destino.x - 1;
+                else if (tablero[destino.x - 2][destino.y] === "p")
+                    origen.x = destino.x - 2;
+            }
+
+        } else if (notacion.indexOf("x") !== -1) {    // Peon captura
+            destino.x = numeroAPosicion(notacion[3]);
+            destino.y = letraAPosicion(notacion[2]);
+            if (turno)
+                origen.x = destino.x + 1;
+            else
+                origen.x = destino.x - 1;
+
+            if (tablero[destino.x][destino.y] === "0") {    // Peon captura al paso
+                if (turno) {
+                    eliminarImgPieza(destino.x + 1, destino.y);
+                    tablero[destino.x + 1][destino.y] = "0";
+                    eliminarObjetoPiezaComida(piezasNegras, destino.x + 1, destino.y);
+                } else {
+                    eliminarImgPieza(destino.x - 1, destino.y);
+                    tablero[destino.x - 1][destino.y] = "0";
+                    eliminarObjetoPiezaComida(piezasNegras, destino.x - 1, destino.y);
+                }
+            }
+        }
+
+        if (notacion.indexOf("=") !== -1) {    // Promocion del peon
+            let nuevaPieza = notacion[notacion.indexOf("=") + 1];
+            if (turno)
+                origen.x = 1;
+            else {
+                origen.x = 6;
+                nuevaPieza = nuevaPieza.toLowerCase();
+            }
+            if (notacion.indexOf("x") === -1) {    // Si promociona sin capturar
+                destino.x = numeroAPosicion(notacion[1]);
+                destino.y = letraAPosicion(notacion[0]);
+            }
+            eliminarImgPieza(origen.x, origen.y);
+            tablero[origen.x][origen.y] = nuevaPieza;
+        }
+
+    } else if (notacion[0] === "O") {    // Enroque
+        let posX;
+        let posYOrigenTorre;
+        let posYDestinoTorre;
+
+        if (turno)
+            posX = 7;
+        else
+            posX = 0;
+
+        origen.x = posX;
+        origen.y = 4;
+        destino.x = posX;
+
+        if (notacion.length === 3) {    // Enroque corto
+            destino.y = 6;
+            posYOrigenTorre = 7;
+            posYDestinoTorre = 5;
+        } else {    // Enroque largo
+            destino.y = 2;
+            posYOrigenTorre = 0;
+            posYDestinoTorre = 3;
+        }
+        seleccionarPieza(posX, posYOrigenTorre);
+        moverPieza(posX, posYDestinoTorre);
+
+    } else {    // Torre, caballo, alfil, dama o rey
+        let ambiguedad;
+        let origenPieza;
+        let subString = notacion.replace("x", "");
+        subString = subString.replace("+", "");
+        subString = subString.replace("#", "");
+        let tipoPieza = subString[0];
+
+        destino.x = numeroAPosicion(subString[subString.length - 1]);
+        destino.y = letraAPosicion(subString[subString.length - 2]);
+
+        if (tipoPieza === "R") {    // Rey
+            if (turno) {    // Rey blanco
+                origen.x = piezasBlancas[0].posX;
+                origen.y = piezasBlancas[0].posY;
+            } else {    // Rey negro
+                origen.x = piezasNegras[0].posX;
+                origen.y = piezasNegras[0].posY;
+            }
+        } else {    // Torre, caballo, alfil o dama
+            if (subString.length === 3) {
+                ambiguedad = undefined;
+                origenPieza = descifrarAmbiguedad(destino, tipoPieza, ambiguedad);
+                origen.x = origenPieza.x;
+                origen.y = origenPieza.y;
+            } else if (subString.length === 4) {
+                ambiguedad = subString[1];
+                origenPieza = descifrarAmbiguedad(destino, tipoPieza, ambiguedad);
+                origen.x = origenPieza.x;
+                origen.y = origenPieza.y;
+            } else {
+                origen.x = numeroAPosicion(subString[2]);
+                origen.y = letraAPosicion(subString[1]);
+            }
+        }
+    }
+    // Relleno los arrays de estilos
+    movAnteriorTableros.push({origenX: origen.x, origenY: origen.y, destinoX: destino.x, destinoY: destino.y});
+
+    if (notacion[notacion.length - 1] === "+" || notacion[notacion.length - 1] === "#") {
+        let posJaqueX;
+        let posJaqueY;
+
+        if (turno) {
+            posJaqueX = piezasNegras[0].posX;
+            posJaqueY = piezasNegras[0].posY;
+        } else {
+            posJaqueX = piezasBlancas[0].posX;
+            posJaqueY = piezasBlancas[0].posY;
+        }
+        jaquesTableros.push({esJaque: true, posX: posJaqueX, posY: posJaqueY});
+    } else
+        jaquesTableros.push({esJaque: false, posX: undefined, posY: undefined});
+
+    // Realizo el movimiento
+    seleccionarPieza(origen.x, origen.y);
+    moverPieza(destino.x, destino.y);
+}
+
+function descifrarAmbiguedad(destino, tipoPieza, ambiguedad) {
+    let piezasAmbiguedad = [];
+    let piezasColor;
+    let esMismoTipo;
+    let origen = {x: undefined, y: undefined};
+
+    if (turno)
+        piezasColor = piezasBlancas;
+    else {
+        piezasColor = piezasNegras;
+        tipoPieza = tipoPieza.toLowerCase();
+    }
+
+    // Si no hay ambiguedad, guardo en un array todas las piezas del mismo tipo que tipoPieza
+    // Si hay ambiguedad, solo guardo las piezas del mismo tipo que tipoPieza que esten en esa letra / numero
+    for (let i = 0, fin = piezasColor.length; i < fin; i++) {
+        esMismoTipo = false;
+        if (tablero[piezasColor[i].posX][piezasColor[i].posY] === tipoPieza) {
+            if (ambiguedad !== undefined) {
+                if (isNaN(ambiguedad)) {    // Es letra
+                    if (letraAPosicion(ambiguedad) === piezasColor[i].posY)
+                        esMismoTipo = true;
+                } else {    // Es numero
+                    if (numeroAPosicion(ambiguedad) === piezasColor[i].posX)
+                        esMismoTipo = true;
+                }
+            } else
+                esMismoTipo = true;
+            if (esMismoTipo)
+                piezasAmbiguedad.push({posX: piezasColor[i].posX, posY: piezasColor[i].posY});
+        }
+    }
+
+    // Descarto las piezas que no tienen la casilla de destino como movPosible y me quedo con la pieza que quede
+    if (piezasAmbiguedad.length > 1) {
+        for (let i = 0, fin = piezasAmbiguedad.length; i < fin; i++) {
+            movPosibles = [];
+            calcularMovSegunPieza(piezasAmbiguedad[i].posX, piezasAmbiguedad[i].posY);
+            for (let j = 0, fin = movPosibles.length; j < fin; j++) {
+                if (destino.x === movPosibles[j].posX && destino.y === movPosibles[j].posY)
+                    if (!movAmenazaReyPropio(j, !turno, piezasAmbiguedad[i], tipoPieza)) {
+                        origen.x = piezasAmbiguedad[i].posX;
+                        origen.y = piezasAmbiguedad[i].posY;
+                    }
+            }
+        }
+    } else {
+        origen.x = piezasAmbiguedad[0].posX;
+        origen.y = piezasAmbiguedad[0].posY;
+    }
+
+    return origen;
+}
+
+function posicionANumero(x) {
     return (8 - x);
 }
 
-function letraPosicion(y) {
+function numeroAPosicion(x) {
+    return (8 - x);
+}
+
+function posicionALetra(y) {
     let letra;
 
     switch (y) {
@@ -1409,6 +1829,39 @@ function letraPosicion(y) {
     }
 
     return letra;
+}
+
+function letraAPosicion(letra) {
+    let y;
+
+    switch (letra) {
+        case "a":
+            y = 0;
+            break;
+        case "b":
+            y = 1;
+            break;
+        case "c":
+            y = 2;
+            break;
+        case "d":
+            y = 3;
+            break;
+        case "e":
+            y = 4;
+            break;
+        case "f":
+            y = 5;
+            break;
+        case "g":
+            y = 6;
+            break;
+        case "h":
+            y = 7;
+            break;
+    }
+
+    return y;
 }
 
 function calcularMovSegunPieza(x, y) {
