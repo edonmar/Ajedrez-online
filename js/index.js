@@ -1442,11 +1442,42 @@ function verRepeticion(cadena) {
         elemento.classList.add("enRepeticion");
     }
 
+    cadena = modificarCadena(cadena);
     guardarTablero();
     movAnteriorTableros.push({origenX: undefined, origenY: undefined, destinoX: undefined, destinoY: undefined});
     jaquesTableros.push({esJaque: false, posX: undefined, posY: undefined});
     cargarCadenaMovimientos(cadena);
     crearEventosMovRepeticion();
+}
+
+// Mi programa funciona con texto tipo PGN (Portable Game Notation) donde las piezas estan en espannol,
+// con espacios despues del punto, usando "o" mayuscula en los enroques y usando "#" para el jaque mate.
+// Si no es asi, modifico el PGN para adaptarlo
+function modificarCadena(cadena) {
+    // Si las letras de las piezas estan en ingles, las paso a espannol
+    if (cadena.indexOf("B") !== -1 || cadena.indexOf("N") !== -1
+        || cadena.indexOf("Q") !== -1 || cadena.indexOf("K") !== -1) {
+        cadena = cadena.replace(/B/g, "A");
+        cadena = cadena.replace(/N/g, "C");
+        cadena = cadena.replace(/Q/g, "D");
+        cadena = cadena.replace(/R/g, "T");
+        cadena = cadena.replace(/K/g, "R");
+    }
+
+    // Si el tipo de guion usado para los enroques enroques es distinto, lo cambia
+    cadena = cadena.replace(/–/g, "-");
+
+    // Si los enroques estan escritos con ceros, los cambio a "o" mayusculas
+    cadena = cadena.replace(/0-0-0/g, "O-O-O");
+    cadena = cadena.replace(/0-0/g, "O-O");
+
+    // Si no hay espacios despues del punto, los annado
+    cadena = cadena.replace(/[.](?! )/g, ". ");
+
+    // Si el mate esta escrito como "++", lo cambio a "#"
+    cadena = cadena.replace("++", "#");
+
+    return cadena;
 }
 
 function crearEventosMovRepeticion() {
