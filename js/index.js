@@ -21,7 +21,8 @@ let resultado = "";
 let cadenasTableros = [];    // Array de strings con todas las posiciones de cada turno de la repeticion
 let movAnteriorTableros = [];    // Array de coordenadas con todos los movimientos de la repeticion
 let jaquesTableros = [];    // Array de booleans con todos los jaques de la repeticion y sus coordenadas
-let movActualRepeticion = undefined;    // El movimiento de la repeticion que estoy viendo en este momento
+let movActualRep = 0;    // El movimiento de la repeticion que estoy viendo en este momento
+let play = false;    // true = repeticion en play, false = repeticion en pause
 
 window.onload = function () {
     inicializarTablero();
@@ -1167,7 +1168,7 @@ function reiniciarPartida(repeticion) {
     for (let i = 0, fin = piezasNegras.length; i < fin; i++)
         eliminarImgPieza(piezasNegras[i].posX, piezasNegras[i].posY);
     if (!repeticion)
-        document.getElementById("contenedorMov").innerHTML = "";
+        document.getElementById("tablaMov").innerHTML = "";
 
     if (tableroGirado) {
         girarSpans(document.querySelectorAll("#numeros span"));
@@ -1198,7 +1199,8 @@ function reiniciarPartida(repeticion) {
     cadenasTableros = [];
     movAnteriorTableros = [];
     jaquesTableros = [];
-    movActualRepeticion = undefined;
+    movActualRep = 0;
+    play = false;
 
     // Coloco el tablero, piezas e imagenes e inicio la partida
     colocarPiezasIniciales();
@@ -1256,8 +1258,8 @@ function girarSpans(spans) {
 }
 
 function escribirMovEnTabla(notacionMov) {
-    let contenedorMov = document.getElementById("contenedorMov");
-    let filas = contenedorMov.querySelectorAll(".filaMov");
+    let tablaMov = document.getElementById("tablaMov");
+    let filas = tablaMov.querySelectorAll(".filaMov");
     let numFilas = filas.length;
 
     if (turno) {    // Movimiento de las blancas: crea una nuevo div con 3 span y rellena los 2 primeros
@@ -1278,7 +1280,7 @@ function escribirMovEnTabla(notacionMov) {
         nuevaFila.appendChild(divNum);
         divBlancas.appendChild(spanBlancas);
         nuevaFila.appendChild(divBlancas);
-        contenedorMov.appendChild(nuevaFila);
+        tablaMov.appendChild(nuevaFila);
 
         if (numFilas > 0)
             cadenaMovimientos += " ";
@@ -1297,11 +1299,11 @@ function escribirMovEnTabla(notacionMov) {
     }
 
     // Mueve el scroll hacia abajo
-    contenedorMov.scrollTop = contenedorMov.scrollHeight;
+    tablaMov.scrollTop = tablaMov.scrollHeight;
 }
 
 function escribirResultado() {
-    let contenedorMov = document.getElementById("contenedorMov");
+    let tablaMov = document.getElementById("tablaMov");
 
     let nuevaFila = document.createElement("div");
     nuevaFila.className = "filaResultado";
@@ -1310,10 +1312,10 @@ function escribirResultado() {
     spanResultado.innerHTML = resultado;
 
     nuevaFila.appendChild(spanResultado);
-    contenedorMov.appendChild(nuevaFila);
+    tablaMov.appendChild(nuevaFila);
 
     // Mueve el scroll hacia abajo
-    contenedorMov.scrollTop = contenedorMov.scrollHeight;
+    tablaMov.scrollTop = tablaMov.scrollHeight;
 }
 
 // Obtiene la notacion en texto de un movimiento, usando la notacion algebraica
@@ -1426,6 +1428,20 @@ function obtenerPiezasAmbiguedad(x, y, tipoOrigen) {
 function verRepeticion(cadena) {
     eliminarEventosTablero();
     reiniciarPartida(true);
+
+    cambiarEstilos(document.getElementById("tablaMov"));
+    cambiarEstilos(document.getElementById("botonesMov"));
+    cambiarEstilos(document.getElementById("btnTodoAtras"));
+    cambiarEstilos(document.getElementById("btnAtras"));
+    cambiarEstilos(document.getElementById("btnPlayPause"));
+    cambiarEstilos(document.getElementById("btnAdelante"));
+    cambiarEstilos(document.getElementById("btnTodoAdelante"));
+
+    function cambiarEstilos(elemento) {
+        elemento.classList.remove("enPartida");
+        elemento.classList.add("enRepeticion");
+    }
+
     guardarTablero();
     movAnteriorTableros.push({origenX: undefined, origenY: undefined, destinoX: undefined, destinoY: undefined});
     jaquesTableros.push({esJaque: false, posX: undefined, posY: undefined});
@@ -1434,32 +1450,97 @@ function verRepeticion(cadena) {
 }
 
 function crearEventosMovRepeticion() {
-    let spans = document.querySelectorAll(".spanMovRepeticion");
+    let movs = document.querySelectorAll(".spanMovRepeticion");
+    let intervalo;
+    let svgPlay = '<svg x="0px" y="0px" viewBox="0 0 47.604 47.604">\n' +
+        '<path d="M43.331,21.237L7.233,0.397c-0.917-0.529-2.044-0.529-2.96,0c-0.916,0.528-1.48,\n' +
+        '1.505-1.48,2.563v41.684c0,1.058,0.564,2.035,1.48,2.563c0.458,0.268,0.969,0.397,1.48,0.397c0.511,\n' +
+        '0,1.022-0.133,1.48-0.397l36.098-20.84c0.918-0.529,1.479-1.506,1.479-2.564S44.247,21.767,\n' +
+        '43.331,21.237z"/></svg>';
+    let svgPause = '<svg x="0px" y="0px" viewBox="0 0 47.607 47.607">\n' +
+        '<path d="M17.991,40.976c0,3.662-2.969,6.631-6.631,6.631l0,0c-3.662,\n' +
+        '0-6.631-2.969-6.631-6.631V6.631C4.729,2.969,7.698,0,11.36,0l0,0c3.662,0,6.631,2.969,6.631,\n' +
+        '6.631V40.976z"/>\n' +
+        '<path d="M42.877,40.976c0,3.662-2.969,6.631-6.631,6.631l0,0c-3.662,0-6.631-2.969-6.631-6.631V6.631\n' +
+        'C29.616,2.969,32.585,0,36.246,0l0,0c3.662,0,6.631,2.969,6.631,6.631V40.976z"/></svg>';
 
-    for (let i = 0, fin = spans.length; i < fin; i++) {
-        spans[i].onclick = function () {
-            estilosMovActualRepeticion(i);
+    // Eventos de la tabla
+    for (let i = 0, fin = movs.length; i < fin; i++) {
+        movs[i].onclick = function () {
+            estilosMovActualRep(i);
             cargarTablero(i + 1);
         }
+    }
+
+    // Eventos de los botones
+    document.getElementById("btnTodoAtras").onclick = function () {
+        pararIntervalo();
+        estilosMovActualRep(-1);
+        cargarTablero(0);
+    }
+    document.getElementById("btnAtras").onclick = function () {
+        pararIntervalo();
+        if (movActualRep >= 0) {
+            estilosMovActualRep(movActualRep - 1);
+            cargarTablero(movActualRep + 1);
+        }
+    }
+    document.getElementById("btnPlayPause").onclick = function () {
+        if (!play) {
+            pasoAdelante();
+            intervalo = setInterval(function () {
+                pasoAdelante();
+                if (movActualRep + 2 === cadenasTableros.length)
+                    pararIntervalo();
+            }, 1000);
+            document.getElementById("btnPlayPause").innerHTML = svgPause;
+            play = true;
+        } else
+            pararIntervalo();
+    }
+    document.getElementById("btnAdelante").onclick = function () {
+        pararIntervalo();
+        pasoAdelante();
+    }
+    document.getElementById("btnTodoAdelante").onclick = function () {
+        pararIntervalo();
+        estilosMovActualRep(movs.length - 1);
+        cargarTablero(movActualRep + 1);
+    }
+
+    function pasoAdelante() {
+        if (movActualRep + 1 !== movs.length) {
+            estilosMovActualRep(movActualRep + 1);
+            cargarTablero(movActualRep + 1);
+        }
+    }
+
+    function pararIntervalo() {
+        clearInterval(intervalo);
+        document.getElementById("btnPlayPause").innerHTML = svgPlay;
+        play = false;
     }
 }
 
 // Colorea el movimiento actual en la tabla, y elimina el coloreado del seleccionado anteriormente
-function estilosMovActualRepeticion(n) {
+function estilosMovActualRep(n) {
     let spans = document.querySelectorAll(".spanMovRepeticion");
 
-    if (movActualRepeticion !== undefined)
-        spans[movActualRepeticion].classList.remove("movActualRepeticion");
-    movActualRepeticion = n;
-    spans[n].classList.add("movActualRepeticion");
+    if (movActualRep !== -1)
+        spans[movActualRep].classList.remove("movActualRep");
+
+    movActualRep = n;
+
+    if (movActualRep !== -1)
+        spans[n].classList.add("movActualRep");
 }
 
 // Rellena la tabla de movimientos con el string de los movimientos de la repeticion
 // Y llama a la funcion que realiza los movimientos
 function cargarCadenaMovimientos(cadena) {
-    let contenedorMov = document.getElementById("contenedorMov");
+    let tablaMov = document.getElementById("tablaMov");
 
-    contenedorMov.innerHTML = "";
+    tablaMov.innerHTML = "";
 
     let subCadenas = cadena.split(" ");
     let fila = undefined;
@@ -1479,7 +1560,7 @@ function cargarCadenaMovimientos(cadena) {
 
             div.appendChild(span);
             fila.appendChild(div);
-            contenedorMov.appendChild(fila);
+            tablaMov.appendChild(fila);
         } else {
             // Rellenar los movimientos de la fila
             div = document.createElement("div");
@@ -1522,11 +1603,11 @@ function cargarCadenaMovimientos(cadena) {
     span.innerHTML = resultado;
 
     fila.appendChild(span);
-    contenedorMov.appendChild(fila);
+    tablaMov.appendChild(fila);
 
     // Muestro el primer movimiento de la partida
     cargarTablero(1);
-    estilosMovActualRepeticion(0);
+    estilosMovActualRep(0);
 }
 
 function guardarTablero() {
@@ -1595,12 +1676,17 @@ function cargarTablero(n) {
 function notacionAMov(notacion) {
     let origen = {x: undefined, y: undefined};
     let destino = {x: undefined, y: undefined};
+    let captura = notacion.indexOf("x") !== -1;
+    let jaque = (notacion[notacion.length - 1] === "+" || notacion[notacion.length - 1] === "#");
+    let subString = notacion.replace("x", "");
+    subString = subString.replace("+", "");
+    subString = subString.replace("#", "");
 
-    if (notacion[0] === notacion[0].toLowerCase() && notacion[0] !== notacion[0].toUpperCase()) {    // Peon
-        origen.y = letraAPosicion(notacion[0]);
+    if (subString[0] === subString[0].toLowerCase() && subString[0] !== subString[0].toUpperCase()) {    // Peon
+        origen.y = letraAPosicion(subString[0]);
 
-        if (notacion.length === 2) {
-            destino.x = numeroAPosicion(notacion[1]);
+        if (subString.length === 2) {
+            destino.x = numeroAPosicion(subString[1]);
             destino.y = origen.y;
             if (turno) {
                 if (tablero[destino.x + 1][destino.y] === "P")
@@ -1614,9 +1700,9 @@ function notacionAMov(notacion) {
                     origen.x = destino.x - 2;
             }
 
-        } else if (notacion.indexOf("x") !== -1) {    // Peon captura
-            destino.x = numeroAPosicion(notacion[3]);
-            destino.y = letraAPosicion(notacion[2]);
+        } else if (captura) {    // Peon captura
+            destino.x = numeroAPosicion(subString[2]);
+            destino.y = letraAPosicion(subString[1]);
             if (turno)
                 origen.x = destino.x + 1;
             else
@@ -1636,7 +1722,7 @@ function notacionAMov(notacion) {
         }
 
         if (notacion.indexOf("=") !== -1) {    // Promocion del peon
-            let nuevaPieza = notacion[notacion.indexOf("=") + 1];
+            let nuevaPieza = subString[subString.indexOf("=") + 1];
             if (turno)
                 origen.x = 1;
             else {
@@ -1644,14 +1730,14 @@ function notacionAMov(notacion) {
                 nuevaPieza = nuevaPieza.toLowerCase();
             }
             if (notacion.indexOf("x") === -1) {    // Si promociona sin capturar
-                destino.x = numeroAPosicion(notacion[1]);
-                destino.y = letraAPosicion(notacion[0]);
+                destino.x = numeroAPosicion(subString[1]);
+                destino.y = letraAPosicion(subString[0]);
             }
             eliminarImgPieza(origen.x, origen.y);
             tablero[origen.x][origen.y] = nuevaPieza;
         }
 
-    } else if (notacion[0] === "O") {    // Enroque
+    } else if (subString[0] === "O") {    // Enroque
         let posX;
         let posYOrigenTorre;
         let posYDestinoTorre;
@@ -1665,7 +1751,7 @@ function notacionAMov(notacion) {
         origen.y = 4;
         destino.x = posX;
 
-        if (notacion.length === 3) {    // Enroque corto
+        if (subString.length === 3) {    // Enroque corto
             destino.y = 6;
             posYOrigenTorre = 7;
             posYDestinoTorre = 5;
@@ -1680,9 +1766,6 @@ function notacionAMov(notacion) {
     } else {    // Torre, caballo, alfil, dama o rey
         let ambiguedad;
         let origenPieza;
-        let subString = notacion.replace("x", "");
-        subString = subString.replace("+", "");
-        subString = subString.replace("#", "");
         let tipoPieza = subString[0];
 
         destino.x = numeroAPosicion(subString[subString.length - 1]);
@@ -1716,7 +1799,7 @@ function notacionAMov(notacion) {
     // Relleno los arrays de estilos
     movAnteriorTableros.push({origenX: origen.x, origenY: origen.y, destinoX: destino.x, destinoY: destino.y});
 
-    if (notacion[notacion.length - 1] === "+" || notacion[notacion.length - 1] === "#") {
+    if (jaque) {
         let posJaqueX;
         let posJaqueY;
 

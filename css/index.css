@@ -189,7 +189,7 @@ body {
 }
 
 .btnModal:hover {
-    background-color: #a2d8cc;
+    background-color: #ffac80;
 }
 
 .btnModalBorde {
@@ -229,24 +229,34 @@ body {
 
 #contenedorMov {
     display: inline-block;
+}
+
+#tablaMov {
     overflow-y: scroll;
-    width: 16em;
-    height: 92vh;
+    width: 17.4em;
     margin-top: 3vh;
     margin-right: 3vh;
     margin-left: 3vh;
     background-color: #f2f2f2;
 }
 
-#contenedorMov div {
+#tablaMov.enPartida {
+    height: 91.7vh;
+}
+
+#tablaMov.enRepeticion {
+    height: 84.7vh;
+}
+
+#tablaMov div {
     height: 2em;
 }
 
-#contenedorMov div.filaMov:nth-child(even) {
+#tablaMov div.filaMov:nth-child(even) {
     background-color: #e6e6e6;
 }
 
-#contenedorMov div.filaMov:nth-child(odd) {
+#tablaMov div.filaMov:nth-child(odd) {
     background-color: #f2f2f2;
 }
 
@@ -264,7 +274,7 @@ body {
 }
 
 .filaMov .divMov { /* Los movimientos del turno */
-    width: 3.5em;
+    width: 4.2em;
     margin-left: 2em;
 }
 
@@ -285,54 +295,104 @@ body {
     cursor: pointer;
 }
 
-.movActualRepeticion {
+#botonesMov.enPartida {
+    display: none;
+}
+
+#botonesMov.enRepeticion {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 17.4em;
+    height: 7vh;
+    margin-right: 3vh;
+    margin-left: 3vh;
+    background-color: #f2f2f2;
+}
+
+#botonesMov button {
+    height: 70%;
+    padding-right: 0.5em;
+    padding-left: 0.5em;
+    background-color: #e6e6e6;
+    border: 1px solid black;
+    border-radius: 4px;
+}
+
+#botonesMov button:hover {
+    background-color: #ffac80;
+}
+
+#botonesMov button.enPartida {
+    display: none;
+}
+
+#botonesMov button.enRepeticion {
+    display: inline;
+}
+
+#botonesMov svg {
+    box-sizing: border-box;
+    width: 2em;
+    fill: black;
+}
+
+#botonesMov svg.enPartida {
+    display: none;
+}
+
+#botonesMov svg.enRepeticion {
+    display: inline;
+}
+
+.movActualRep {
     background-color: #ffac80;
 }
 
 .peonBlanco {
-    background-image: url("../img/peon_blanco.svg");
+    background-image: url("../svg/peon_blanco.svg");
 }
 
 .torreBlanco {
-    background-image: url("../img/torre_blanco.svg");
+    background-image: url("../svg/torre_blanco.svg");
 }
 
 .caballoBlanco {
-    background-image: url("../img/caballo_blanco.svg");
+    background-image: url("../svg/caballo_blanco.svg");
 }
 
 .alfilBlanco {
-    background-image: url("../img/alfil_blanco.svg");
+    background-image: url("../svg/alfil_blanco.svg");
 }
 
 .damaBlanco {
-    background-image: url("../img/dama_blanco.svg");
+    background-image: url("../svg/dama_blanco.svg");
 }
 
 .reyBlanco {
-    background-image: url("../img/rey_blanco.svg");
+    background-image: url("../svg/rey_blanco.svg");
 }
 
 .peonNegro {
-    background-image: url("../img/peon_negro.svg");
+    background-image: url("../svg/peon_negro.svg");
 }
 
 .torreNegro {
-    background-image: url("../img/torre_negro.svg");
+    background-image: url("../svg/torre_negro.svg");
 }
 
 .caballoNegro {
-    background-image: url("../img/caballo_negro.svg");
+    background-image: url("../svg/caballo_negro.svg");
 }
 
 .alfilNegro {
-    background-image: url("../img/alfil_negro.svg");
+    background-image: url("../svg/alfil_negro.svg");
 }
 
 .damaNegro {
-    background-image: url("../img/dama_negro.svg");
+    background-image: url("../svg/dama_negro.svg");
 }
 
 .reyNegro {
-    background-image: url("../img/rey_negro.svg");
+    background-image: url("../svg/rey_negro.svg");
 }
