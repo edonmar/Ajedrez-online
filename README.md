@@ -1,4 +1,5 @@
-.checkout
+Ajedrez
 =========
 
-A Symfony project created on May 29, 2020, 8:25 pm.
+Aplicación web para jugar al ajedrez de manera online con otros jugadores, y poder ver las repeticiones y movimientos de
+todas las partidas anteriores. Los jugadores podrán comunicarse mediante chat.
