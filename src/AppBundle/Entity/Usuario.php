@@ -56,12 +56,19 @@ class Usuario
     private $anotaciones;
 
     /**
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Partida")
+     * @var Partida[]
+     */
+    private $partidas;
+
+    /**
      * Usuario constructor.
      */
     public function __construct()
     {
         $this->mensajes = new ArrayCollection();
         $this->anotaciones = new ArrayCollection();
+        $this->partidas = new ArrayCollection();
     }
 
     /**
@@ -177,6 +184,24 @@ class Usuario
     public function setAnotaciones($anotaciones)
     {
         $this->anotaciones = $anotaciones;
+        return $this;
+    }
+
+    /**
+     * @return Partida[]
+     */
+    public function getPartidas()
+    {
+        return $this->partidas;
+    }
+
+    /**
+     * @param Partida[] $partidas
+     * @return Usuario
+     */
+    public function setPartidas($partidas)
+    {
+        $this->partidas = $partidas;
         return $this;
     }
 }
