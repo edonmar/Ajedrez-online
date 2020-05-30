@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
@@ -41,6 +42,20 @@ class Usuario
      * @var bool
      */
     private $esAdministrador;
+
+    /**
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Mensaje", mappedBy="usuario")
+     * @var Mensaje[]
+     */
+    private $mensajes;
+
+    /**
+     * Usuario constructor.
+     */
+    public function __construct()
+    {
+        $this->mensajes = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -119,6 +134,24 @@ class Usuario
     public function setEsAdministrador($esAdministrador)
     {
         $this->esAdministrador = $esAdministrador;
+        return $this;
+    }
+
+    /**
+     * @return Mensaje[]
+     */
+    public function getMensajes()
+    {
+        return $this->mensajes;
+    }
+
+    /**
+     * @param Mensaje[] $mensajes
+     * @return Usuario
+     */
+    public function setMensajes($mensajes)
+    {
+        $this->mensajes = $mensajes;
         return $this;
     }
 }

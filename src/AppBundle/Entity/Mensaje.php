@@ -31,6 +31,12 @@ class Mensaje
     private $fechaHora;
 
     /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Usuario", inversedBy="mensajes")
+     * @var Usuario
+     */
+    private $usuario;
+
+    /**
      * @return int
      */
     public function getId()
@@ -71,6 +77,24 @@ class Mensaje
     public function setFechaHora($fechaHora)
     {
         $this->fechaHora = $fechaHora;
+        return $this;
+    }
+
+    /**
+     * @return Usuario
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * @param Usuario $usuario
+     * @return Mensaje
+     */
+    public function setUsuario($usuario)
+    {
+        $this->usuario = $usuario;
         return $this;
     }
 }
