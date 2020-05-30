@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
@@ -52,6 +53,20 @@ class Partida
      * @ORM\OneToOne(targetEntity="AppBundle\Entity\Anotacion")
      */
     private $anotacion;
+
+    /**
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Tablero", mappedBy="partida")
+     * @var Tablero[]
+     */
+    private $tableros;
+
+    /**
+     * Partida constructor.
+     */
+    public function __construct()
+    {
+        $this->tableros = new ArrayCollection();
+    }
 
     /**
      * @return int
@@ -166,6 +181,24 @@ class Partida
     public function setAnotacion($anotacion)
     {
         $this->anotacion = $anotacion;
+        return $this;
+    }
+
+    /**
+     * @return Tablero[]
+     */
+    public function getTableros()
+    {
+        return $this->tableros;
+    }
+
+    /**
+     * @param Tablero[] $tableros
+     * @return Partida
+     */
+    public function setTableros($tableros)
+    {
+        $this->tableros = $tableros;
         return $this;
     }
 }

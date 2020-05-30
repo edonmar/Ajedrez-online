@@ -61,6 +61,12 @@ class Tablero
     private $jaque;
 
     /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Partida", inversedBy="tableros")
+     * @var Partida
+     */
+    private $partida;
+
+    /**
      * @return int
      */
     public function getId()
@@ -191,6 +197,24 @@ class Tablero
     public function setJaque($jaque)
     {
         $this->jaque = $jaque;
+        return $this;
+    }
+
+    /**
+     * @return Partida
+     */
+    public function getPartida()
+    {
+        return $this->partida;
+    }
+
+    /**
+     * @param Partida $partida
+     * @return Tablero
+     */
+    public function setPartida($partida)
+    {
+        $this->partida = $partida;
         return $this;
     }
 }
