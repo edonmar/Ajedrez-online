@@ -5,13 +5,13 @@ namespace AppBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
 
-class PortadaController extends Controller
+class InicioController extends Controller
 {
     /**
-     * @Route("/", name="portada")
+     * @Route("/", name="inicio")
      */
     public function indexAction()
     {
-        return $this->render('portada.html.twig');
+        return $this->render('inicio.html.twig');
     }
 }

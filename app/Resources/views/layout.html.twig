@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <nav class="navbar navbar-dark bg-dark menuVertical">
+        <ul class="navbar-nav">
+            <a class="navbar-brand" href="{{ path('inicio') }}"><i class="fas fa-chess"></i> Ajedrez</a>
+            {% set nombre = app.request.get('_route') %}
+            <li class="nav-item{% if nombre == 'inicio' %} active{% endif %}">
+                <a class="nav-link" href="{{ path('inicio') }}"><i class="fas fa-home"></i> Inicio</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+{% endblock %}
+
