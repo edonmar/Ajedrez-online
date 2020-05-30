@@ -50,11 +50,18 @@ class Usuario
     private $mensajes;
 
     /**
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Anotacion", mappedBy="usuario")
+     * @var Anotacion[]
+     */
+    private $anotaciones;
+
+    /**
      * Usuario constructor.
      */
     public function __construct()
     {
         $this->mensajes = new ArrayCollection();
+        $this->anotaciones = new ArrayCollection();
     }
 
     /**
@@ -152,6 +159,24 @@ class Usuario
     public function setMensajes($mensajes)
     {
         $this->mensajes = $mensajes;
+        return $this;
+    }
+
+    /**
+     * @return Anotacion[]
+     */
+    public function getAnotaciones()
+    {
+        return $this->anotaciones;
+    }
+
+    /**
+     * @param Anotacion[] $anotaciones
+     * @return Usuario
+     */
+    public function setAnotaciones($anotaciones)
+    {
+        $this->anotaciones = $anotaciones;
         return $this;
     }
 }

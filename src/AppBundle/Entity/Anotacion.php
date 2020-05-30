@@ -6,9 +6,9 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="anotaciones")
+ * @ORM\Table(name="anotacion")
  */
-class Anotaciones
+class Anotacion
 {
     /**
      * @ORM\Id
@@ -31,6 +31,12 @@ class Anotaciones
     private $esDestacada;
 
     /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Usuario", inversedBy="anotaciones")
+     * @var Usuario
+     */
+    private $usuario;
+
+    /**
      * @return int
      */
     public function getId()
@@ -48,7 +54,7 @@ class Anotaciones
 
     /**
      * @param string $texto
-     * @return Anotaciones
+     * @return Anotacion
      */
     public function setTexto($texto)
     {
@@ -66,11 +72,29 @@ class Anotaciones
 
     /**
      * @param bool $esDestacada
-     * @return Anotaciones
+     * @return Anotacion
      */
     public function setEsDestacada($esDestacada)
     {
         $this->esDestacada = $esDestacada;
+        return $this;
+    }
+
+    /**
+     * @return Usuario
+     */
+    public function getUsuario()
+    {
+        return $this->usuario;
+    }
+
+    /**
+     * @param Usuario $usuario
+     * @return Anotacion
+     */
+    public function setUsuario($usuario)
+    {
+        $this->usuario = $usuario;
         return $this;
     }
 }
