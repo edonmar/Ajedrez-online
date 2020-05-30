@@ -49,6 +49,11 @@ class Partida
     private $fechaFin;
 
     /**
+     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Anotacion")
+     */
+    private $anotacion;
+
+    /**
      * @return int
      */
     public function getId()
@@ -143,6 +148,24 @@ class Partida
     public function setFechaFin($fechaFin)
     {
         $this->fechaFin = $fechaFin;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAnotacion()
+    {
+        return $this->anotacion;
+    }
+
+    /**
+     * @param mixed $anotacion
+     * @return Partida
+     */
+    public function setAnotacion($anotacion)
+    {
+        $this->anotacion = $anotacion;
         return $this;
     }
 }
