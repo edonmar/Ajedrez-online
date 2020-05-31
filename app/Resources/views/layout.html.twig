@@ -18,6 +18,11 @@
                     <i class="fas fa-chess-board"></i> Visor de PGN
                 </a>
             </li>
+            <li class="nav-item{% if nombre starts with 'usuario' %} active{% endif %}">
+                <a class="nav-link" href="{{ path('usuario_listar') }}">
+                    <i class="fas fa-user-alt"></i> Ver usuarios
+                </a>
+            </li>
         </ul>
     </nav>
 

@@ -41,7 +41,7 @@ class Usuario
      * @ORM\Column(type="boolean")
      * @var bool
      */
-    private $esAdministrador;
+    private $administrador;
 
     /**
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\Mensaje", mappedBy="usuario")
@@ -136,18 +136,18 @@ class Usuario
     /**
      * @return bool
      */
-    public function isEsAdministrador()
+    public function isAdministrador()
     {
-        return $this->esAdministrador;
+        return $this->administrador;
     }
 
     /**
-     * @param bool $esAdministrador
+     * @param bool $administrador
      * @return Usuario
      */
-    public function setEsAdministrador($esAdministrador)
+    public function setAdministrador($administrador)
     {
-        $this->esAdministrador = $esAdministrador;
+        $this->administrador = $administrador;
         return $this;
     }
 
