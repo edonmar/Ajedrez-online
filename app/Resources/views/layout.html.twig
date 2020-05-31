@@ -8,6 +8,11 @@
             <li class="nav-item{% if nombre == 'inicio' %} active{% endif %}">
                 <a class="nav-link" href="{{ path('inicio') }}"><i class="fas fa-home"></i> Inicio</a>
             </li>
+            <li class="nav-item{% if nombre == 'partida_local' %} active{% endif %}">
+                <a class="nav-link" href="{{ path('partida_local') }}">
+                    <i class="fas fa-user-friends"></i> Partida local
+                </a>
+            </li>
         </ul>
     </nav>
 

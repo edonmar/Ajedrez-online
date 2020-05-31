@@ -1,13 +1,3 @@
-* {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-body {
-    background-color: #222831;
-}
-
 #contenido {
     height: 100%;
     display: flex;
@@ -18,7 +8,6 @@ body {
 #tablero { /* Contiene las casillas, numeros, letras y boton de girar */
     float: left;
     margin-top: 3vh;
-    margin-left: 3vh;
 }
 
 #casillasTablero {
