@@ -13,6 +13,11 @@
                     <i class="fas fa-user-friends"></i> Partida local
                 </a>
             </li>
+            <li class="nav-item{% if nombre == 'visor_pgn' %} active{% endif %}">
+                <a class="nav-link" href="{{ path('visor_pgn') }}">
+                    <i class="fas fa-chess-board"></i> Visor de PGN
+                </a>
+            </li>
         </ul>
     </nav>
 
