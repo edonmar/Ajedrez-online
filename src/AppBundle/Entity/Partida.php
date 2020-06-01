@@ -20,8 +20,8 @@ class Partida
     private $id;
 
     /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @var bool
+     * @ORM\Column(type="integer", nullable=true)
+     * @var int
      */
     private $jugadorBlancas;
 
@@ -83,15 +83,15 @@ class Partida
     }
 
     /**
-     * @return bool
+     * @return int
      */
-    public function isJugadorBlancas()
+    public function getJugadorBlancas()
     {
         return $this->jugadorBlancas;
     }
 
     /**
-     * @param bool $jugadorBlancas
+     * @param int $jugadorBlancas
      * @return Partida
      */
     public function setJugadorBlancas($jugadorBlancas)
