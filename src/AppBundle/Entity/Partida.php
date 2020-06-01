@@ -50,6 +50,12 @@ class Partida
     private $fechaFin;
 
     /**
+     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Usuario")
+     * @var Usuario[]
+     */
+    private $usuarios;
+
+    /**
      * @ORM\OneToOne(targetEntity="AppBundle\Entity\Anotacion")
      */
     private $anotacion;
@@ -199,6 +205,24 @@ class Partida
     public function setTableros($tableros)
     {
         $this->tableros = $tableros;
+        return $this;
+    }
+
+    /**
+     * @return Usuario[]
+     */
+    public function getUsuarios()
+    {
+        return $this->usuarios;
+    }
+
+    /**
+     * @param Usuario[] $usuarios
+     * @return Partida
+     */
+    public function setUsuarios($usuarios)
+    {
+        $this->usuarios = $usuarios;
         return $this;
     }
 }

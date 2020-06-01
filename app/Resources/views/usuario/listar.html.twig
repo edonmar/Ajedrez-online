@@ -12,7 +12,7 @@
             <thead>
             <tr>
                 <th>Nombre</th>
-                <th>Número de partidas</th>
+                <th colspan="2">Número de partidas</th>
                 <th>Rol</th>
                 <th>Fecha de registro</th>
             </tr>
@@ -20,16 +20,19 @@
             <tbody>
             {% for usuario in usuarios %}
                 <tr>
-                    <td class="nombre">{{ usuario.nombre }}</td>
-                    <td class="numPartidas">{{ usuario.partidas|length }}</td>
-                    <td class="rol">
+                    <td class="nombre align-middle">{{ usuario.nombre }}</td>
+                    <td class="numPartidas align-middle">{{ numPartidas[loop.index - 1] }}</td>
+                    <td class="btnVerHistorial text-center">
+                        <a class="btn btn-success" href="{{ path('usuario_partidas_listar', {'id': usuario.id}) }}">Ver partidas</a>
+                    </td>
+                    <td class="rol align-middle">
                         {% if usuario.administrador == true %}
                             Administrador
                         {% else %}
                             Jugador
                         {% endif %}
                     </td>
-                    <td class="fechaRegistro">{{ usuario.fechaRegistro|date('d/m/Y') }}</td>
+                    <td class="fechaRegistro align-middle">{{ usuario.fechaRegistro|date('d/m/Y') }}</td>
                 </tr>
             {% endfor %}
             </tbody>
