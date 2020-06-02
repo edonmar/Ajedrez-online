@@ -23,13 +23,31 @@ class Partida
      * @ORM\Column(type="integer", nullable=true)
      * @var int
      */
+    private $jugadorAnfitrion;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @var int
+     */
+    private $jugadorInvitado;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @var int
+     */
     private $jugadorBlancas;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @var int
+     */
+    private $numMovimientos;
 
     /**
      * @ORM\Column(type="text", nullable=true)
      * @var string
      */
-    private $movimientos;
+    private $pgn;
 
     /**
      * @ORM\Column(type="string", nullable=true)
@@ -85,6 +103,42 @@ class Partida
     /**
      * @return int
      */
+    public function getJugadorAnfitrion()
+    {
+        return $this->jugadorAnfitrion;
+    }
+
+    /**
+     * @param int $jugadorAnfitrion
+     * @return Partida
+     */
+    public function setJugadorAnfitrion($jugadorAnfitrion)
+    {
+        $this->jugadorAnfitrion = $jugadorAnfitrion;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getJugadorInvitado()
+    {
+        return $this->jugadorInvitado;
+    }
+
+    /**
+     * @param int $jugadorInvitado
+     * @return Partida
+     */
+    public function setJugadorInvitado($jugadorInvitado)
+    {
+        $this->jugadorInvitado = $jugadorInvitado;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
     public function getJugadorBlancas()
     {
         return $this->jugadorBlancas;
@@ -101,20 +155,38 @@ class Partida
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getMovimientos()
+    public function getNumMovimientos()
     {
-        return $this->movimientos;
+        return $this->numMovimientos;
     }
 
     /**
-     * @param string $movimientos
+     * @param int $numMovimientos
      * @return Partida
      */
-    public function setMovimientos($movimientos)
+    public function setNumMovimientos($numMovimientos)
     {
-        $this->movimientos = $movimientos;
+        $this->numMovimientos = $numMovimientos;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPgn()
+    {
+        return $this->pgn;
+    }
+
+    /**
+     * @param string $pgn
+     * @return Partida
+     */
+    public function setPgn($pgn)
+    {
+        $this->pgn = $pgn;
         return $this;
     }
 
@@ -173,6 +245,24 @@ class Partida
     }
 
     /**
+     * @return Usuario[]
+     */
+    public function getUsuarios()
+    {
+        return $this->usuarios;
+    }
+
+    /**
+     * @param Usuario[] $usuarios
+     * @return Partida
+     */
+    public function setUsuarios($usuarios)
+    {
+        $this->usuarios = $usuarios;
+        return $this;
+    }
+
+    /**
      * @return mixed
      */
     public function getAnotacion()
@@ -205,24 +295,6 @@ class Partida
     public function setTableros($tableros)
     {
         $this->tableros = $tableros;
-        return $this;
-    }
-
-    /**
-     * @return Usuario[]
-     */
-    public function getUsuarios()
-    {
-        return $this->usuarios;
-    }
-
-    /**
-     * @param Usuario[] $usuarios
-     * @return Partida
-     */
-    public function setUsuarios($usuarios)
-    {
-        $this->usuarios = $usuarios;
         return $this;
     }
 }

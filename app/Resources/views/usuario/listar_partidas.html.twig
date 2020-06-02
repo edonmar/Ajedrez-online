@@ -14,6 +14,7 @@
                 <th>Rival</th>
                 <th>Color</th>
                 <th>Resultado</th>
+                <th>Movimientos</th>
                 <th>Fecha de inicio</th>
                 <th>Fecha de fin</th>
             </tr>
@@ -63,6 +64,7 @@
                             {% endif %}
                         {% endif %}
                     </td>
+                    <td class="numMovimientos">{{ partida.numMovimientos }}</td>
                     <td class="fecha">{{ partida.fechaInicio|date('d/m/Y H:i') }}</td>
                     <td class="fecha">{{ partida.fechaFin|date('d/m/Y H:i') }}</td>
                 </tr>
