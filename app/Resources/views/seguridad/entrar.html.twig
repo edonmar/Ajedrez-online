@@ -1,0 +1,21 @@
+{% extends 'layout.html.twig' %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <div class="contenidoPagina">
+        <h1>Iniciar sesión</h1>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error.message }}
+            </div>
+        {% endif %}
+        <form action="{{ path('usuario_entrar') }}" method="post">
+            <input type="text" name="_username" placeholder="Nombre"
+                   value="{{ ultimo_usuario }}"{% if not ultimo_usuario %} autofocus="autofocus"{% endif %}>
+            <input type="password" name="_password"
+                   placeholder="Clave"{% if ultimo_usuario %} autofocus="autofocus"{% endif %}>
+            <button type="submit" class="btn btn-primary">Entrar</button>
+        </form>
+    </div>
+{% endblock %}
