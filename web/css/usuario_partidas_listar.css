@@ -11,18 +11,22 @@
     width: 35%;
 }
 
-.numPartidas {
+.color {
     width: 10%;
 }
 
-.btnVerHistorial {
+.resultado {
     width: 15%;
 }
 
-.rol{
+.fecha{
     width: 20%;
 }
 
-.fechaRegistro{
-    width: 20%;
+a {
+    color: white;
+}
+
+a:hover {
+    color: #cccccc;
 }

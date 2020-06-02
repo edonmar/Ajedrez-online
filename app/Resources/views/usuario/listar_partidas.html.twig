@@ -1,0 +1,73 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}
+    Partidas de {{ usuario.nombre }}
+{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{ asset('css/usuario_partidas_listar.css') }}">
+    <div class="contenidoPagina">
+        <h1>Partidas de {{ usuario.nombre }}</h1>
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+            <tr>
+                <th>Rival</th>
+                <th>Color</th>
+                <th>Resultado</th>
+                <th>Fecha de inicio</th>
+                <th>Fecha de fin</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for partida in partidas %}
+                {% if partida.jugadorBlancas == usuario.id %}
+                    {% set color = true %}
+                {% else %}
+                    {% set color = false %}
+                {% endif %}
+                <tr>
+                    <td class="nombre">
+                        {% if partida.usuarios[0].id == usuario.id %}
+                            <a href="{{ path('usuario_partidas_listar', {'id': partida.usuarios[1].id}) }}">
+                                {{ partida.usuarios[1].nombre }}
+                            </a>
+                        {% else %}
+                            <a href="{{ path('usuario_partidas_listar', {'id': partida.usuarios[0].id}) }}">
+                                {{ partida.usuarios[0].nombre }}
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td class="color">
+                        {% if color %}
+                            Blancas
+                        {% else %}
+                            Negras
+                        {% endif %}
+                    </td>
+                    <td class="resultado">
+                        {% if partida.resultado == "1/2-1/2" %}
+                            Tablas
+                        {% else %}
+                            {% if partida.resultado == "1-0" %}
+                                {% if color %}
+                                    Victoria
+                                {% else %}
+                                    Derrota
+                                {% endif %}
+                            {% elseif partida.resultado == "0-1" %}
+                                {% if color %}
+                                    Derrota
+                                {% else %}
+                                    Victoria
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="fecha">{{ partida.fechaInicio|date('d/m/Y H:i') }}</td>
+                    <td class="fecha">{{ partida.fechaFin|date('d/m/Y H:i') }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

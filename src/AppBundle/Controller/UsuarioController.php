@@ -26,4 +26,17 @@ class UsuarioController extends Controller
             'numPartidas' => $numPartidas
         ]);
     }
+
+    /**
+     * @Route("/usuario/partidas/{id}", name="usuario_partidas_listar")
+     */
+    public function partidasAction(PartidaRepository $partidaRepository, Usuario $usuario)
+    {
+        $partidas = $partidaRepository->findByUsuario($usuario);
+
+        return $this->render('usuario/listar_partidas.html.twig', [
+            'partidas' => $partidas,
+            'usuario' => $usuario
+        ]);
+    }
 }
