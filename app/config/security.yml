@@ -12,6 +12,10 @@ security:
     encoders:
         AppBundle\Entity\Usuario: plaintext
 
+    role_hierarchy:
+        ROLE_ADMINISTRADOR: 'ROLE_USUARIO'
+        ROLE_USUARIO: 'ROLE_USER'
+
     firewalls:
         # disables authentication for assets and the profiler, adapt it according to your needs
         dev:
