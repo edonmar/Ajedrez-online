@@ -12,6 +12,11 @@ body {
     background-color: #222831;
 }
 
+.contenidoPagina {
+    padding: 2em 1em 1em 14.5em;
+    width: calc(100% - 13em);
+}
+
 .menuVertical {
     display: flex;
     align-items: flex-start;

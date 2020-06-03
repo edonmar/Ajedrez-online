@@ -1,0 +1,12 @@
+AppBundle\Entity\Usuario:
+  admin:
+    nombre: admin
+    clave: password
+    fechaRegistro: <dateTimeBetween("-3 years", "now")>
+    administrador: true
+
+  usuarios_{1..4}:
+    nombre: '<es_ES:firstName()>'
+    clave: password
+    fechaRegistro: <dateTimeBetween("-3 years", "now")>
+    administrador: false

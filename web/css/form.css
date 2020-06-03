@@ -1,0 +1,8 @@
+.contenidoPagina {
+    padding: 2em 1em 1em 14.5em;
+    width: calc(100% - 13em);
+}
+
+.contenidoPagina h1, label {
+    color: white;
+}

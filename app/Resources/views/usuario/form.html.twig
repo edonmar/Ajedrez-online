@@ -1,0 +1,26 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}
+    Crear usuario
+{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{ asset('css/form.css') }}">
+    <div class="contenidoPagina">
+        <h1>
+            {% if usuario.id %}
+                Modificar usuario {{ usuario.nombre }}
+            {% else %}
+                Nuevo usuario
+            {% endif %}
+        </h1>
+        {{ form_start(formulario) }}
+        {{ form_widget(formulario) }}
+        <a href="{{ path('inicio', {'id': usuario.id}) }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Volver
+            al inicio</a>
+        <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Guardar cambios</button>
+        {{ form_end(formulario) }}
+    </div>
+{% endblock %}
+
+

@@ -1,10 +1,10 @@
-* {
-    color: white;
-}
-
 .contenidoPagina {
     padding: 2em 1em 1em 14.5em;
     width: calc(100% - 13em);
+}
+
+.contenidoPagina * {
+    color: white;
 }
 
 .nombre {

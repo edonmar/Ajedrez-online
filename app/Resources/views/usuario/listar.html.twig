@@ -33,6 +33,9 @@
                         {% endif %}
                     </td>
                     <td class="fechaRegistro align-middle">{{ usuario.fechaRegistro|date('d/m/Y') }}</td>
+                    <td class="btnEditar align-middle text-center">
+                        <a class="btn btn-success" href="{{ path('usuario_form', {'id': usuario.id}) }}">Editar</a>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

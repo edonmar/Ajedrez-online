@@ -182,6 +182,11 @@ class Usuario implements UserInterface
         return $this;
     }
 
+    public function __toString()
+    {
+        return $this->getNombre();
+    }
+
     /**
      * @inheritDoc
      */
