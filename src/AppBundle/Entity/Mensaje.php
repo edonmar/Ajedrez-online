@@ -37,6 +37,12 @@ class Mensaje
     private $usuario;
 
     /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Partida", inversedBy="mensajes")
+     * @var Partida
+     */
+    private $partida;
+
+    /**
      * @return int
      */
     public function getId()
@@ -95,6 +101,24 @@ class Mensaje
     public function setUsuario($usuario)
     {
         $this->usuario = $usuario;
+        return $this;
+    }
+
+    /**
+     * @return Partida
+     */
+    public function getPartida()
+    {
+        return $this->partida;
+    }
+
+    /**
+     * @param Partida $partida
+     * @return Mensaje
+     */
+    public function setPartida($partida)
+    {
+        $this->partida = $partida;
         return $this;
     }
 }

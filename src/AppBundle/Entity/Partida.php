@@ -85,11 +85,18 @@ class Partida
     private $tableros;
 
     /**
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Mensaje", mappedBy="partida")
+     * @var Mensaje[]
+     */
+    private $mensajes;
+
+    /**
      * Partida constructor.
      */
     public function __construct()
     {
         $this->tableros = new ArrayCollection();
+        $this->mensajes = new ArrayCollection();
     }
 
     /**
@@ -295,6 +302,24 @@ class Partida
     public function setTableros($tableros)
     {
         $this->tableros = $tableros;
+        return $this;
+    }
+
+    /**
+     * @return Mensaje[]
+     */
+    public function getMensajes()
+    {
+        return $this->mensajes;
+    }
+
+    /**
+     * @param Mensaje[] $mensajes
+     * @return Partida
+     */
+    public function setMensajes($mensajes)
+    {
+        $this->mensajes = $mensajes;
         return $this;
     }
 }
