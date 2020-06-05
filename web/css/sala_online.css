@@ -1,3 +1,44 @@
-.contenidoPagina * {
+.contenidoPagina h3 {
     color: white;
+}
+
+#contenedorChat {
+    display: inline-block;
+}
+
+#mensajesChat {
+    overflow-y: scroll;
+    width: 17.4em;
+    height: 73vh;
+    padding: 0.4em 0.5em;
+    border: none;
+    background-color: #e6e6e6;
+}
+
+#textAreaChat {
+    overflow-y: scroll;
+    width: 17.4em;
+    height: 9vh;
+    resize: none;
+    margin-top: 5px;
+    padding: 0.4em 0.5em;
+    border: none;
+    background-color: #e6e6e6;
+}
+
+#btnEnviarMensaje {
+    width: 17.4em;
+    height: 3.5vh;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    background-color: #428a42;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+#btnEnviarMensaje:hover {
+    background-color: #326732;
 }
