@@ -6,7 +6,7 @@
     display: inline-block;
 }
 
-#mensajesChat {
+#divMensajes {
     overflow-y: scroll;
     width: 17.4em;
     height: 73vh;

@@ -7,7 +7,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class SalaOnlineController extends Controller
@@ -22,9 +21,9 @@ class SalaOnlineController extends Controller
     }
 
     /**
-     * @Route("/nuevoMensaje", name="ajax")
+     * @Route("/nuevo_mensaje", name="nuevo_mensaje")
      */
-    public function ajax(Request $request)
+    public function nuevoMensaje(Request $request)
     {
         $texto = $request->get('texto');
         $valido = false;
