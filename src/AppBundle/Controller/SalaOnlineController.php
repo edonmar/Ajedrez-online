@@ -58,6 +58,7 @@ class SalaOnlineController extends Controller
     public function cargarMensajes(Request $request, MensajeRepository $mensajeRespository)
     {
         $mensajes = $mensajeRespository->findSinPartida();
+        $this->eliminarMensajesAntiguos($mensajes);
 
         $lista = array();
         foreach ($mensajes as $m) {
@@ -68,5 +69,21 @@ class SalaOnlineController extends Controller
         }
 
         return new JsonResponse($lista);
+    }
+
+    // Se borran los mensajes que tengan mas de 2 horas
+    public function eliminarMensajesAntiguos($mensajes)
+    {
+        foreach ($mensajes as $m) {
+            $fechaActual = new \DateTime();
+            $diff = date_diff($m->getFechaHora(), $fechaActual);
+            $minutos = (($diff->y * 365.25 + $diff->m * 30 + $diff->d) * 24 + $diff->h) * 60 + $diff->i + $diff->s/60;
+
+            if($minutos >= 120) {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($m);
+                $em->flush();
+            }
+        }
     }
 }
