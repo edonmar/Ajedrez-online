@@ -3,7 +3,9 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Mensaje;
+use AppBundle\Repository\MensajeRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use stdClass;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +39,7 @@ class SalaOnlineController extends Controller
                 }
         }
 
-        if($valido) {
+        if ($valido) {
             $nuevoMensaje = new Mensaje();
             $nuevoMensaje->setFechaHora(new \DateTime());
             $nuevoMensaje->setTexto($texto);
@@ -48,5 +50,23 @@ class SalaOnlineController extends Controller
         }
 
         return new JsonResponse(['status' => 'ok']);
+    }
+
+    /**
+     * @Route("/cargar_mensajes", name="cargar_mensajes")
+     */
+    public function cargarMensajes(Request $request, MensajeRepository $mensajeRespository)
+    {
+        $mensajes = $mensajeRespository->findSinPartida();
+
+        $lista = array();
+        foreach ($mensajes as $m) {
+            $objeto = new stdClass();
+            $objeto->usuario = $m->getUsuario()->getNombre();
+            $objeto->texto = $m->getTexto();
+            array_push($lista, $objeto);
+        }
+
+        return new JsonResponse($lista);
     }
 }
