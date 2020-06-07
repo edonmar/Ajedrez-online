@@ -11,10 +11,21 @@ function iniciarIntervalos() {
 }
 
 function iniciarEventos() {
-    document.getElementById("btnEnviarMensaje").onclick = function () {
+    let textAreaChat = document.getElementById("textAreaChat");
+    textAreaChat.addEventListener("keyup", function (event) {
+        // Si pulso enter
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            nuevoMensaje();
+            cargarMensajes();
+        }
+    });
+
+    let btnEnviarMensaje = document.getElementById("btnEnviarMensaje");
+    btnEnviarMensaje.addEventListener("click", function () {
         nuevoMensaje();
         cargarMensajes();
-    }
+    });
 }
 
 function nuevoMensaje() {
@@ -41,6 +52,7 @@ function cargarMensajes() {
                 let mensaje = document.createElement("div");
                 let autor = document.createElement("span");
                 let texto = document.createElement("span");
+                mensaje.classList.add("divMensaje");
                 autor.classList.add("msgAutor");
 
                 autor.innerHTML = respuesta[i].usuario + ": ";

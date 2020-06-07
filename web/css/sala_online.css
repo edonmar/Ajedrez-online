@@ -17,6 +17,10 @@
     background-color: #e6e6e6;
 }
 
+.divMensaje:last-child {
+    margin-bottom: 0.4em;
+}
+
 .msgAutor {
     font-weight: bold;
 }
