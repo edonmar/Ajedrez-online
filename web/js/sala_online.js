@@ -84,11 +84,18 @@ function cargarUsuarios() {
             for (let i = 0, finI = respuesta.length; i < finI; i++) {
                 let usuario = document.createElement("div");
                 let nombre = document.createElement("span");
+                let invitar = document.createElement("span");
                 usuario.classList.add("divUsuario");
+                invitar.classList.add("usuariosInvitar");
 
                 nombre.innerHTML = "<a href='usuario/partidas/" + respuesta[i].id + "'>" + respuesta[i].nombre + "</a>";
+                invitar.innerHTML = "Invitar";
+                invitar.addEventListener("click", function(){
+                    invitarPartida(respuesta[i].id);
+                });
 
                 usuario.appendChild(nombre);
+                usuario.appendChild(invitar);
                 divUsuarios.appendChild(usuario);
             }
             divUsuarios.scrollTop = divUsuarios.scrollHeight;
@@ -96,5 +103,11 @@ function cargarUsuarios() {
     };
 
     xhr.open("GET", "/cargar_usuarios", true)
+    xhr.send();
+}
+
+function invitarPartida(id) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "/invitar_partida?invitado=" + id, true)
     xhr.send();
 }

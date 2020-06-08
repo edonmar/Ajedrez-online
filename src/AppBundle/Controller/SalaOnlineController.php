@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Mensaje;
+use AppBundle\Entity\Partida;
 use AppBundle\Repository\MensajeRepository;
 use AppBundle\Repository\UsuarioRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -105,4 +106,25 @@ class SalaOnlineController extends Controller
 
         return new JsonResponse($lista);
     }
+
+    /**
+     * @Route("/invitar_partida", name="invitar_partida")
+     */
+    public function invitarPartida(Request $request, UsuarioRepository $usuarioRepository)
+    {
+        $idInvitado = $request->get('invitado');
+        $usuarioInvitado = $usuarioRepository->findOneBy(array('id' => $idInvitado));
+        $usuarioAnfitrion = $this->getUser();
+
+        $nuevaPartida = new Partida();
+        $nuevaPartida->setJugadorAnfitrion($usuarioAnfitrion->getId());
+        $nuevaPartida->setJugadorInvitado($usuarioInvitado->getId());
+        $nuevaPartida->setUsuarios(array($usuarioAnfitrion, $usuarioInvitado));
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($nuevaPartida);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'ok']);
+    }
+
 }
