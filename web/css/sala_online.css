@@ -14,7 +14,7 @@
     height: 73vh;
     padding: 0.4em 0.5em;
     border: none;
-    background-color: #e6e6e6;
+    background-color: #f2f2f2;
 }
 
 .divMensaje:last-child {
@@ -33,7 +33,7 @@
     margin-top: 5px;
     padding: 0.4em 0.5em;
     border: none;
-    background-color: #e6e6e6;
+    background-color: #f2f2f2;
 }
 
 #btnEnviarMensaje {
@@ -51,4 +51,31 @@
 
 #btnEnviarMensaje:hover {
     background-color: #326732;
+}
+
+#contenedorUsuarios {
+    display: inline-block;
+    width: 18vw;
+    min-width: 15em;
+    margin-left: 2vw;
+}
+
+#divUsuarios {
+    overflow-y: scroll;
+    width: 100%;
+    height: 85.3vh;
+    border: none;
+    background-color: #f2f2f2;
+}
+
+#divUsuarios div.divUsuario:nth-child(even) {
+    background-color: #e6e6e6;
+}
+
+.divUsuario {
+    padding-left: 0.5em;
+}
+
+.divUsuario span {
+    line-height: 2em;
 }

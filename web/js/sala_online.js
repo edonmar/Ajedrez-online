@@ -1,5 +1,6 @@
 window.onload = function () {
     cargarMensajes();
+    cargarUsuarios();
     iniciarIntervalos();
     iniciarEventos();
 }
@@ -7,6 +8,7 @@ window.onload = function () {
 function iniciarIntervalos() {
     setInterval(function () {
         cargarMensajes();
+        cargarUsuarios();
     }, 1000);
 }
 
@@ -67,5 +69,32 @@ function cargarMensajes() {
     };
 
     xhr.open("GET", "/cargar_mensajes", true)
+    xhr.send();
+}
+
+function cargarUsuarios() {
+    let divUsuarios = document.getElementById("divUsuarios");
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            let respuesta = JSON.parse(this.responseText);
+
+            divUsuarios.innerHTML = "";
+            for (let i = 0, finI = respuesta.length; i < finI; i++) {
+                let usuario = document.createElement("div");
+                let nombre = document.createElement("span");
+                usuario.classList.add("divUsuario");
+
+                nombre.innerHTML = "<a href='usuario/partidas/" + respuesta[i].id + "'>" + respuesta[i].nombre + "</a>";
+
+                usuario.appendChild(nombre);
+                divUsuarios.appendChild(usuario);
+            }
+            divUsuarios.scrollTop = divUsuarios.scrollHeight;
+        }
+    };
+
+    xhr.open("GET", "/cargar_usuarios", true)
     xhr.send();
 }

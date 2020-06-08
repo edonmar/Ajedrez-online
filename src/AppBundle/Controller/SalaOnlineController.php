@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Mensaje;
 use AppBundle\Repository\MensajeRepository;
+use AppBundle\Repository\UsuarioRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -85,5 +86,23 @@ class SalaOnlineController extends Controller
                 $em->flush();
             }
         }
+    }
+
+    /**
+     * @Route("/cargar_usuarios", name="cargar_usuarios")
+     */
+    public function cargar_usuarios(Request $request, UsuarioRepository $usuarioRepository)
+    {
+        $usuarios = $usuarioRepository->findOrdenadosPorNombre();
+
+        $lista = array();
+        foreach ($usuarios as $u) {
+            $objeto = new stdClass();
+            $objeto->id = $u->getId();
+            $objeto->nombre = $u->getNombre();
+            array_push($lista, $objeto);
+        }
+
+        return new JsonResponse($lista);
     }
 }
