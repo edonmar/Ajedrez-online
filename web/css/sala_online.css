@@ -85,3 +85,41 @@
     margin-right: 0.5em;
     cursor: pointer;
 }
+
+#contenedorInvitaciones {
+    display: inline-block;
+    width: 22vw;
+    min-width: 18em;
+    margin-left: 2vw;
+}
+
+#divInvitaciones {
+    overflow-y: scroll;
+    width: 100%;
+    height: 35vh;
+    border: none;
+    background-color: #f2f2f2;
+}
+
+#divInvitaciones div.divInvitacion:nth-child(even) {
+    background-color: #e6e6e6;
+}
+
+.divInvitacion {
+    padding-left: 0.5em;
+}
+
+.divInvitacion span {
+    line-height: 2em;
+}
+
+.invitacionAceptar,
+.invitacionRechazar {
+    float: right;
+    margin-right: 0.5em;
+    cursor: pointer;
+}
+
+.invitacionAceptar {
+    margin-left: 0.5em;
+}

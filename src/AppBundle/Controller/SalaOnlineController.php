@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Mensaje;
 use AppBundle\Entity\Partida;
 use AppBundle\Repository\MensajeRepository;
+use AppBundle\Repository\PartidaRepository;
 use AppBundle\Repository\UsuarioRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use stdClass;
@@ -79,9 +80,9 @@ class SalaOnlineController extends Controller
         foreach ($mensajes as $m) {
             $fechaActual = new \DateTime();
             $diff = date_diff($m->getFechaHora(), $fechaActual);
-            $minutos = (($diff->y * 365.25 + $diff->m * 30 + $diff->d) * 24 + $diff->h) * 60 + $diff->i + $diff->s/60;
+            $minutos = (($diff->y * 365.25 + $diff->m * 30 + $diff->d) * 24 + $diff->h) * 60 + $diff->i + $diff->s / 60;
 
-            if($minutos >= 120) {
+            if ($minutos >= 120) {
                 $em = $this->getDoctrine()->getManager();
                 $em->remove($m);
                 $em->flush();
@@ -125,6 +126,56 @@ class SalaOnlineController extends Controller
         $em->flush();
 
         return new JsonResponse(['status' => 'ok']);
+    }
+
+    /**
+     * @Route("/cargar_invitaciones", name="cargar_invitaciones")
+     */
+    public function cargar_invitaciones(Request $request, PartidaRepository $partidaRepository, UsuarioRepository $usuarioRepository)
+    {
+        $partidas = $partidaRepository->findInvitacionesByUsuarioOrdenadas($this->getUser());
+
+        $lista = array();
+        foreach ($partidas as $p) {
+            $usuarioAnfitrion = $usuarioRepository->findOneBy(array('id' => $p->getJugadorAnfitrion()));
+            $objeto = new stdClass();
+            $objeto->id = $p->getId();
+            $objeto->anfitrion = $usuarioAnfitrion->getNombre();
+            array_push($lista, $objeto);
+        }
+
+        return new JsonResponse($lista);
+    }
+
+    /**
+     * @Route("/rechazar_invitacion", name="rechazar_invitacion")
+     */
+    public function rechazarInvitacion(Request $request, PartidaRepository $partidaRepository)
+    {
+        $idPartida = $request->get('partida');
+        $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
+
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($partida);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'ok']);
+    }
+
+    /**
+     * @Route("/aceptar_invitacion", name="aceptar_invitacion")
+     */
+    public function aceptarInvitacion(Request $request, PartidaRepository $partidaRepository)
+    {
+        $idPartida = $request->get('partida');
+        $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
+
+        $partida->setJugadorBlancas(rand(0, 1) > 0.5);
+        $partida->setNumMovimientos(0);
+        $partida->setPgn("");
+        $partida->setFechaInicio(new \DateTime());
+        $em = $this->getDoctrine()->getManager();
+        $em->flush();
     }
 
 }

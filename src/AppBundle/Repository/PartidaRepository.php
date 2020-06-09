@@ -35,4 +35,16 @@ class PartidaRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findInvitacionesByUsuarioOrdenadas(Usuario $usuario)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p')
+            ->where('p.jugadorInvitado = :usuario')
+            ->andWhere('p.fechaInicio is NULL')
+            ->setParameter('usuario', $usuario)
+            ->orderBy('p.jugadorAnfitrion', 'desc')
+            ->getQuery()
+            ->getResult();
+    }
 }
