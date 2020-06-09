@@ -1,17 +1,20 @@
 window.onload = function () {
-    cargarMensajes();
-    cargarUsuarios();
-    cargarInvitaciones();
+    cargarTodo();
     iniciarIntervalos();
     iniciarEventos();
 }
 
 function iniciarIntervalos() {
     setInterval(function () {
-        cargarMensajes();
-        cargarUsuarios();
-        cargarInvitaciones();
+        cargarTodo();
     }, 1000);
+}
+
+function cargarTodo() {
+    cargarMensajes();
+    cargarUsuarios();
+    cargarInvitaciones();
+    cargarPartidasEnCurso();
 }
 
 function iniciarEventos() {
@@ -37,7 +40,7 @@ function nuevoMensaje() {
     let texto = textArea.value;
     let xhr = new XMLHttpRequest();
 
-    xhr.open("GET", "/nuevo_mensaje?texto=" + texto, true)
+    xhr.open("GET", "/nuevo_mensaje?texto=" + texto, true);
     xhr.send();
 
     textArea.value = null;
@@ -70,7 +73,7 @@ function cargarMensajes() {
         }
     };
 
-    xhr.open("GET", "/cargar_mensajes", true)
+    xhr.open("GET", "/cargar_mensajes", true);
     xhr.send();
 }
 
@@ -103,13 +106,13 @@ function cargarUsuarios() {
         }
     };
 
-    xhr.open("GET", "/cargar_usuarios", true)
+    xhr.open("GET", "/cargar_usuarios", true);
     xhr.send();
 }
 
 function invitarPartida(id) {
     let xhr = new XMLHttpRequest();
-    xhr.open("GET", "/invitar_partida?invitado=" + id, true)
+    xhr.open("GET", "/invitar_partida?invitado=" + id, true);
     xhr.send();
 }
 
@@ -127,11 +130,11 @@ function cargarInvitaciones() {
                 let anfitrion = document.createElement("span");
                 let rechazar = document.createElement("span");
                 let aceptar = document.createElement("span");
-                invitacion.classList.add("divUsuario");
+                invitacion.classList.add("divInvitacion");
                 rechazar.classList.add("invitacionRechazar");
                 aceptar.classList.add("invitacionAceptar");
 
-                anfitrion.innerHTML = "<a href='usuario/partidas/" + respuesta[i].id + "'>" + respuesta[i].anfitrion + "</a>";
+                anfitrion.innerHTML = respuesta[i].anfitrion;
 
                 rechazar.innerHTML = "Rechazar";
                 rechazar.addEventListener("click", function(){
@@ -143,6 +146,7 @@ function cargarInvitaciones() {
                 aceptar.addEventListener("click", function(){
                     aceptarInvitacion(respuesta[i].id);
                     cargarInvitaciones();
+                    cargarPartidasEnCurso();
                 });
 
                 invitacion.appendChild(anfitrion);
@@ -153,18 +157,49 @@ function cargarInvitaciones() {
         }
     };
 
-    xhr.open("GET", "/cargar_invitaciones", true)
+    xhr.open("GET", "/cargar_invitaciones", true);
     xhr.send();
 }
 
 function rechazarInvitacion(id) {
     let xhr = new XMLHttpRequest();
-    xhr.open("GET", "/rechazar_invitacion?partida=" + id, true)
+    xhr.open("GET", "/rechazar_invitacion?partida=" + id, true);
     xhr.send();
 }
 
 function aceptarInvitacion(id) {
     let xhr = new XMLHttpRequest();
-    xhr.open("GET", "/aceptar_invitacion?partida=" + id, true)
+    xhr.open("GET", "/aceptar_invitacion?partida=" + id, true);
+    xhr.send();
+}
+
+function cargarPartidasEnCurso() {
+    let divPartidas = document.getElementById("divPartidas");
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            let respuesta = JSON.parse(this.responseText);
+
+            divPartidas.innerHTML = "";
+            for (let i = 0, finI = respuesta.length; i < finI; i++) {
+                let partida = document.createElement("div");
+                let rival = document.createElement("span");
+                let jugar = document.createElement("span");
+                partida.classList.add("divUsuario");
+                rival.classList.add("partidaRival");
+                jugar.classList.add("partidaJugar");
+
+                rival.innerHTML = respuesta[i].rival;
+                jugar.innerHTML = "<a href='partida_online/" + respuesta[i].id + "'>Jugar</a>";
+
+                partida.appendChild(rival);
+                partida.appendChild(jugar);
+                divPartidas.appendChild(partida);
+            }
+        }
+    };
+
+    xhr.open("GET", "/cargar_partidas_en_curso", true);
     xhr.send();
 }

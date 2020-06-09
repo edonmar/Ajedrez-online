@@ -58,7 +58,7 @@ class SalaOnlineController extends Controller
     /**
      * @Route("/cargar_mensajes", name="cargar_mensajes")
      */
-    public function cargarMensajes(Request $request, MensajeRepository $mensajeRespository)
+    public function cargarMensajes(MensajeRepository $mensajeRespository)
     {
         $mensajes = $mensajeRespository->findSinPartida();
         $this->eliminarMensajesAntiguos($mensajes);
@@ -93,7 +93,7 @@ class SalaOnlineController extends Controller
     /**
      * @Route("/cargar_usuarios", name="cargar_usuarios")
      */
-    public function cargar_usuarios(Request $request, UsuarioRepository $usuarioRepository)
+    public function cargar_usuarios(UsuarioRepository $usuarioRepository)
     {
         $usuarios = $usuarioRepository->findOrdenadosPorNombre();
 
@@ -131,7 +131,7 @@ class SalaOnlineController extends Controller
     /**
      * @Route("/cargar_invitaciones", name="cargar_invitaciones")
      */
-    public function cargar_invitaciones(Request $request, PartidaRepository $partidaRepository, UsuarioRepository $usuarioRepository)
+    public function cargar_invitaciones(PartidaRepository $partidaRepository, UsuarioRepository $usuarioRepository)
     {
         $partidas = $partidaRepository->findInvitacionesByUsuarioOrdenadas($this->getUser());
 
@@ -178,4 +178,28 @@ class SalaOnlineController extends Controller
         $em->flush();
     }
 
+
+    /**
+     * @Route("/cargar_partidas_en_curso", name="cargar_partidas_en_curso")
+     */
+    public function cargar_partidas_en_curso(PartidaRepository $partidaRepository)
+    {
+        $partidas = $partidaRepository->findEnCusro($this->getUser());
+
+        $lista = array();
+        foreach ($partidas as $p) {
+            $jugadores = $p->getUsuarios();
+            if ($jugadores[0]->getId() == $this->getUser()->getId())
+                $rival = $jugadores[1]->getNombre();
+            else
+                $rival = $jugadores[0]->getNombre();
+
+            $objeto = new stdClass();
+            $objeto->id = $p->getId();
+            $objeto->rival = $rival;
+            array_push($lista, $objeto);
+        }
+
+        return new JsonResponse($lista);
+    }
 }

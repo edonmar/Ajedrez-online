@@ -47,4 +47,16 @@ class PartidaRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findEnCusro(Usuario $usuario)
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p')
+            ->innerJoin('p.usuarios', 'u')
+            ->where('u.id = :usuario')
+            ->andWhere('p.fechaInicio is not NULL')
+            ->setParameter('usuario', $usuario)
+            ->getQuery()
+            ->getResult();
+    }
 }
