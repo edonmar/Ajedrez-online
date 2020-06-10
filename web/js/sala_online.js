@@ -73,7 +73,7 @@ function cargarMensajes() {
         }
     };
 
-    xhr.open("GET", "/cargar_mensajes", true);
+    xhr.open("GET", "/cargar_mensajes_sala", true);
     xhr.send();
 }
 
@@ -95,7 +95,7 @@ function cargarUsuarios() {
 
                 nombre.innerHTML = "<a href='usuario/partidas/" + respuesta[i].id + "'>" + respuesta[i].nombre + "</a>";
                 invitar.innerHTML = "Invitar";
-                invitar.addEventListener("click", function(){
+                invitar.addEventListener("click", function () {
                     invitarPartida(respuesta[i].id);
                 });
 
@@ -137,13 +137,13 @@ function cargarInvitaciones() {
                 anfitrion.innerHTML = respuesta[i].anfitrion;
 
                 rechazar.innerHTML = "Rechazar";
-                rechazar.addEventListener("click", function(){
+                rechazar.addEventListener("click", function () {
                     rechazarInvitacion(respuesta[i].id);
                     cargarInvitaciones();
                 });
 
                 aceptar.innerHTML = "Aceptar";
-                aceptar.addEventListener("click", function(){
+                aceptar.addEventListener("click", function () {
                     aceptarInvitacion(respuesta[i].id);
                     cargarInvitaciones();
                     cargarPartidasEnCurso();

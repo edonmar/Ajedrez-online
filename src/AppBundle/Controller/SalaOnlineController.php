@@ -56,7 +56,7 @@ class SalaOnlineController extends Controller
     }
 
     /**
-     * @Route("/cargar_mensajes", name="cargar_mensajes")
+     * @Route("/cargar_mensajes_sala", name="cargar_mensajes_sala")
      */
     public function cargarMensajes(MensajeRepository $mensajeRespository)
     {
