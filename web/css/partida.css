@@ -370,8 +370,74 @@
     font-weight: bold;
 }
 
+#contenedorChat {
+    display: inline-block;
+    float: left;
+    width: 17.4em;
+    margin-top: 3vh;
+    margin-right: 3vh;
+    margin-left: 3vh;
+}
+
+#divMensajes {
+    overflow-y: scroll;
+    width: 100%;
+}
+
+#divMensajes {
+    height: 70vh;
+    padding: 0.4em 0.5em;
+    border: none;
+    background-color: #f2f2f2;
+}
+
+.divMensaje:last-child {
+    margin-bottom: 0.4em;
+}
+
+.msgAutor {
+    font-weight: bold;
+}
+
+#textAreaChat {
+    width: 100%;
+    height: 9vh;
+    resize: none;
+    margin-top: 5px;
+    padding: 0.4em 0.5em;
+    border: none;
+    background-color: #f2f2f2;
+}
+
+#btnEnviarMensaje {
+    width: 100%;
+    height: 3.5vh;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    background-color: #428a42;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+#btnEnviarMensaje:hover {
+    background-color: #326732;
+}
+
 #btnCargarPgn:hover {
     background-color: #326732;
+}
+
+.nombreBlancas,
+.nombreNegras {
+    color: white;
+    text-align: center;
+}
+
+.nombreBlancas {
+    margin-top: 1vh;
 }
 
 .peonBlanco {
