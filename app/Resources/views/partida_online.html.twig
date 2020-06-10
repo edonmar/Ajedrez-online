@@ -15,11 +15,11 @@
         {% endif %}
     {% else %}
         {% if partida.jugadorAnfitrion == partida.usuarios[0].id %}
-            {% set nombreBlancas = partida.usuarios[0].nombre %}
-            {% set nombreNegras = partida.usuarios[1].nombre %}
-        {% else %}
             {% set nombreBlancas = partida.usuarios[1].nombre %}
             {% set nombreNegras = partida.usuarios[0].nombre %}
+        {% else %}
+            {% set nombreBlancas = partida.usuarios[0].nombre %}
+            {% set nombreNegras = partida.usuarios[1].nombre %}
         {% endif %}
     {% endif %}
 
@@ -31,14 +31,14 @@
 
     <div id="contenido">
         <div id="contenedorChat">
-            <h3 id="jugadorNegras" class="nombreNegras">{{ nombreNegras }}</h3>
+            <h3 class="nombreJugador nombreNegras">{{ nombreNegras }}</h3>
             <div id="divMensajes"></div>
             <textarea id="textAreaChat" name="textAreaChat"
                       placeholder="Escribe aquí tu mensaje"></textarea>
             <div>
                 <button type="button" id="btnEnviarMensaje">Enviar</button>
             </div>
-            <h3 id="jugadorBlancas" class="nombreBlancas">{{ nombreBlancas }}</h3>
+            <h3 class="nombreJugador nombreBlancas">{{ nombreBlancas }}</h3>
         </div>
 
         <div id="tablero">

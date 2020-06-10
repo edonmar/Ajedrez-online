@@ -430,14 +430,17 @@
     background-color: #326732;
 }
 
-.nombreBlancas,
-.nombreNegras {
+.nombreJugador {
     color: white;
     text-align: center;
 }
 
-.nombreBlancas {
+.nombreJugador:last-child {
     margin-top: 1vh;
+}
+
+.suTurno {
+    text-decoration: underline;
 }
 
 .peonBlanco {

@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Mensaje;
 use AppBundle\Entity\Partida;
+use AppBundle\Entity\Tablero;
 use AppBundle\Repository\MensajeRepository;
 use AppBundle\Repository\PartidaRepository;
 use AppBundle\Repository\UsuarioRepository;
@@ -170,14 +171,26 @@ class SalaOnlineController extends Controller
         $idPartida = $request->get('partida');
         $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
 
+        // Valores iniciales de la partida
         $partida->setJugadorBlancas(rand(0, 1) > 0.5);
         $partida->setNumMovimientos(0);
         $partida->setPgn("");
         $partida->setFechaInicio(new \DateTime());
         $em = $this->getDoctrine()->getManager();
         $em->flush();
-    }
 
+        // Creo el primer tablero de la partida
+        $nuevoTablero = new Tablero();
+        $nuevoTablero->setPartida($partida);
+        $nuevoTablero->setCasillas("tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT");
+        $nuevoTablero->setTurno(true);
+        $nuevoTablero->setEnroques("DRdr");
+        $nuevoTablero->setRegla50mov("0000");
+        $nuevoTablero->setJaque(false);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($nuevoTablero);
+        $em->flush();
+    }
 
     /**
      * @Route("/cargar_partidas_en_curso", name="cargar_partidas_en_curso")
