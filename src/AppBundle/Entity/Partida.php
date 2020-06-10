@@ -74,11 +74,6 @@ class Partida
     private $usuarios;
 
     /**
-     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Anotacion")
-     */
-    private $anotacion;
-
-    /**
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\Tablero", mappedBy="partida")
      * @var Tablero[]
      */
@@ -266,24 +261,6 @@ class Partida
     public function setUsuarios($usuarios)
     {
         $this->usuarios = $usuarios;
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAnotacion()
-    {
-        return $this->anotacion;
-    }
-
-    /**
-     * @param mixed $anotacion
-     * @return Partida
-     */
-    public function setAnotacion($anotacion)
-    {
-        $this->anotacion = $anotacion;
         return $this;
     }
 
