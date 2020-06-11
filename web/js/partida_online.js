@@ -1,5 +1,7 @@
 let tablero = [];    // El tablero donde se hacen todas las operaciones
 let tableroHTML = [];    // El tablero que se muestra en pantalla (el del HTML)
+let hayPiezaSelec = false;
+let piezaSelec = {x: undefined, y: undefined};
 let movidaEnroqueCortoBlanco = false;    // Si una de las piezas implicadas en el enroque se mueve, no podra enrocar
 let peonAlPaso = {x: undefined, y: undefined};    // Si hay un peon que pueda ser capturado al paso
 let piezasBlancas = [];    // Array con las coordenadas de todas las piezas blancas. El rey en la posicion 0
@@ -8,20 +10,17 @@ let movidaEnroqueLargoBlanco = false;
 let movidaEnroqueCortoNegro = false;
 let movidaEnroqueLargoNegro = false;
 let tableroGirado = false;
+let turno;
+let estadoActual;    // Si actualmente es mi turno o no
 
 window.onload = function () {
     cargarMensajes();
     iniciarIntervalos();
     iniciarEventosChat();
-
     inicializarTablero();
     inicializarTableroHTML();
     iniciarEventoBtnGirar();
     cargarTablero();
-    //colocarPiezasIniciales();
-    //inicializarArraysPiezas();
-    //annadirImgPiezasIniciales();
-    //iniciarEventosTablero();
 }
 
 // Asigna a la variable Tablero un array 8x8 vacio
@@ -50,7 +49,39 @@ function inicializarTableroHTML() {
 function iniciarIntervalos() {
     setInterval(function () {
         cargarMensajes();
+        if (!estadoActual)
+            cargarTablero();
     }, 1000);
+}
+
+// Si es el turno del jugador, tiene acceso a los eventos de mover tablero
+// Si no es el turno del jugador, llama al intervalo de la llamada ajax que comprueba cuando el otro jugador ha movido
+function cambiarEstado(esMiTurno) {
+    if (esMiTurno) {
+        if (!estadoActual) {
+            iniciarEventosTablero();
+            estadoActual = true;
+        }
+    } else {
+        if (estadoActual) {
+            eliminarEventosTablero();
+            estadoActual = false;
+        }
+    }
+}
+
+function iniciarEventosTablero() {
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            tableroHTML[i][j].onclick = function () {
+                clickEnCasilla(i, j);
+            }
+}
+
+function eliminarEventosTablero() {
+    for (let i = 0; i < 8; i++)
+        for (let j = 0; j < 8; j++)
+            tableroHTML[i][j].onclick = null;
 }
 
 function iniciarEventosChat() {
@@ -196,12 +227,20 @@ function cargarTablero() {
 }
 
 function actualizarTablero(respuesta) {
-    mostrarTurno(respuesta.turno);
+    turno = respuesta.colorTurno;
+    mostrarTurno(respuesta.colorTurno);
     mostrarTablero(respuesta.casillas);
-    mostrarUltimoMov(respuesta.ultimoMov);
-    if(respuesta.jaque)
-        mostrarJaque(respuesta.turno);
+    if (respuesta.ultimoMov !== "")
+        mostrarUltimoMov(respuesta.ultimoMov);
+    if (respuesta.jaque)
+        mostrarJaque(respuesta.colorTurno);
     cargarCadenaMovimientos(respuesta.pgn);
+    cargarEnroques(respuesta.enroques);
+    if (respuesta.peonAlPaso !== "")
+        cargarPeonAlPaso(respuesta.peonAlPaso);
+
+    let esMiTurno = respuesta.colorTurno === respuesta.miColor;
+    cambiarEstado(esMiTurno);
 }
 
 function mostrarTurno(turno) {
@@ -257,7 +296,7 @@ function mostrarTablero(casillas) {
 
     function setReyPrimeraPos(piezasColor, valorRey) {
         for (let k = 0, finK = piezasColor.length; k < finK; k++) {
-            if(tablero[piezasColor[k].x][piezasColor[k].y] === valorRey){
+            if (tablero[piezasColor[k].x][piezasColor[k].y] === valorRey) {
                 let reyX = piezasColor[k].x;
                 let reyY = piezasColor[k].y;
 
@@ -278,7 +317,7 @@ function mostrarUltimoMov(ultimoMov) {
     annadirEstiloMovAnterior(destinoX, destinoY);
 }
 
-function mostrarJaque(turno){
+function mostrarJaque(turno) {
     let piezasColor;
 
     if (turno)
@@ -304,6 +343,57 @@ function annadirEstiloMovAnterior(x, y) {
         y = 7 - y;
     }
     tableroHTML[x][y].classList.add("casillasMovAnterior");
+}
+
+function annadirEstiloMovPosibles() {
+    let x = piezaSelec.x;
+    let y = piezaSelec.y;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
+    // Pieza seleccionada
+    casillaHTML.classList.add("piezaSeleccionada");
+    casillaHTML.innerHTML = "<div class='piezaResaltadaBorde'></div>";
+
+    // Movimientos posibles
+    for (let i = 0, finI = movPosibles.length; i < finI; i++) {
+        x = movPosibles[i].x;
+        y = movPosibles[i].y;
+        if (tableroGirado) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        tableroHTML[x][y].innerHTML = "<div class='movPosible'></div>";
+    }
+}
+
+function eliminarEstiloMovPosibles() {
+    let x = piezaSelec.x;
+    let y = piezaSelec.y;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
+    // Pieza seleccionada
+    casillaHTML.classList.remove("piezaSeleccionada");
+    if (!casillaHTML.classList.contains("reyAmenazado"))
+        casillaHTML.innerHTML = "";
+
+    // Movimientos posibles
+    for (let i = 0, finI = movPosibles.length; i < finI; i++) {
+        x = movPosibles[i].x;
+        y = movPosibles[i].y;
+        if (tableroGirado) {
+            x = 7 - x;
+            y = 7 - y;
+        }
+        tableroHTML[x][y].innerHTML = "";
+    }
 }
 
 // Rellena la tabla de movimientos con el string de los movimientos de la repeticion
@@ -345,6 +435,22 @@ function cargarCadenaMovimientos(cadena) {
             fila.appendChild(div);
         }
     }
+}
+
+function cargarEnroques(enroques) {
+    if(enroques.indexOf("D") === -1)
+        movidaEnroqueLargoBlanco = true;
+    if(enroques.indexOf("R") === -1)
+        movidaEnroqueCortoBlanco = true;
+    if(enroques.indexOf("d") === -1)
+        movidaEnroqueLargoNegro = true;
+    if(enroques.indexOf("r") === -1)
+        movidaEnroqueCortoNegro = true;
+}
+
+function cargarPeonAlPaso(alPaso) {
+    peonAlPaso.x = parseInt(alPaso[0]);
+    peonAlPaso.y = parseInt(alPaso[1]);
 }
 
 function annadirImgPieza(x, y) {
@@ -453,10 +559,879 @@ function eliminarImgPieza(x, y) {
     }
 }
 
+// Al pulsar una pieza, la selecciono
+// Si pulso una casilla a la que no me puedo mover, no pasa nada
+// Si pulso una pieza y luego otra, selecciono la segunda
+// Si pulso la misma pieza que ya esta seleccionada, la deselecciono
+function clickEnCasilla(x, y) {
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+
+    let blanca = esBlanca(tablero[x][y]);
+    let negra = esNegra(tablero[x][y]);
+
+    if (!hayPiezaSelec) {
+        if (turno && blanca || !turno && negra)
+            realizarSeleccionPieza(x, y);
+    } else {
+        if (esMovValido(x, y)) {
+            if (siPeonPromociona(x))
+                modalPromocionPeon(x, y);
+            else {
+                enviarMovimiento(x, y, null);
+                eliminarEstiloMovPosibles();
+                deseleccionarPieza();
+                movPosibles = [];
+            }
+        } else {
+            // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
+            if (x !== piezaSelec.x || y !== piezaSelec.y) {
+                // Compruebo que este pulsando una pieza y que sea de mi color
+                if (turno && blanca || !turno && negra) {
+                    eliminarEstiloMovPosibles();
+                    realizarSeleccionPieza(x, y);
+                }
+            } else {    // Si la pieza pulsada es la que estaba seleccionada, la deselecciono
+                eliminarEstiloMovPosibles();
+                deseleccionarPieza();
+            }
+        }
+    }
+}
+
 function esBlanca(valor) {
     return valor === valor.toUpperCase() && valor !== valor.toLowerCase();
 }
 
 function esNegra(valor) {
     return valor === valor.toLowerCase() && valor !== valor.toUpperCase();
+}
+
+function realizarSeleccionPieza(x, y) {
+    movPosibles = [];
+    calcularMovSegunPieza(x, y);
+    seleccionarPieza(x, y);
+    eliminarMovQueAmenazanAMiRey();
+    if (tablero[piezaSelec.x][piezaSelec.y].toUpperCase() === "R")
+        annadirEnroquesPosibles();
+    annadirEstiloMovPosibles();
+}
+
+function enviarMovimiento(x, y, promocionPeon) {
+    let xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            let respuesta = JSON.parse(this.responseText);
+            //actualizarTablero(respuesta);
+        }
+    };
+
+    xhr.open("GET", "/movimiento_y_comprobaciones?partida=" + idPartida + "&origenX=" + piezaSelec.x + "&origenY=" + piezaSelec.y
+        + "&destinoX=" + x + "&destinoY=" + y + "&promocionPeon=" + promocionPeon, true);
+    xhr.send();
+}
+
+function seleccionarPieza(x, y) {
+    hayPiezaSelec = true;
+    piezaSelec = {x: x, y: y};
+}
+
+function deseleccionarPieza() {
+    hayPiezaSelec = false;
+    piezaSelec = {x: undefined, y: undefined};
+}
+
+function esMovValido(x, y) {
+    return movPosibles.some(pos => pos.x === x && pos.y === y);
+}
+
+// Elimina la pieza comida del array del otro color
+function eliminarObjetoPiezaComida(piezasColor, x, y) {
+    let posicion = undefined;
+    piezasColor.find((pos, i) => {
+        if (pos.x === x && pos.y === y) {
+            piezasColor.splice(i, 1);
+            posicion = i;
+            return true;    // Parar la busqueda
+        }
+    });
+    return posicion;
+}
+
+// Comprueba todos los movimientos posibles de todas las piezas de un color
+// Acaba el bucle y devuelve true si uno de los movimientos es comerse al rey del otro color
+function esJaque(colorAmenazante) {
+    let movPosiblesAux = movPosibles;
+    let piezasAmenazantes;
+    let reyAmenazado;
+    let jaque = false;
+
+    if (colorAmenazante) {
+        piezasAmenazantes = piezasBlancas;
+        reyAmenazado = "r";
+    } else {
+        piezasAmenazantes = piezasNegras;
+        reyAmenazado = "R";
+    }
+
+    let numPiezasAmenazantes = piezasAmenazantes.length;
+    let i = 0;
+    do {
+        movPosibles = [];
+        calcularMovSegunPieza(piezasAmenazantes[i].x, piezasAmenazantes[i].y);
+        for (let i = 0, finI = movPosibles.length; i < finI; i++)
+            if (tablero[movPosibles[i].x][movPosibles[i].y] === reyAmenazado) {
+                jaque = true;
+                break;
+            }
+        i++;
+    } while (i < numPiezasAmenazantes && !jaque);
+
+    movPosibles = movPosiblesAux;
+
+    return jaque;
+}
+
+// Para cada movimiento posible de la pieza seleccionada:
+// Compruebo si al hacer ese movimiento mi rey quedaria en jaque
+// Si queda en jaque, elimino ese movimiento de movPosibles
+function eliminarMovQueAmenazanAMiRey() {
+    if (movPosibles.length > 0) {
+        let valorCasillaOrigen = tablero[piezaSelec.x][piezaSelec.y];
+        let i = 0;
+
+        do {
+            if (movAmenazaReyPropio(i, !turno, piezaSelec, valorCasillaOrigen))
+                movPosibles.splice(i, 1);
+            else
+                i++;
+        } while (i < movPosibles.length);
+    }
+}
+
+// Llamando a la funcion esJaque, compruebo si al hacer un movimiento el rey del color movido quedaria en jaque
+function movAmenazaReyPropio(i, colorAmenazante, casillaOrigen, valorCasillaOrigen) {
+    let jaque = false;
+    let comeNormal = false;
+    let comeAlPaso = false;
+    let colorComida;
+    let posComida;
+    let casillaDestinoX = movPosibles[i].x;
+    let casillaDestinoY = movPosibles[i].y;
+    let valorCasillaDestino = tablero[casillaDestinoX][casillaDestinoY];
+
+    // Compruebo si ha comido de manera normal
+    if (esNegra(valorCasillaOrigen) && esBlanca(valorCasillaDestino)) {
+        colorComida = piezasBlancas;
+        comeNormal = true;
+    } else if (esBlanca(valorCasillaOrigen) && esNegra(valorCasillaDestino)) {
+        colorComida = piezasNegras;
+        comeNormal = true;
+    } else if (valorCasillaOrigen.toUpperCase() === "P") {
+        if (casillaOrigen.x === peonAlPaso.x && casillaDestinoY === peonAlPaso.y) {    // Si ha comido al paso
+            if (casillaDestinoX === peonAlPaso.x - 1) {
+                colorComida = piezasNegras;
+                comeAlPaso = true;
+            } else if (casillaDestinoX === peonAlPaso.x + 1) {
+                colorComida = piezasBlancas;
+                comeAlPaso = true;
+            }
+        }
+    }
+
+    // Si el movimiento come una pieza, simulo eliminar la pieza comida de su array
+    if (comeNormal)
+        posComida = eliminarObjetoPiezaComida(colorComida, casillaDestinoX, casillaDestinoY);
+    else if (comeAlPaso)
+        posComida = eliminarObjetoPiezaComida(colorComida, peonAlPaso.x, peonAlPaso.y);
+
+    // Simulo mover una pieza para ver como quedaria el tablero si hiciera ese movimiento
+    tablero[casillaOrigen.x][casillaOrigen.y] = "0";
+    tablero[casillaDestinoX][casillaDestinoY] = valorCasillaOrigen;
+    if (comeAlPaso)
+        tablero[peonAlPaso.x][peonAlPaso.y] = "0";
+
+    // Realizo la comprobacion
+    if (esJaque(colorAmenazante))
+        jaque = true;
+
+    // Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
+    tablero[casillaOrigen.x][casillaOrigen.y] = valorCasillaOrigen;
+    tablero[casillaDestinoX][casillaDestinoY] = valorCasillaDestino;
+    if (comeAlPaso) {
+        if (colorComida === piezasBlancas)
+            tablero[peonAlPaso.x][peonAlPaso.y] = "P";
+        if (colorComida === piezasNegras)
+            tablero[peonAlPaso.x][peonAlPaso.y] = "p";
+    }
+
+    // Vuelvo a colocar la pieza comida (si la hay) en su array, en la posicion donde estaba
+    if (comeNormal)
+        colorComida.splice(posComida, 0, {x: casillaDestinoX, y: casillaDestinoY});
+    else if (comeAlPaso)
+        colorComida.splice(posComida, 0, {x: peonAlPaso.x, y: peonAlPaso.y});
+
+    return jaque;
+}
+
+// Comprueba si se ha seleccionado un rey y si tiene algun enroque disponible
+// Si lo hay, comprueba todos los movimientos posibles de todas las piezas del otro color
+// Si ninguno de esos movimientos amenaza al rey o a las casillas por las que pasa, annade el enroque a movPosibles
+function annadirEnroquesPosibles() {
+    let comprobarEnroqueCorto = false;
+    let comprobarEnroqueLargo = false;
+    let piezasAmenazantes;
+    let x;
+
+    if (turno) {
+        piezasAmenazantes = piezasNegras;
+        x = 7;
+    } else {
+        piezasAmenazantes = piezasBlancas;
+        x = 0;
+    }
+
+    // Enroque corto
+    if (turno && !movidaEnroqueCortoBlanco || !turno && !movidaEnroqueCortoNegro)
+        if (tablero[x][5] === "0" && tablero[x][6] === "0")
+            comprobarEnroqueCorto = true;
+
+    // Enroque largo
+    if (turno && !movidaEnroqueLargoBlanco || !turno && !movidaEnroqueLargoNegro)
+        if (tablero[x][1] === "0" && tablero[x][2] === "0" && tablero[x][3] === "0")
+            comprobarEnroqueLargo = true;
+
+    if (comprobarEnroqueCorto || comprobarEnroqueLargo) {
+        let enroqueCortoAmenazado = false;
+        let enroqueLargoAmenazado = false;
+        let movPosiblesAux = movPosibles;
+        let numPiezasAmenazantes = piezasAmenazantes.length;
+        let i = 0;
+
+        do {
+            movPosibles = [];
+            calcularMovSegunPieza(piezasAmenazantes[i].x, piezasAmenazantes[i].y);
+            for (let j = 0, finI = movPosibles.length; j < finI; j++) {
+                if (movPosibles[j].x === x) {
+                    if (movPosibles[j].y === 4) {
+                        enroqueCortoAmenazado = true;
+                        enroqueLargoAmenazado = true;
+                        break;
+                    }
+                    if (comprobarEnroqueCorto && !enroqueCortoAmenazado)
+                        if (movPosibles[j].y === 5 || movPosibles[j].y === 6)
+                            enroqueCortoAmenazado = true;
+                    if (comprobarEnroqueLargo && !enroqueLargoAmenazado)
+                        if (movPosibles[j].y === 3 || movPosibles[j].y === 2 || movPosibles[j].y === 1)
+                            enroqueLargoAmenazado = true;
+                }
+                if (enroqueCortoAmenazado && enroqueLargoAmenazado)
+                    break;
+            }
+            i++;
+        } while (i < numPiezasAmenazantes && (!enroqueCortoAmenazado || !enroqueLargoAmenazado));
+
+        movPosibles = movPosiblesAux;
+
+        if (comprobarEnroqueCorto && !enroqueCortoAmenazado)
+            movPosibles.push({x: x, y: 6});
+
+        if (comprobarEnroqueLargo && !enroqueLargoAmenazado)
+            movPosibles.push({x: x, y: 2});
+    }
+}
+
+function siPeonPromociona(x) {
+    let promociona = false;
+
+    if (x === 0 && tablero[piezaSelec.x][piezaSelec.y] === "P" ||
+        x === 7 && tablero[piezaSelec.x][piezaSelec.y] === "p")
+        promociona = true;
+
+    return promociona;
+}
+
+function modalPromocionPeon(x, y) {
+    let modal = document.getElementById("miModal");
+    let cerrar = document.getElementById("modalCerrar");
+    let titulo = document.getElementById("modalTitulo");
+    let body = document.getElementById("modalBody");
+
+    titulo.innerHTML = "Selecciona una pieza";
+    body.innerHTML = "";
+
+    // Boton de cerrar el modal sin promocionar
+    cerrar.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    let contenedorBtn = document.createElement("div");
+
+    // Boton dama
+    let btnDama = document.createElement("div");
+    btnDama.classList.add("btnModal");
+    btnDama.innerHTML = "<div class='btnModalBorde'></div>";
+    if (turno)
+        btnDama.classList.add("damaBlanco");
+    else
+        btnDama.classList.add("damaNegro");
+
+    btnDama.onclick = function () {
+        if (turno)
+            promocionarPeon(x, y, "D");
+        else
+            promocionarPeon(x, y, "d");
+    }
+    contenedorBtn.appendChild(btnDama);
+
+    // Boton torre
+    let btnTorre = document.createElement("div");
+    btnTorre.classList.add("btnModal");
+    btnTorre.innerHTML = "<div class='btnModalBorde'></div>";
+    if (turno)
+        btnTorre.classList.add("torreBlanco");
+    else
+        btnTorre.classList.add("torreNegro");
+
+    btnTorre.onclick = function () {
+        if (turno)
+            promocionarPeon(x, y, "T");
+        else
+            promocionarPeon(x, y, "t");
+    }
+    contenedorBtn.appendChild(btnTorre);
+
+    // Boton alfil
+    let btnAlfil = document.createElement("div");
+    btnAlfil.classList.add("btnModal");
+    btnAlfil.innerHTML = "<div class='btnModalBorde'></div>";
+    if (turno)
+        btnAlfil.classList.add("alfilBlanco");
+    else
+        btnAlfil.classList.add("alfilNegro");
+
+    btnAlfil.onclick = function () {
+        if (turno)
+            promocionarPeon(x, y, "A");
+        else
+            promocionarPeon(x, y, "a");
+    }
+    contenedorBtn.appendChild(btnAlfil);
+
+    // Boton caballo
+    let btnCaballo = document.createElement("div");
+    btnCaballo.classList.add("btnModal");
+    btnCaballo.innerHTML = "<div class='btnModalBorde'></div>";
+    if (turno)
+        btnCaballo.classList.add("caballoBlanco");
+    else
+        btnCaballo.classList.add("caballoNegro");
+
+    btnCaballo.onclick = function () {
+        if (turno)
+            promocionarPeon(x, y, "C");
+        else
+            promocionarPeon(x, y, "c");
+    }
+    contenedorBtn.appendChild(btnCaballo);
+
+    body.appendChild(contenedorBtn);
+
+    // Mostrar el modal
+    modal.style.display = "block";
+
+    function promocionarPeon(x, y, nuevaPieza) {
+        modal.style.display = "none";
+        titulo.innerHTML = "";
+        body.innerHTML = "";
+        enviarMovimiento(x, y, nuevaPieza);
+        eliminarEstiloMovPosibles();
+        deseleccionarPieza();
+        movPosibles = [];
+    }
+}
+
+function calcularMovSegunPieza(x, y) {
+    let tipo = tablero[x][y];
+
+    if (tipo === tipo.toUpperCase()) {
+        switch (tipo) {
+            case "P":
+                calcularMovPeonBlanco(x, y);
+                break;
+            case "T":
+                calcularMovTorreBlanco(x, y);
+                break;
+            case "C":
+                calcularMovCaballoBlanco(x, y);
+                break;
+            case "A":
+                calcularMovAlfilBlanco(x, y);
+                break;
+            case "D":
+                calcularMovDamaBlanco(x, y);
+                break;
+            case "R":
+                calcularMovReyBlanco(x, y);
+                break;
+        }
+    } else {
+        switch (tipo) {
+            case "p":
+                calcularMovPeonNegro(x, y);
+                break;
+            case "t":
+                calcularMovTorreNegro(x, y);
+                break;
+            case "c":
+                calcularMovCaballoNegro(x, y);
+                break;
+            case "a":
+                calcularMovAlfilNegro(x, y);
+                break;
+            case "d":
+                calcularMovDamaNegro(x, y);
+                break;
+            case "r":
+                calcularMovReyNegro(x, y);
+                break;
+        }
+    }
+}
+
+function calcularMovPeonBlanco(x, y) {
+    if (x !== 0) {
+        // Una casilla hacia delante
+        if (tablero[x - 1][y] === "0")
+            movPosibles.push({x: x - 1, y: y});
+
+        // Comer hacia la izquierda
+        if (y > 0) {
+            // Comer normal
+            if (esNegra(tablero[x - 1][y - 1]))
+                movPosibles.push({x: x - 1, y: y - 1});
+            // Comer al paso
+            if (x === 3 && peonAlPaso.x === 3 && peonAlPaso.y === y - 1)
+                movPosibles.push({x: x - 1, y: y - 1});
+        }
+
+        // Comer hacia la derecha
+        if (y < 7) {
+            // Comer normal
+            if (esNegra(tablero[x - 1][y + 1]))
+                movPosibles.push({x: x - 1, y: y + 1});
+            // Comer al paso
+            if (x === 3 && peonAlPaso.x === 3 && peonAlPaso.y === y + 1)
+                movPosibles.push({x: x - 1, y: y + 1});
+        }
+    }
+
+    // Dos casillas hacia delante
+    if (x === 6 && tablero[5][y] === "0" && tablero[4][y] === "0")
+        movPosibles.push({x: 4, y: y});
+}
+
+function calcularMovPeonNegro(x, y) {
+    if (x !== 7) {
+        // Una casilla hacia delante
+        if (tablero[x + 1][y] === "0")
+            movPosibles.push({x: x + 1, y: y});
+
+        // Comer hacia la izquierda
+        if (y > 0) {
+            // Comer normal
+            if (esBlanca(tablero[x + 1][y - 1]))
+                movPosibles.push({x: x + 1, y: y - 1});
+            // Comer al paso
+            if (x === 4 && peonAlPaso.x === 4 && peonAlPaso.y === y - 1)
+                movPosibles.push({x: x + 1, y: y - 1});
+        }
+
+        // Comer hacia la derecha
+        if (y < 7) {
+            // Comer normal
+            if (esBlanca(tablero[x + 1][y + 1]))
+                movPosibles.push({x: x + 1, y: y + 1});
+            // Comer al paso
+            if (x === 4 && peonAlPaso.x === 4 && peonAlPaso.y === y + 1)
+                movPosibles.push({x: x + 1, y: y + 1});
+        }
+    }
+
+    // Dos casillas hacia delante
+    if (x === 1 && tablero[2][y] === "0" && tablero[3][y] === "0")
+        movPosibles.push({x: 3, y: y});
+}
+
+function calcularMovTorreBlanco(x, y) {
+    let i;
+
+    // Arriba
+    i = 1;
+    while (x - i >= 0) {
+        if (esBlanca(tablero[x - i][y]))
+            break;
+        movPosibles.push({x: x - i, y: y});
+        if (esNegra(tablero[x - i][y]))
+            break;
+        i++;
+    }
+
+    // Derecha
+    i = 1;
+    while (y + i <= 7) {
+        if (esBlanca(tablero[x][y + i]))
+            break;
+        movPosibles.push({x: x, y: y + i});
+        if (esNegra(tablero[x][y + i]))
+            break;
+        i++;
+    }
+
+    // Abajo
+    i = 1;
+    while (x + i <= 7) {
+        if (esBlanca(tablero[x + i][y]))
+            break;
+        movPosibles.push({x: x + i, y: y});
+        if (esNegra(tablero[x + i][y]))
+            break;
+        i++;
+    }
+
+    // Izquierda
+    i = 1;
+    while (y - i >= 0) {
+        if (esBlanca(tablero[x][y - i]))
+            break;
+        movPosibles.push({x: x, y: y - i});
+        if (esNegra(tablero[x][y - i]))
+            break;
+        i++;
+    }
+}
+
+function calcularMovTorreNegro(x, y) {
+    let i;
+
+    // Arriba
+    i = 1;
+    while (x - i >= 0) {
+        if (esNegra(tablero[x - i][y]))
+            break;
+        movPosibles.push({x: x - i, y: y});
+        if (esBlanca(tablero[x - i][y]))
+            break;
+        i++;
+    }
+
+    // Derecha
+    i = 1;
+    while (y + i <= 7) {
+        if (esNegra(tablero[x][y + i]))
+            break;
+        movPosibles.push({x: x, y: y + i});
+        if (esBlanca(tablero[x][y + i]))
+            break;
+        i++;
+    }
+
+    // Abajo
+    i = 1;
+    while (x + i <= 7) {
+        if (esNegra(tablero[x + i][y]))
+            break;
+        movPosibles.push({x: x + i, y: y});
+        if (esBlanca(tablero[x + i][y]))
+            break;
+        i++;
+    }
+
+    // Izquierda
+    i = 1;
+    while (y - i >= 0) {
+        if (esNegra(tablero[x][y - i]))
+            break;
+        movPosibles.push({x: x, y: y - i});
+        if (esBlanca(tablero[x][y - i]))
+            break;
+        i++;
+    }
+}
+
+function calcularMovCaballoBlanco(x, y) {
+    // Arriba - Izquierda
+    if (x - 1 >= 0 && y - 2 >= 0)
+        if (!esBlanca(tablero[x - 1][y - 2]))
+            movPosibles.push({x: x - 1, y: y - 2});
+    if (x - 2 >= 0 && y - 1 >= 0)
+        if (!esBlanca(tablero[x - 2][y - 1]))
+            movPosibles.push({x: x - 2, y: y - 1});
+
+    // Arriba - Derecha
+    if (x - 1 >= 0 && y + 2 <= 7)
+        if (!esBlanca(tablero[x - 1][y + 2]))
+            movPosibles.push({x: x - 1, y: y + 2});
+    if (x - 2 >= 0 && y + 1 <= 7)
+        if (!esBlanca(tablero[x - 2][y + 1]))
+            movPosibles.push({x: x - 2, y: y + 1});
+
+    // Abajo - Derecha
+    if (x + 1 <= 7 && y + 2 <= 7)
+        if (!esBlanca(tablero[x + 1][y + 2]))
+            movPosibles.push({x: x + 1, y: y + 2});
+    if (x + 2 <= 7 && y + 1 <= 7)
+        if (!esBlanca(tablero[x + 2][y + 1]))
+            movPosibles.push({x: x + 2, y: y + 1});
+
+    // Abajo - Izquierda
+    if (x + 1 <= 7 && y - 2 >= 0)
+        if (!esBlanca(tablero[x + 1][y - 2]))
+            movPosibles.push({x: x + 1, y: y - 2});
+    if (x + 2 <= 7 && y - 1 >= 0)
+        if (!esBlanca(tablero[x + 2][y - 1]))
+            movPosibles.push({x: x + 2, y: y - 1});
+}
+
+function calcularMovCaballoNegro(x, y) {
+    // Arriba - Izquierda
+    if (x - 1 >= 0 && y - 2 >= 0)
+        if (!esNegra(tablero[x - 1][y - 2]))
+            movPosibles.push({x: x - 1, y: y - 2});
+    if (x - 2 >= 0 && y - 1 >= 0)
+        if (!esNegra(tablero[x - 2][y - 1]))
+            movPosibles.push({x: x - 2, y: y - 1});
+
+    // Arriba - Derecha
+    if (x - 1 >= 0 && y + 2 <= 7)
+        if (!esNegra(tablero[x - 1][y + 2]))
+            movPosibles.push({x: x - 1, y: y + 2});
+    if (x - 2 >= 0 && y + 1 <= 7)
+        if (!esNegra(tablero[x - 2][y + 1]))
+            movPosibles.push({x: x - 2, y: y + 1});
+
+    // Abajo - Derecha
+    if (x + 1 <= 7 && y + 2 <= 7)
+        if (!esNegra(tablero[x + 1][y + 2]))
+            movPosibles.push({x: x + 1, y: y + 2});
+    if (x + 2 <= 7 && y + 1 <= 7)
+        if (!esNegra(tablero[x + 2][y + 1]))
+            movPosibles.push({x: x + 2, y: y + 1});
+
+    // Abajo - Izquierda
+    if (x + 1 <= 7 && y - 2 >= 0)
+        if (!esNegra(tablero[x + 1][y - 2]))
+            movPosibles.push({x: x + 1, y: y - 2});
+    if (x + 2 <= 7 && y - 1 >= 0)
+        if (!esNegra(tablero[x + 2][y - 1]))
+            movPosibles.push({x: x + 2, y: y - 1});
+}
+
+function calcularMovAlfilBlanco(x, y) {
+    let i, j;
+
+    // Arriba - Izquierda
+    i = 1;
+    j = 1;
+    while (x - i >= 0 && y - j >= 0) {
+        if (esBlanca(tablero[x - i][y - j]))
+            break;
+        movPosibles.push({x: x - i, y: y - j});
+        if (esNegra(tablero[x - i][y - j]))
+            break;
+        i++;
+        j++;
+    }
+
+    // Arriba - Derecha
+    i = 1;
+    j = 1;
+    while (x - i >= 0 && y + j <= 7) {
+        if (esBlanca(tablero[x - i][y + j]))
+            break;
+        movPosibles.push({x: x - i, y: y + j});
+        if (esNegra(tablero[x - i][y + j]))
+            break;
+        i++;
+        j++;
+    }
+
+    // Abajo - Derecha
+    i = 1;
+    j = 1;
+    while (x + i <= 7 && y + j <= 7) {
+        if (esBlanca(tablero[x + i][y + j]))
+            break;
+        movPosibles.push({x: x + i, y: y + j});
+        if (esNegra(tablero[x + i][y + j]))
+            break;
+        i++;
+        j++;
+    }
+
+    // Abajo - Izquierda
+    i = 1;
+    j = 1;
+    while (x + i <= 7 && y - j >= 0) {
+        if (esBlanca(tablero[x + i][y - j]))
+            break;
+        movPosibles.push({x: x + i, y: y - j});
+        if (esNegra(tablero[x + i][y - j]))
+            break;
+        i++;
+        j++;
+    }
+}
+
+function calcularMovAlfilNegro(x, y) {
+    let i, j;
+
+    // Arriba - Izquierda
+    i = 1;
+    j = 1;
+    while (x - i >= 0 && y - j >= 0) {
+        if (esNegra(tablero[x - i][y - j]))
+            break;
+        movPosibles.push({x: x - i, y: y - j});
+        if (esBlanca(tablero[x - i][y - j]))
+            break;
+        i++;
+        j++;
+    }
+
+    // Arriba - Derecha
+    i = 1;
+    j = 1;
+    while (x - i >= 0 && y + j <= 7) {
+        if (esNegra(tablero[x - i][y + j]))
+            break;
+        movPosibles.push({x: x - i, y: y + j});
+        if (esBlanca(tablero[x - i][y + j]))
+            break;
+        i++;
+        j++;
+    }
+
+    // Abajo - Derecha
+    i = 1;
+    j = 1;
+    while (x + i <= 7 && y + j <= 7) {
+        if (esNegra(tablero[x + i][y + j]))
+            break;
+        movPosibles.push({x: x + i, y: y + j});
+        if (esBlanca(tablero[x + i][y + j]))
+            break;
+        i++;
+        j++;
+    }
+
+    // Abajo - Izquierda
+    i = 1;
+    j = 1;
+    while (x + i <= 7 && y - j >= 0) {
+        if (esNegra(tablero[x + i][y - j]))
+            break;
+        movPosibles.push({x: x + i, y: y - j});
+        if (esBlanca(tablero[x + i][y - j]))
+            break;
+        i++;
+        j++;
+    }
+}
+
+function calcularMovDamaBlanco(x, y) {
+    calcularMovTorreBlanco(x, y);
+    calcularMovAlfilBlanco(x, y);
+}
+
+function calcularMovDamaNegro(x, y) {
+    calcularMovTorreNegro(x, y);
+    calcularMovAlfilNegro(x, y);
+}
+
+function calcularMovReyBlanco(x, y) {
+    // Arriba - Izquierda
+    if (x - 1 >= 0 && y - 1 >= 0)
+        if (!esBlanca(tablero[x - 1][y - 1]))
+            movPosibles.push({x: x - 1, y: y - 1});
+
+    // Arriba
+    if (x - 1 >= 0)
+        if (!esBlanca(tablero[x - 1][y]))
+            movPosibles.push({x: x - 1, y: y});
+
+    // Arriba - Derecha
+    if (x - 1 >= 0 && y + 1 <= 7)
+        if (!esBlanca(tablero[x - 1][y + 1]))
+            movPosibles.push({x: x - 1, y: y + 1});
+
+    // Derecha
+    if (y + 1 <= 7)
+        if (!esBlanca(tablero[x][y + 1]))
+            movPosibles.push({x: x, y: y + 1});
+
+    // Abajo - Derecha
+    if (x + 1 <= 7 && y + 1 <= 7)
+        if (!esBlanca(tablero[x + 1][y + 1]))
+            movPosibles.push({x: x + 1, y: y + 1});
+
+    // Abajo
+    if (x + 1 <= 7)
+        if (!esBlanca(tablero[x + 1][y]))
+            movPosibles.push({x: x + 1, y: y});
+
+    // Abajo - Izquierda
+    if (x + 1 <= 7 && y - 1 >= 0)
+        if (!esBlanca(tablero[x + 1][y - 1]))
+            movPosibles.push({x: x + 1, y: y - 1});
+
+    // Izquierda
+    if (y - 1 >= 0)
+        if (!esBlanca(tablero[x][y - 1]))
+            movPosibles.push({x: x, y: y - 1});
+}
+
+function calcularMovReyNegro(x, y) {
+    // Arriba - Izquierda
+    if (x - 1 >= 0 && y - 1 >= 0)
+        if (!esNegra(tablero[x - 1][y - 1]))
+            movPosibles.push({x: x - 1, y: y - 1});
+
+    // Arriba
+    if (x - 1 >= 0)
+        if (!esNegra(tablero[x - 1][y]))
+            movPosibles.push({x: x - 1, y: y});
+
+    // Arriba - Derecha
+    if (x - 1 >= 0 && y + 1 <= 7)
+        if (!esNegra(tablero[x - 1][y + 1]))
+            movPosibles.push({x: x - 1, y: y + 1});
+
+    // Derecha
+    if (y + 1 <= 7)
+        if (!esNegra(tablero[x][y + 1]))
+            movPosibles.push({x: x, y: y + 1});
+
+    // Abajo - Derecha
+    if (x + 1 <= 7 && y + 1 <= 7)
+        if (!esNegra(tablero[x + 1][y + 1]))
+            movPosibles.push({x: x + 1, y: y + 1});
+
+    // Abajo
+    if (x + 1 <= 7)
+        if (!esNegra(tablero[x + 1][y]))
+            movPosibles.push({x: x + 1, y: y});
+
+    // Abajo - Izquierda
+    if (x + 1 <= 7 && y - 1 >= 0)
+        if (!esNegra(tablero[x + 1][y - 1]))
+            movPosibles.push({x: x + 1, y: y - 1});
+
+    // Izquierda
+    if (y - 1 >= 0)
+        if (!esNegra(tablero[x][y - 1]))
+            movPosibles.push({x: x, y: y - 1});
 }

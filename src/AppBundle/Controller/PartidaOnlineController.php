@@ -87,15 +87,37 @@ class PartidaOnlineController extends Controller
         $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
         $tablero = $tableroRepository->findUltimoByPartida($partida);
 
+        // Obtengo el color dle jugador que ha hecho la peticion
+        if ($partida->isJugadorBlancas()) {
+            if ($partida->getJugadorAnfitrion() == $this->getUser()->getId())
+                $miColor = true;
+            else
+                $miColor = false;
+        } else {
+            if ($partida->getJugadorAnfitrion() == $this->getUser()->getId())
+                $miColor = false;
+            else
+                $miColor = true;
+        }
+
         $objeto = new stdClass();
         $objeto->casillas = $tablero[0]->getCasillas();
-        $objeto->turno = $tablero[0]->isTurno();
+        $objeto->colorTurno = $tablero[0]->isTurno();
         $objeto->enroques = $tablero[0]->getEnroques();
         $objeto->peonAlPaso = $tablero[0]->getPeonAlPaso();
         $objeto->ultimoMov = $tablero[0]->getUltimoMov();
         $objeto->jaque = $tablero[0]->isJaque();
         $objeto->pgn = $partida->getPgn();
+        $objeto->miColor = $miColor;
 
         return new JsonResponse($objeto);
+    }
+
+    /**
+     * @Route("/movimiento_y_comprobaciones", name="movimiento_y_comprobaciones")
+     */
+    public function movimientoYComprobaciones(Request $request)
+    {
+        return new JsonResponse(['status'=>'ok']);
     }
 }

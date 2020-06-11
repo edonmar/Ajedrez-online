@@ -31,13 +31,13 @@ class Tablero
     private $turno;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string")
      * @var string
      */
     private $enroques;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string")
      * @var string
      */
     private $peonAlPaso;
@@ -49,7 +49,7 @@ class Tablero
     private $regla50mov;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string")
      * @var string
      */
     private $ultimoMov;

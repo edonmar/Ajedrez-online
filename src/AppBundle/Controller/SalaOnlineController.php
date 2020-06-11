@@ -185,7 +185,9 @@ class SalaOnlineController extends Controller
         $nuevoTablero->setCasillas("tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT");
         $nuevoTablero->setTurno(true);
         $nuevoTablero->setEnroques("DRdr");
+        $nuevoTablero->setPeonAlPaso("");
         $nuevoTablero->setRegla50mov("0000");
+        $nuevoTablero->setUltimoMov("");
         $nuevoTablero->setJaque(false);
         $em = $this->getDoctrine()->getManager();
         $em->persist($nuevoTablero);
