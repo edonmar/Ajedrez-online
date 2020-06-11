@@ -625,7 +625,7 @@ function enviarMovimiento(x, y, promocionPeon) {
     xhr.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
             let respuesta = JSON.parse(this.responseText);
-            //actualizarTablero(respuesta);
+            actualizarTablero(respuesta);
         }
     };
 
