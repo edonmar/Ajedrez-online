@@ -985,6 +985,9 @@ function modalFinDePartida(resultado) {
     } else if (resultado === "I") {
         cabecera = "Tablas";
         parrafo = "Falta de material para dar mate";
+    } else if (resultado === "5") {
+        cabecera = "Tablas";
+        parrafo = "50 turnos sin mover peón ni realizar capturas";
     }
 
     titulo.innerHTML = cabecera;

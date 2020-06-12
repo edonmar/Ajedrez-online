@@ -28,6 +28,8 @@ class PartidaOnlineController extends Controller
     public $movidaEnroqueLargoBlanco;
     public $movidaEnroqueCortoNegro;
     public $movidaEnroqueLargoNegro;
+    public $regla50MovBlancas = 0;
+    public $regla50MovNegras = 0;
     public $jaque;
     public $turno;
     public $resultado = null;
@@ -135,6 +137,7 @@ class PartidaOnlineController extends Controller
                 $this->setArrayPiezas();
                 $this->setEnroques($tablero[0]->getEnroques());
                 $this->setPeonAlPaso($tablero[0]->getPeonAlPaso());
+                $this->setRegla50Mov($tablero[0]->getRegla50Mov());
                 // Comprueba que la pieza que se va a mover es del color del jugador que ha hecho la llamada, y que es su turno
                 if ($miColor && ctype_upper($this->tablero[$origenX][$origenY]) && $this->turno ||
                     !$miColor && ctype_lower($this->tablero[$origenX][$origenY]) && !$this->turno) {
@@ -147,7 +150,9 @@ class PartidaOnlineController extends Controller
                         $this->turno = !$this->turno;
                         $peonAlPaso = $this->cadenaPeonAlPaso();
                         $enroques = $this->cadenaEnroques();
-                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso, $this->jaque);
+                        $regla50Mov = $this->cadenaRegla50Mov();
+                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso,
+                            $regla50Mov, $this->jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
                         if ($finDePartida)
                             $this->finalizarPartida($partida);
@@ -174,6 +179,15 @@ class PartidaOnlineController extends Controller
         $finDePartida = false;
         $jaque = false;
         $mate = false;
+        // Las siguientes variables son como estaba el tablero antes de mover la pieza. Las necesito para comprobar tablas
+        if ($promocionPeon !== "null") {
+            if ($this->turno)
+                $valorAnteriorCasillaOrigen = "P";
+            else
+                $valorAnteriorCasillaOrigen = "p";
+        } else
+            $valorAnteriorCasillaOrigen = $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y];
+        $valorAnteriorCasillaDestino = $this->tablero[$destinoX][$destinoY];
 
         if ($promocionPeon !== "null")
             $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y] = $promocionPeon;
@@ -206,6 +220,9 @@ class PartidaOnlineController extends Controller
             if ($this->piezasInsuficientes($this->piezasBlancas) && $this->piezasInsuficientes($this->piezasNegras)) {
                 $finDePartida = true;
                 $this->resultado = "I";
+            } else if ($this->regla50Movimientos($valorAnteriorCasillaOrigen, $valorAnteriorCasillaDestino)) {
+                $finDePartida = true;
+                $this->resultado = "5";
             }
         }
 
@@ -228,7 +245,7 @@ class PartidaOnlineController extends Controller
         return $objeto;
     }
 
-    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $enroques, $peonAlPaso, $jaque)
+    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $enroques, $peonAlPaso, $regla50Mov, $jaque)
     {
         $nuevoTablero = new Tablero();
         $nuevoTablero->setPartida($partida);
@@ -236,7 +253,7 @@ class PartidaOnlineController extends Controller
         $nuevoTablero->setTurno($turno);
         $nuevoTablero->setEnroques($enroques);
         $nuevoTablero->setPeonAlPaso($peonAlPaso);
-        $nuevoTablero->setRegla50mov("0000");
+        $nuevoTablero->setRegla50mov($regla50Mov);
         $nuevoTablero->setUltimoMov($ultimoMov);
         $nuevoTablero->setJaque($jaque);
         $em = $this->getDoctrine()->getManager();
@@ -330,6 +347,12 @@ class PartidaOnlineController extends Controller
         $this->peonAlPaso = $objeto;
     }
 
+    function setRegla50Mov($cadenaRegla50Mov)
+    {
+        $this->regla50MovBlancas = (int)($cadenaRegla50Mov[0] . $cadenaRegla50Mov[1]);
+        $this->regla50MovNegras = (int)($cadenaRegla50Mov[2] . $cadenaRegla50Mov[3]);
+    }
+
     function cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY)
     {
         return strval($origenX) . strval($origenY) . strval($destinoX) . strval($destinoY);
@@ -354,6 +377,19 @@ class PartidaOnlineController extends Controller
             $enroques .= "r";
 
         return $enroques;
+    }
+
+    function cadenaRegla50Mov()
+    {
+        $cadenaBlancas = strval($this->regla50MovBlancas);
+        if(strlen($cadenaBlancas) === 1)
+            $cadenaBlancas = "0" . $cadenaBlancas;
+
+        $cadenaNegras = strval($this->regla50MovNegras);
+        if(strlen($cadenaNegras) === 1)
+            $cadenaNegras = "0" . $cadenaNegras;
+
+        return $cadenaBlancas . $cadenaNegras;
     }
 
     function setEnroques($cadenaEnroques)
@@ -815,6 +851,22 @@ class PartidaOnlineController extends Controller
         }
 
         return $piezasInsuficientes;
+    }
+
+    function regla50Movimientos($valorAnteriorCasillaOrigen, $valorAnteriorCasillaDestino)
+    {
+        // Si cualquiera de los colores captura una pieza o mueve un peon, pone los dos contadores a 0
+        if (strtoupper($valorAnteriorCasillaOrigen) === "P" || $valorAnteriorCasillaDestino !== "0") {
+            $this->regla50MovBlancas = 0;
+            $this->regla50MovNegras = 0;
+        } else {
+            if ($this->turno)
+                $this->regla50MovBlancas++;
+            else
+                $this->regla50MovNegras++;
+        }
+
+        return $this->regla50MovBlancas === 50 && $this->regla50MovNegras === 50;
     }
 
     function calcularMovSegunPieza($x, $y)
