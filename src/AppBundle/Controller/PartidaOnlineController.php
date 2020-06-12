@@ -30,6 +30,7 @@ class PartidaOnlineController extends Controller
     public $movidaEnroqueLargoNegro;
     public $jaque;
     public $turno;
+    public $resultado = null;
 
     /**
      * @Route("/partida_online/{id}", name="partida_online")
@@ -140,7 +141,7 @@ class PartidaOnlineController extends Controller
                     $this->realizarSeleccionPieza($origenX, $origenY);
                     // Comprueba que el movimiento que se va a realizar es valido
                     if ($valido = $this->esMovValido($destinoX, $destinoY)) {
-                        $this->realizarMovimientoYComprobaciones($destinoX, $destinoY, $request->get('promocionPeon'));
+                        $finDePartida = $this->realizarMovimientoYComprobaciones($destinoX, $destinoY, $request->get('promocionPeon'));
                         $cadena = $this->tableroACadena();
                         $ultimoMov = $this->cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY);
                         $this->turno = !$this->turno;
@@ -148,6 +149,8 @@ class PartidaOnlineController extends Controller
                         $enroques = $this->cadenaEnroques();
                         $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso, $this->jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
+                        if ($finDePartida)
+                            $this->finalizarPartida($partida);
                     }
                 }
             }
@@ -168,15 +171,38 @@ class PartidaOnlineController extends Controller
 
     function realizarMovimientoYComprobaciones($destinoX, $destinoY, $promocionPeon)
     {
-        if($promocionPeon !== "null")
+        $finDePartida = false;
+        $jaque = false;
+        $mate = false;
+
+        if ($promocionPeon !== "null")
             $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y] = $promocionPeon;
         $this->moverPieza($destinoX, $destinoY);
         $haEnrocado = $this->enroqueYComprobaciones($destinoX, $destinoY);
         $haCapturadoAlPAso = $this->capturaAlPasoYComprobaciones($destinoX, $destinoY);
+
         if ($this->esJaque($this->turno))
             $this->jaque = true;
         else
             $this->jaque = false;
+
+        if ($this->tieneMovimientos()) {
+            if ($this->esJaque($this->turno)) {
+                $jaque = true;
+            }
+        } else {
+            $finDePartida = true;
+            if ($this->esJaque($this->turno)) {
+                $mate = true;
+                if ($this->turno)
+                    $this->resultado = "B";
+                else
+                    $this->resultado = "N";
+            } else
+                $this->resultado = "A";
+        }
+
+        return $finDePartida;
     }
 
     function tableroRespuesta($tablero, $partida, $miColor)
@@ -189,6 +215,7 @@ class PartidaOnlineController extends Controller
         $objeto->ultimoMov = $tablero[0]->getUltimoMov();
         $objeto->jaque = $tablero[0]->isJaque();
         $objeto->pgn = $partida->getPgn();
+        $objeto->resultado = $partida->getResultado();
         $objeto->miColor = $miColor;
 
         return $objeto;
@@ -207,6 +234,14 @@ class PartidaOnlineController extends Controller
         $nuevoTablero->setJaque($jaque);
         $em = $this->getDoctrine()->getManager();
         $em->persist($nuevoTablero);
+        $em->flush();
+    }
+
+    function finalizarPartida($partida)
+    {
+        $partida->setResultado($this->resultado);
+        $partida->setFechaFin(new \DateTime());
+        $em = $this->getDoctrine()->getManager();
         $em->flush();
     }
 
@@ -515,6 +550,39 @@ class PartidaOnlineController extends Controller
         }
 
         return $jaque;
+    }
+
+    // Compruebo si el color contrario al que acaba de mover tiene algun movimiento posible
+    // Para cada movimiento de cada pieza, compruebo si al hacer ese movimiento el rey de ese color quedaria en jaque
+    // Si hay al menos un movimiento que sea posible sin colocar a su propio rey en jaque, acaba el bucle y devuelve true
+    function tieneMovimientos()
+    {
+        $puedeMover = false;
+
+        if ($this->turno)
+            $piezasAmenazadas = $this->piezasNegras;
+        else
+            $piezasAmenazadas = $this->piezasBlancas;
+
+        $numPiezasAmenazadas = sizeof($piezasAmenazadas);
+        $i = 0;
+        do {
+            $this->movPosibles = [];
+            $this->calcularMovSegunPieza($piezasAmenazadas[$i]->x, $piezasAmenazadas[$i]->y);
+            $numMovimientos = sizeof($this->movPosibles);
+            if ($numMovimientos > 0) {
+                $valorCasillaOrigen = $this->tablero[$piezasAmenazadas[$i]->x][$piezasAmenazadas[$i]->y];
+                $j = 0;
+                do {
+                    if (!$this->movAmenazaReyPropio($j, $this->turno, $piezasAmenazadas[$i], $valorCasillaOrigen))
+                        $puedeMover = true;
+                    $j++;
+                } while ($j < $numMovimientos && !$puedeMover);
+            }
+            $i++;
+        } while ($i < $numPiezasAmenazadas && !$puedeMover);
+
+        return $puedeMover;
     }
 
     // Comprueba cuando se mueve el rey o la torre. Ese color no podra hacer enroque

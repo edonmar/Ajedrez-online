@@ -12,6 +12,7 @@ let movidaEnroqueLargoNegro = false;
 let tableroGirado = false;
 let turno;
 let estadoActual;    // Si actualmente es mi turno o no
+let partidaTerminada = false;
 
 window.onload = function () {
     cargarMensajes();
@@ -49,16 +50,16 @@ function inicializarTableroHTML() {
 function iniciarIntervalos() {
     setInterval(function () {
         cargarMensajes();
-        if (!estadoActual)
+        if (!estadoActual && !partidaTerminada)
             cargarTablero();
     }, 1000);
 }
 
 // Si es el turno del jugador, tiene acceso a los eventos de mover tablero
 // Si no es el turno del jugador, llama al intervalo de la llamada ajax que comprueba cuando el otro jugador ha movido
-function cambiarEstado(esMiTurno) {
+function cambiarEstado(esMiTurno, resultado) {
     if (esMiTurno) {
-        if (!estadoActual) {
+        if (!estadoActual && resultado === null) {
             iniciarEventosTablero();
             estadoActual = true;
         }
@@ -237,9 +238,13 @@ function actualizarTablero(respuesta) {
     cargarCadenaMovimientos(respuesta.pgn);
     cargarEnroques(respuesta.enroques);
     cargarPeonAlPaso(respuesta.peonAlPaso);
+    if (respuesta.resultado !== null) {
+        partidaTerminada = true;
+        modalFinDePartida(respuesta.resultado);
+    }
 
     let esMiTurno = respuesta.colorTurno === respuesta.miColor;
-    cambiarEstado(esMiTurno);
+    cambiarEstado(esMiTurno, respuesta.resultado);
 }
 
 function mostrarTurno(turno) {
@@ -956,6 +961,45 @@ function modalPromocionPeon(x, y) {
         deseleccionarPieza();
         movPosibles = [];
     }
+}
+
+function modalFinDePartida(resultado) {
+    let modal = document.getElementById("miModal");
+    let cerrar = document.getElementById("modalCerrar");
+    let titulo = document.getElementById("modalTitulo");
+    let body = document.getElementById("modalBody");
+    let nombreBlancas = document.querySelector(".nombreBlancas");
+    let nombreNegras = document.querySelector(".nombreNegras");
+    let cabecera;
+    let parrafo;
+
+    if (resultado === "B") {
+        cabecera = "Gana " + nombreBlancas.innerHTML;
+        parrafo = "Jaque mate";
+    } else if (resultado === "N") {
+        cabecera = "Gana " + nombreNegras.innerHTML;
+        parrafo = "Jaque mate";
+    } else if (resultado === "A"){
+        cabecera = "Tablas";
+        parrafo = "Rey ahogado";
+    }
+
+    titulo.innerHTML = cabecera;
+
+    let p = document.createElement("P");
+    p.innerHTML = parrafo;
+
+    body.appendChild(p);
+
+    // Boton de cerrar el modal
+    cerrar.onclick = function () {
+        modal.style.display = "none";
+        titulo.innerHTML = "";
+        body.innerHTML = "";
+    }
+
+    // Mostrar el modal
+    modal.style.display = "block";
 }
 
 function calcularMovSegunPieza(x, y) {
