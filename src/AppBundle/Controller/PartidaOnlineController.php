@@ -24,6 +24,10 @@ class PartidaOnlineController extends Controller
     public $hayPiezaSelec = false;
     public $piezaSelec;
     public $peonAlPaso;
+    public $movidaEnroqueCortoBlanco;
+    public $movidaEnroqueLargoBlanco;
+    public $movidaEnroqueCortoNegro;
+    public $movidaEnroqueLargoNegro;
     public $turno;
 
     /**
@@ -127,6 +131,7 @@ class PartidaOnlineController extends Controller
                 $partida->getJugadorInvitado() === $this->getUser()->getId()) {
                 $this->cadenaATablero($tablero[0]->getCasillas());
                 $this->setArrayPiezas();
+                $this->setEnroques($tablero[0]->getEnroques());
                 $this->setPeonAlPaso($tablero[0]->getPeonAlPaso());
                 // Comprueba que la pieza que se va a mover es del color del jugador que ha hecho la llamada, y que es su turno
                 if ($miColor && ctype_upper($this->tablero[$origenX][$origenY]) && $this->turno ||
@@ -134,9 +139,12 @@ class PartidaOnlineController extends Controller
                     $this->calcularMovSegunPieza($origenX, $origenY);
                     $this->seleccionarPieza($origenX, $origenY);
                     $this->eliminarMovQueAmenazanAMiRey();
+                    if (strtoupper($this->tablero[$this->piezaSelec->x][$this->piezaSelec->y]) === "R")
+                        $this->annadirEnroquesPosibles();
                     // Comprueba que el movimiento que se va a realizar es valido
                     if ($valido = $this->esMovValido($destinoX, $destinoY)) {
                         $this->moverPieza($destinoX, $destinoY);
+                        $haEnrocado = $this->enroqueYComprobaciones($destinoX, $destinoY);
                         $haCapturadoAlPAso = $this->capturaAlPasoYComprobaciones($destinoX, $destinoY);
                         if ($this->esJaque($this->turno))
                             $jaque = true;
@@ -146,7 +154,8 @@ class PartidaOnlineController extends Controller
                         $ultimoMov = $this->cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY);
                         $this->turno = !$this->turno;
                         $peonAlPaso = $this->cadenaPeonAlPaso();
-                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $peonAlPaso, $jaque);
+                        $enroques = $this->cadenaEnroques();
+                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso, $jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
                     }
                 }
@@ -172,13 +181,13 @@ class PartidaOnlineController extends Controller
         return $objeto;
     }
 
-    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $peonAlPaso, $jaque)
+    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $enroques, $peonAlPaso, $jaque)
     {
         $nuevoTablero = new Tablero();
         $nuevoTablero->setPartida($partida);
         $nuevoTablero->setCasillas($cadena);
         $nuevoTablero->setTurno($turno);
-        $nuevoTablero->setEnroques("DRdr");
+        $nuevoTablero->setEnroques($enroques);
         $nuevoTablero->setPeonAlPaso($peonAlPaso);
         $nuevoTablero->setRegla50mov("0000");
         $nuevoTablero->setUltimoMov($ultimoMov);
@@ -274,6 +283,45 @@ class PartidaOnlineController extends Controller
     function cadenaPeonAlPaso()
     {
         return strval($this->peonAlPaso->x) . strval($this->peonAlPaso->y);
+    }
+
+    function cadenaEnroques()
+    {
+        $enroques = "";
+
+        if (!$this->movidaEnroqueLargoBlanco)
+            $enroques .= "D";
+        if (!$this->movidaEnroqueCortoBlanco)
+            $enroques .= "R";
+        if (!$this->movidaEnroqueLargoNegro)
+            $enroques .= "d";
+        if (!$this->movidaEnroqueCortoNegro)
+            $enroques .= "r";
+
+        return $enroques;
+    }
+
+    function setEnroques($cadenaEnroques)
+    {
+        if (strpos($cadenaEnroques, "D") === false)
+            $this->movidaEnroqueLargoBlanco = true;
+        else
+            $this->movidaEnroqueLargoBlanco = false;
+
+        if (strpos($cadenaEnroques, "R") === false)
+            $this->movidaEnroqueCortoBlanco = true;
+        else
+            $this->movidaEnroqueCortoBlanco = false;
+
+        if (strpos($cadenaEnroques, "d") === false)
+            $this->movidaEnroqueLargoNegro = true;
+        else
+            $this->movidaEnroqueLargoNegro = false;
+
+        if (strpos($cadenaEnroques, "r") === false)
+            $this->movidaEnroqueCortoNegro = true;
+        else
+            $this->movidaEnroqueCortoNegro = false;
     }
 
     function seleccionarPieza($x, $y)
@@ -454,6 +502,139 @@ class PartidaOnlineController extends Controller
         }
 
         return $jaque;
+    }
+
+    // Comprueba cuando se mueve el rey o la torre. Ese color no podra hacer enroque
+    // Comprueba si el movimiento que se acaba de hacer es un enroque y mueve la torre
+    function enroqueYComprobaciones($x, $y)
+    {
+        $haEnrocado = new stdClass();
+        $haEnrocado->corto = false;
+        $haEnrocado->largo = false;
+
+        if ($this->tablero[$x][$y] === "T") {    // Si ha movido torre blanca
+            if ($this->piezaSelec->y === 0)
+                $this->movidaEnroqueLargoBlanco = true;
+            if ($this->piezaSelec->y === 7)
+                $this->movidaEnroqueCortoBlanco = true;
+        } else if ($this->tablero[$x][$y] === "t") {    // Si ha movido torre negra
+            if ($this->piezaSelec->y === 0)
+                $this->movidaEnroqueLargoNegro = true;
+            if ($this->piezaSelec->y === 7)
+                $this->movidaEnroqueCortoNegro = true;
+        } else if (strtoupper($this->tablero[$x][$y]) === "R") {    // Si ha movido un rey
+            // Si el movimiento es un enroque (el rey mueve 2 posiciones)
+            if (abs($this->piezaSelec->y - $y) === 2) {
+                if ($this->turno)
+                    $x = 7;
+                else
+                    $x = 0;
+
+                if ($y === 6) {    // Enroque corto
+                    $posYOrigenTorre = 7;
+                    $posYDestinoTorre = 5;
+                    $haEnrocado->corto = true;
+                } else {    // Enroque largo
+                    $posYOrigenTorre = 0;
+                    $posYDestinoTorre = 3;
+                    $haEnrocado->largo = true;
+                }
+
+                // Selecciono la torre y la muevo
+                $this->seleccionarPieza($x, $posYOrigenTorre);
+                $this->moverPieza($x, $posYDestinoTorre);
+                // Vuelvo a seleccionar la casilla de origen del rey
+                $this->seleccionarPieza($x, 4);
+            }
+
+            if ($this->turno) {
+                $this->movidaEnroqueLargoBlanco = true;
+                $this->movidaEnroqueCortoBlanco = true;
+            } else {
+                $this->movidaEnroqueLargoNegro = true;
+                $this->movidaEnroqueCortoNegro = true;
+            }
+        }
+
+        return $haEnrocado;
+    }
+
+    // Comprueba si se ha seleccionado un rey y si tiene algun enroque disponible
+    // Si lo hay, comprueba todos los movimientos posibles de todas las piezas del otro color
+    // Si ninguno de esos movimientos amenaza al rey o a las casillas por las que pasa, annade el enroque a movPosibles
+    function annadirEnroquesPosibles()
+    {
+        $comprobarEnroqueCorto = false;
+        $comprobarEnroqueLargo = false;
+
+        if ($this->turno) {
+            $piezasAmenazantes = $this->piezasNegras;
+            $x = 7;
+        } else {
+            $piezasAmenazantes = $this->piezasBlancas;
+            $x = 0;
+        }
+
+        // Enroque corto
+        if ($this->turno && !$this->movidaEnroqueCortoBlanco ||
+            !$this->turno && !$this->movidaEnroqueCortoNegro)
+            if ($this->tablero[$x][5] === "0" && $this->tablero[$x][6] === "0")
+                $comprobarEnroqueCorto = true;
+
+        // Enroque largo
+        if ($this->turno && !$this->movidaEnroqueLargoBlanco ||
+            !$this->turno && !$this->movidaEnroqueLargoNegro)
+            if ($this->tablero[$x][1] === "0" && $this->tablero[$x][2] === "0" &&
+                $this->tablero[$x][3] === "0")
+                $comprobarEnroqueLargo = true;
+
+        if ($comprobarEnroqueCorto || $comprobarEnroqueLargo) {
+            $enroqueCortoAmenazado = false;
+            $enroqueLargoAmenazado = false;
+            $movPosiblesAux = $this->movPosibles;
+            $numPiezasAmenazantes = sizeof($piezasAmenazantes);
+            $i = 0;
+
+            do {
+                $this->movPosibles = [];
+                $this->calcularMovSegunPieza($piezasAmenazantes[$i]->x, $piezasAmenazantes[$i]->y);
+                for ($j = 0, $finI = sizeof($this->movPosibles); $j < $finI; $j++) {
+                    if ($this->movPosibles[$j]->x === $x) {
+                        if ($this->movPosibles[$j]->y === 4) {
+                            $enroqueCortoAmenazado = true;
+                            $enroqueLargoAmenazado = true;
+                            break;
+                        }
+                        if ($comprobarEnroqueCorto && !$enroqueCortoAmenazado)
+                            if ($this->movPosibles[$j]->y === 5 || $this->movPosibles[$j]->y === 6)
+                                $enroqueCortoAmenazado = true;
+                        if ($comprobarEnroqueLargo && !$enroqueLargoAmenazado)
+                            if ($this->movPosibles[$j]->y === 3 || $this->movPosibles[$j]->y === 2 ||
+                                $this->movPosibles[$j]->y === 1)
+                                $enroqueLargoAmenazado = true;
+                    }
+                    if ($enroqueCortoAmenazado && $enroqueLargoAmenazado)
+                        break;
+                }
+                $i++;
+            } while ($i < $numPiezasAmenazantes && (!$enroqueCortoAmenazado || !$enroqueLargoAmenazado));
+
+            $this->movPosibles = $movPosiblesAux;
+
+            if ($comprobarEnroqueCorto && !$enroqueCortoAmenazado) {
+                $mov = new stdClass();
+                $mov->x = $x;
+                $mov->y = 6;
+                array_push($this->movPosibles, $mov);
+            }
+
+            if ($comprobarEnroqueLargo && !$enroqueLargoAmenazado) {
+                $mov = new stdClass();
+                $mov->x = $x;
+                $mov->y = 2;
+                array_push($this->movPosibles, $mov);
+            }
+        }
     }
 
     // Comprueba cuando un peon mueve dos casillas y lo guarda para que pueda ser capturado al paso
