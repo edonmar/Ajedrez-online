@@ -14,22 +14,24 @@ class PartidaRepository extends ServiceEntityRepository
         parent::__construct($registry, Partida::class);
     }
 
-    public function contarPorUsuario(Usuario $usuario){
+    public function contarTerminadasByUsuario(Usuario $usuario){
         return $this->createQueryBuilder('p')
             ->select('count(p)')
             ->innerJoin('p.usuarios', 'u')
             ->where('u.id = :usuario')
+            ->andWhere('p.fechaFin is not NULL')
             ->setParameter('usuario', $usuario)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
-    public function findByUsuario(Usuario $usuario)
+    public function findTerminadasByUsuario(Usuario $usuario)
     {
         return $this->createQueryBuilder('p')
             ->select('p')
             ->innerJoin('p.usuarios', 'u')
             ->where('u.id = :usuario')
+            ->andWhere('p.fechaFin is not NULL')
             ->setParameter('usuario', $usuario)
             ->orderBy('p.fechaFin', 'desc')
             ->getQuery()
@@ -55,6 +57,7 @@ class PartidaRepository extends ServiceEntityRepository
             ->innerJoin('p.usuarios', 'u')
             ->where('u.id = :usuario')
             ->andWhere('p.fechaInicio is not NULL')
+            ->andWhere('p.fechaFin is NULL')
             ->setParameter('usuario', $usuario)
             ->getQuery()
             ->getResult();

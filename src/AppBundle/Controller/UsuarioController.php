@@ -20,7 +20,7 @@ class UsuarioController extends Controller
         $usuarios = $usuarioRepository->findOrdenadosPorNombre();
         $numPartidas = array();
         foreach ($usuarios as $usuario) {
-            $numPartidas[] = $partidaRepository->contarPorUsuario($usuario);
+            $numPartidas[] = $partidaRepository->contarTerminadasByUsuario($usuario);
         }
 
         return $this->render('usuario/listar.html.twig', [
@@ -34,7 +34,7 @@ class UsuarioController extends Controller
      */
     public function partidasAction(PartidaRepository $partidaRepository, Usuario $usuario)
     {
-        $partidas = $partidaRepository->findByUsuario($usuario);
+        $partidas = $partidaRepository->findTerminadasByUsuario($usuario);
 
         return $this->render('usuario/listar_partidas.html.twig', [
             'partidas' => $partidas,

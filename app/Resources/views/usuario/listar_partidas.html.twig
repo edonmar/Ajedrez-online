@@ -46,16 +46,17 @@
                         {% endif %}
                     </td>
                     <td class="resultado">
-                        {% if partida.resultado == "1/2-1/2" %}
+                        {% if partida.resultado == "A" or partida.resultado == "I"
+                            or partida.resultado == "3" or partida.resultado == "5" %}
                             Tablas
                         {% else %}
-                            {% if partida.resultado == "1-0" %}
+                            {% if partida.resultado == "B" %}
                                 {% if color %}
                                     Victoria
                                 {% else %}
                                     Derrota
                                 {% endif %}
-                            {% elseif partida.resultado == "0-1" %}
+                            {% elseif partida.resultado == "N" %}
                                 {% if color %}
                                     Derrota
                                 {% else %}
