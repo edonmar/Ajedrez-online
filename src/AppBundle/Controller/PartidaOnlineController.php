@@ -28,6 +28,7 @@ class PartidaOnlineController extends Controller
     public $movidaEnroqueLargoBlanco;
     public $movidaEnroqueCortoNegro;
     public $movidaEnroqueLargoNegro;
+    public $jaque;
     public $turno;
 
     /**
@@ -136,26 +137,16 @@ class PartidaOnlineController extends Controller
                 // Comprueba que la pieza que se va a mover es del color del jugador que ha hecho la llamada, y que es su turno
                 if ($miColor && ctype_upper($this->tablero[$origenX][$origenY]) && $this->turno ||
                     !$miColor && ctype_lower($this->tablero[$origenX][$origenY]) && !$this->turno) {
-                    $this->calcularMovSegunPieza($origenX, $origenY);
-                    $this->seleccionarPieza($origenX, $origenY);
-                    $this->eliminarMovQueAmenazanAMiRey();
-                    if (strtoupper($this->tablero[$this->piezaSelec->x][$this->piezaSelec->y]) === "R")
-                        $this->annadirEnroquesPosibles();
+                    $this->realizarSeleccionPieza($origenX, $origenY);
                     // Comprueba que el movimiento que se va a realizar es valido
                     if ($valido = $this->esMovValido($destinoX, $destinoY)) {
-                        $this->moverPieza($destinoX, $destinoY);
-                        $haEnrocado = $this->enroqueYComprobaciones($destinoX, $destinoY);
-                        $haCapturadoAlPAso = $this->capturaAlPasoYComprobaciones($destinoX, $destinoY);
-                        if ($this->esJaque($this->turno))
-                            $jaque = true;
-                        else
-                            $jaque = false;
+                        $this->realizarMovimientoYComprobaciones($destinoX, $destinoY, $request->get('promocionPeon'));
                         $cadena = $this->tableroACadena();
                         $ultimoMov = $this->cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY);
                         $this->turno = !$this->turno;
                         $peonAlPaso = $this->cadenaPeonAlPaso();
                         $enroques = $this->cadenaEnroques();
-                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso, $jaque);
+                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso, $this->jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
                     }
                 }
@@ -164,6 +155,28 @@ class PartidaOnlineController extends Controller
         $objeto = $this->tableroRespuesta($tablero, $partida, $miColor);
 
         return new JsonResponse($objeto);
+    }
+
+    function realizarSeleccionPieza($origenX, $origenY)
+    {
+        $this->calcularMovSegunPieza($origenX, $origenY);
+        $this->seleccionarPieza($origenX, $origenY);
+        $this->eliminarMovQueAmenazanAMiRey();
+        if (strtoupper($this->tablero[$this->piezaSelec->x][$this->piezaSelec->y]) === "R")
+            $this->annadirEnroquesPosibles();
+    }
+
+    function realizarMovimientoYComprobaciones($destinoX, $destinoY, $promocionPeon)
+    {
+        if($promocionPeon !== "null")
+            $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y] = $promocionPeon;
+        $this->moverPieza($destinoX, $destinoY);
+        $haEnrocado = $this->enroqueYComprobaciones($destinoX, $destinoY);
+        $haCapturadoAlPAso = $this->capturaAlPasoYComprobaciones($destinoX, $destinoY);
+        if ($this->esJaque($this->turno))
+            $this->jaque = true;
+        else
+            $this->jaque = false;
     }
 
     function tableroRespuesta($tablero, $partida, $miColor)
