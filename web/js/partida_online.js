@@ -979,9 +979,12 @@ function modalFinDePartida(resultado) {
     } else if (resultado === "N") {
         cabecera = "Gana " + nombreNegras.innerHTML;
         parrafo = "Jaque mate";
-    } else if (resultado === "A"){
+    } else if (resultado === "A") {
         cabecera = "Tablas";
         parrafo = "Rey ahogado";
+    } else if (resultado === "I") {
+        cabecera = "Tablas";
+        parrafo = "Falta de material para dar mate";
     }
 
     titulo.innerHTML = cabecera;

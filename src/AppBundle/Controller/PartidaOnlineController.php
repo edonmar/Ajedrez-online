@@ -202,6 +202,13 @@ class PartidaOnlineController extends Controller
                 $this->resultado = "A";
         }
 
+        if (!$finDePartida) {
+            if ($this->piezasInsuficientes($this->piezasBlancas) && $this->piezasInsuficientes($this->piezasNegras)) {
+                $finDePartida = true;
+                $this->resultado = "I";
+            }
+        }
+
         return $finDePartida;
     }
 
@@ -753,6 +760,61 @@ class PartidaOnlineController extends Controller
         }
 
         return $haCapturadoAlPAso;
+    }
+
+    // Si se da uno de estos casos, devuelve true. Significa que un color no tiene piezas suficientes para ganar
+    function piezasInsuficientes($piezasColor)
+    {
+        $piezasInsuficientes = false;
+        $longPiezas = sizeof($piezasColor);
+
+        if ($longPiezas === 1)    // Rey solo
+            $piezasInsuficientes = true;
+        else if ($longPiezas === 2) {
+            if (strtoupper($this->tablero[$piezasColor[1]->x][$piezasColor[1]->y]) === "C")    // Rey y caballo
+                $piezasInsuficientes = true;
+            else if (strtoupper($this->tablero[$piezasColor[1]->x][$piezasColor[1]->y]) === "A")    // Rey y alfil
+                $piezasInsuficientes = true;
+        } else if ($longPiezas === 3) {
+            if (strtoupper($this->tablero[$piezasColor[1]->x][$piezasColor[1]->y]) === "C" &&
+                strtoupper($this->tablero[$piezasColor[2]->x][$piezasColor[2]->y]) === "C")    // Rey y dos caballos
+                $piezasInsuficientes = true;
+        }
+        // Rey y varios alfiles, pero todos los alfiles en casilla del mismo color
+        if (!$piezasInsuficientes && $longPiezas > 2) {
+            $soloAlfiles = true;
+
+            for ($i = 1; $i < $longPiezas; $i++) {
+                if (strtoupper($this->tablero[$piezasColor[$i]->x][$piezasColor[$i]->y]) !== "A") {
+                    $soloAlfiles = false;
+                    break;
+                }
+            }
+            if ($soloAlfiles) {
+                $todosMismoColorCasilla = true;
+                $primerColorCasilla = null;
+
+                for ($i = 1; $i < $longPiezas; $i++) {
+                    if ($piezasColor[$i]->x % 2 === 0)
+                        $colorCasilla = $piezasColor[$i]->y % 2 === 0;
+                    else
+                        $colorCasilla = $piezasColor[$i]->y % 2 !== 0;
+
+                    if ($i === 1)
+                        $primerColorCasilla = $colorCasilla;
+                    else {
+                        if ($primerColorCasilla !== $colorCasilla) {
+                            $todosMismoColorCasilla = false;
+                            break;
+                        }
+                    }
+                }
+                if ($todosMismoColorCasilla)
+                    $piezasInsuficientes = true;
+            }
+        }
+
+        return $piezasInsuficientes;
     }
 
     function calcularMovSegunPieza($x, $y)
