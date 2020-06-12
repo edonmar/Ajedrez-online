@@ -19,6 +19,12 @@ class PartidaOnlineController extends Controller
 {
     public $tablero = [];
     public $movPosibles = [];
+    public $piezasBlancas = [];
+    public $piezasNegras = [];
+    public $hayPiezaSelec = false;
+    public $piezaSelec;
+    public $peonAlPaso;
+    public $turno;
 
     /**
      * @Route("/partida_online/{id}", name="partida_online")
@@ -111,6 +117,7 @@ class PartidaOnlineController extends Controller
         $idPartida = $request->get('partida');
         $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
         $tablero = $tableroRepository->findUltimoByPartida($partida);
+        $this->turno = $tablero[0]->isTurno();
 
         // Compruebo que la partida este en curso
         if ($partida->getFechaInicio() !== null && $partida->getFechaFin() === null) {
@@ -118,19 +125,26 @@ class PartidaOnlineController extends Controller
             $miColor = $this->colorJugador($partida);
             if ($partida->getJugadorAnfitrion() === $this->getUser()->getId() ||
                 $partida->getJugadorInvitado() === $this->getUser()->getId()) {
-                $tableroCasillas = $tablero[0]->getCasillas();
-                $this->cadenaATablero($tableroCasillas);
+                $this->cadenaATablero($tablero[0]->getCasillas());
+                $this->setArrayPiezas();
+                $this->setPeonAlPaso($tablero[0]->getPeonAlPaso());
                 // Comprueba que la pieza que se va a mover es del color del jugador que ha hecho la llamada, y que es su turno
-                if ($miColor && ctype_upper($this->tablero[$origenX][$origenY]) && $tablero[0]->isTurno() ||
-                    !$miColor && ctype_lower($this->tablero[$origenX][$origenY]) && !$tablero[0]->isTurno()) {
+                if ($miColor && ctype_upper($this->tablero[$origenX][$origenY]) && $this->turno ||
+                    !$miColor && ctype_lower($this->tablero[$origenX][$origenY]) && !$this->turno) {
                     $this->calcularMovSegunPieza($origenX, $origenY);
+                    $this->seleccionarPieza($origenX, $origenY);
+                    $this->eliminarMovQueAmenazanAMiRey();
                     // Comprueba que el movimiento que se va a realizar es valido
                     if ($valido = $this->esMovValido($destinoX, $destinoY)) {
-                        $this->moverPieza($origenX, $origenY, $destinoX, $destinoY);
+                        $this->moverPieza($destinoX, $destinoY);
+                        if ($this->esJaque($this->turno))
+                            $jaque = true;
+                        else
+                            $jaque = false;
                         $cadena = $this->tableroACadena();
-                        $turno = !($tablero[0]->isTurno());
                         $ultimoMov = $this->cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY);
-                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $turno);
+                        $this->turno = !$this->turno;
+                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
                     }
                 }
@@ -156,7 +170,7 @@ class PartidaOnlineController extends Controller
         return $objeto;
     }
 
-    function nuevoTablero($partida, $cadena, $ultimoMov, $turno)
+    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $jaque)
     {
         $nuevoTablero = new Tablero();
         $nuevoTablero->setPartida($partida);
@@ -166,7 +180,7 @@ class PartidaOnlineController extends Controller
         $nuevoTablero->setPeonAlPaso("");
         $nuevoTablero->setRegla50mov("0000");
         $nuevoTablero->setUltimoMov($ultimoMov);
-        $nuevoTablero->setJaque(false);
+        $nuevoTablero->setJaque($jaque);
         $em = $this->getDoctrine()->getManager();
         $em->persist($nuevoTablero);
         $em->flush();
@@ -211,9 +225,58 @@ class PartidaOnlineController extends Controller
         return $cadena;
     }
 
+    function setArrayPiezas()
+    {
+        for ($i = 0; $i < 8; $i++) {
+            for ($j = 0; $j < 8; $j++) {
+                $tipo = $this->tablero[$i][$j];
+                if ($tipo !== "0") {
+                    $pieza = new stdClass();
+                    $pieza->x = $i;
+                    $pieza->y = $j;
+
+                    if (ctype_upper($tipo)) {
+                        if ($tipo === "R")
+                            array_unshift($this->piezasBlancas, $pieza);
+                        else
+                            array_push($this->piezasBlancas, $pieza);
+                    } else if (ctype_lower($tipo)) {
+                        if ($tipo === "r")
+                            array_unshift($this->piezasNegras, $pieza);
+                        else
+                            array_push($this->piezasNegras, $pieza);
+                    }
+                }
+            }
+        }
+    }
+
+    function setPeonAlPaso($cadenaPeonAlPaso)
+    {
+        $objeto = new stdClass();
+        if(strlen($cadenaPeonAlPaso) === 2) {
+            $objeto->x = (int)$cadenaPeonAlPaso[0];
+            $objeto->y = (int)$cadenaPeonAlPaso[1];
+        } else {
+            $objeto->x = null;
+            $objeto->y = null;
+        }
+        $this->peonAlPaso = $objeto;
+    }
+
     function cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY)
     {
         return strval($origenX) . strval($origenY) . strval($destinoX) . strval($destinoY);
+    }
+
+    function seleccionarPieza($x, $y)
+    {
+        $this->hayPiezaSelec = true;
+
+        $objeto = new stdClass();
+        $objeto->x = $x;
+        $objeto->y = $y;
+        $this->piezaSelec = $objeto;
     }
 
     function esMovValido($x, $y)
@@ -224,10 +287,166 @@ class PartidaOnlineController extends Controller
         return in_array($mov, $this->movPosibles);
     }
 
-    function moverPieza($origenX, $origenY, $destinoX, $destinoY)
+    function moverPieza($x, $y)
     {
-        $this->tablero[$destinoX][$destinoY] = $this->tablero[$origenX][$origenY];
-        $this->tablero[$origenX][$origenY] = "0";
+        $captura = false;
+
+        if ($this->tablero[$x][$y] !== "0")
+            $captura = true;
+
+        $this->tablero[$x][$y] = $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y];
+        $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y] = "0";
+
+        if ($this->turno) {
+            $this->piezasBlancas = $this->cambiarObjetoPiezaMovida($this->piezasBlancas, $x, $y);
+            if ($captura)
+                $this->piezasNegras = $this->eliminarObjetoPiezaCapturada($this->piezasNegras, $x, $y);
+        } else {
+            $this->piezasNegras = $this->cambiarObjetoPiezaMovida($this->piezasNegras, $x, $y);
+            if ($captura)
+                $this->piezasBlancas = $this->eliminarObjetoPiezaCapturada($this->piezasBlancas, $x, $y);
+        }
+    }
+
+    // Cambia las coordenadas de la pieza en el array de objetos
+    function cambiarObjetoPiezaMovida($piezasColor, $x, $y)
+    {
+        $index = $this->buscarPiezaEnArray($piezasColor, $this->piezaSelec->x, $this->piezaSelec->y);
+
+        $piezasColor[$index]->x = $x;
+        $piezasColor[$index]->y = $y;
+
+        return $piezasColor;
+    }
+
+    // Comprueba si se ha capturado una pieza y elimina la pieza capturada del array del otro color
+    function eliminarObjetoPiezaCapturada($piezasColor, $x, $y)
+    {
+        $index = $this->buscarPiezaEnArray($piezasColor, $x, $y);
+        array_splice($piezasColor, $index, 1);
+        return $piezasColor;
+    }
+
+    function buscarPiezaEnArray($piezasColor, $x, $y)
+    {
+        for ($i = 0, $finI = sizeof($piezasColor); $i < $finI; $i++) {
+            if ($piezasColor[$i]->x === $x && $piezasColor[$i]->y === $y) {
+                $index = $i;
+                break;
+            }
+        }
+        return $index;
+    }
+
+    // Comprueba todos los movimientos posibles de todas las piezas de un color
+    // Acaba el bucle y devuelve true si uno de los movimientos es capturar al rey del otro color
+    function esJaque($colorAmenazante)
+    {
+        $movPosiblesAux = $this->movPosibles;
+        $jaque = false;
+
+        if ($colorAmenazante) {
+            $piezasAmenazantes = $this->piezasBlancas;
+            $reyAmenazado = "r";
+        } else {
+            $piezasAmenazantes = $this->piezasNegras;
+            $reyAmenazado = "R";
+        }
+
+        $numPiezasAmenazantes = sizeof($piezasAmenazantes);
+        $i = 0;
+        do {
+            $this->movPosibles = [];
+            $this->calcularMovSegunPieza($piezasAmenazantes[$i]->x, $piezasAmenazantes[$i]->y);
+            for ($j = 0, $finI = sizeof($this->movPosibles); $j < $finI; $j++) {
+                if ($this->tablero[$this->movPosibles[$j]->x][$this->movPosibles[$j]->y] === $reyAmenazado) {
+                    $jaque = true;
+                    break;
+                }
+            }
+            $i++;
+        } while ($i < $numPiezasAmenazantes && !$jaque);
+
+        $this->movPosibles = $movPosiblesAux;
+
+        return $jaque;
+    }
+
+    // Para cada movimiento posible de la pieza seleccionada:
+    // Compruebo si al hacer ese movimiento mi rey quedaria en jaque
+    // Si queda en jaque, elimino ese movimiento de movPosibles
+    function eliminarMovQueAmenazanAMiRey()
+    {
+        if (sizeof($this->movPosibles) > 0) {
+            $valorCasillaOrigen = $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y];
+            $i = 0;
+
+            do {
+                if ($this->movAmenazaReyPropio($i, !$this->turno, $this->piezaSelec, $valorCasillaOrigen))
+                    array_splice($this->movPosibles, $i, 1);
+                else
+                    $i++;
+            } while ($i < sizeof($this->movPosibles));
+        }
+    }
+
+    // Llamando a la funcion esJaque, compruebo si al hacer un movimiento el rey del color movido quedaria en jaque
+    function movAmenazaReyPropio($i, $colorAmenazante, $casillaOrigen, $valorCasillaOrigen)
+    {
+        $jaque = false;
+        $capturaNormal = false;
+        $capturaAlPaso = false;
+        $casillaDestinoX = $this->movPosibles[$i]->x;
+        $casillaDestinoY = $this->movPosibles[$i]->y;
+        $valorCasillaDestino = $this->tablero[$casillaDestinoX][$casillaDestinoY];
+
+        // Compruebo si ha comido de manera normal
+        if (ctype_lower($valorCasillaOrigen) && ctype_upper($valorCasillaDestino)) {
+            $colorCapturada = $this->piezasBlancas;
+            $capturaNormal = true;
+        } else if (ctype_upper($valorCasillaOrigen) && ctype_lower($valorCasillaDestino)) {
+            $colorCapturada = $this->piezasNegras;
+            $capturaNormal = true;
+        } else if (strtoupper($valorCasillaOrigen) === "P") {
+            // Si ha comido al paso
+            if ($casillaOrigen->x === $this->peonAlPaso->x && $casillaDestinoY === $this->peonAlPaso->y) {
+                if ($casillaDestinoX === $this->peonAlPaso->x - 1) {
+                    $colorCapturada = $this->piezasNegras;
+                    $capturaAlPaso = true;
+                } else if ($casillaDestinoX === $this->peonAlPaso->x + 1) {
+                    $colorCapturada = $this->piezasBlancas;
+                    $capturaAlPaso = true;
+                }
+            }
+        }
+
+        // Si el movimiento captura una pieza, simulo eliminar la pieza capturada de su array
+        if ($capturaNormal)
+            $colorCapturada = $this->eliminarObjetoPiezaCapturada($colorCapturada, $casillaDestinoX, $casillaDestinoY);
+        else if ($capturaAlPaso)
+            $colorCapturada = $this->eliminarObjetoPiezaCapturada($colorCapturada, $this->peonAlPaso->x, $this->peonAlPaso->y);
+
+        // Simulo mover una pieza para ver como quedaria el tablero si hiciera ese movimiento
+        $this->tablero[$casillaOrigen->x][$casillaOrigen->y] = "0";
+        $this->tablero[$casillaDestinoX][$casillaDestinoY] = $valorCasillaOrigen;
+        if ($capturaAlPaso)
+            $this->tablero[$this->peonAlPaso->x][$this->peonAlPaso->y] = "0";
+
+        // Realizo la comprobacion
+        if ($this->esJaque($colorAmenazante))
+            $jaque = true;
+
+        // Vuelvo a colocar las piezas donde estaban antes de simular el movimiento
+        $this->tablero[$casillaOrigen->x][$casillaOrigen->y] = $valorCasillaOrigen;
+        $this->tablero[$casillaDestinoX][$casillaDestinoY] = $valorCasillaDestino;
+        if ($capturaAlPaso) {
+            if ($colorCapturada)
+                $this->tablero[$this->peonAlPaso->x][$this->peonAlPaso->y] = "P";
+            else
+                $this->tablero[$this->peonAlPaso->x][$this->peonAlPaso->y] = "p";
+        }
+
+        return $jaque;
     }
 
     function calcularMovSegunPieza($x, $y)
