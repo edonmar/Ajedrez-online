@@ -236,8 +236,7 @@ function actualizarTablero(respuesta) {
         mostrarJaque(respuesta.colorTurno);
     cargarCadenaMovimientos(respuesta.pgn);
     cargarEnroques(respuesta.enroques);
-    if (respuesta.peonAlPaso !== "")
-        cargarPeonAlPaso(respuesta.peonAlPaso);
+    cargarPeonAlPaso(respuesta.peonAlPaso);
 
     let esMiTurno = respuesta.colorTurno === respuesta.miColor;
     cambiarEstado(esMiTurno);
@@ -438,19 +437,24 @@ function cargarCadenaMovimientos(cadena) {
 }
 
 function cargarEnroques(enroques) {
-    if(enroques.indexOf("D") === -1)
+    if (enroques.indexOf("D") === -1)
         movidaEnroqueLargoBlanco = true;
-    if(enroques.indexOf("R") === -1)
+    if (enroques.indexOf("R") === -1)
         movidaEnroqueCortoBlanco = true;
-    if(enroques.indexOf("d") === -1)
+    if (enroques.indexOf("d") === -1)
         movidaEnroqueLargoNegro = true;
-    if(enroques.indexOf("r") === -1)
+    if (enroques.indexOf("r") === -1)
         movidaEnroqueCortoNegro = true;
 }
 
 function cargarPeonAlPaso(alPaso) {
-    peonAlPaso.x = parseInt(alPaso[0]);
-    peonAlPaso.y = parseInt(alPaso[1]);
+    if (alPaso.length === 2) {
+        peonAlPaso.x = parseInt(alPaso[0]);
+        peonAlPaso.y = parseInt(alPaso[1]);
+    } else {
+        peonAlPaso.x = undefined;
+        peonAlPaso.y = undefined;
+    }
 }
 
 function annadirImgPieza(x, y) {

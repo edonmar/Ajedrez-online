@@ -137,6 +137,7 @@ class PartidaOnlineController extends Controller
                     // Comprueba que el movimiento que se va a realizar es valido
                     if ($valido = $this->esMovValido($destinoX, $destinoY)) {
                         $this->moverPieza($destinoX, $destinoY);
+                        $haCapturadoAlPAso = $this->capturaAlPasoYComprobaciones($destinoX, $destinoY);
                         if ($this->esJaque($this->turno))
                             $jaque = true;
                         else
@@ -144,7 +145,8 @@ class PartidaOnlineController extends Controller
                         $cadena = $this->tableroACadena();
                         $ultimoMov = $this->cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY);
                         $this->turno = !$this->turno;
-                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $jaque);
+                        $peonAlPaso = $this->cadenaPeonAlPaso();
+                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $peonAlPaso, $jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
                     }
                 }
@@ -170,14 +172,14 @@ class PartidaOnlineController extends Controller
         return $objeto;
     }
 
-    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $jaque)
+    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $peonAlPaso, $jaque)
     {
         $nuevoTablero = new Tablero();
         $nuevoTablero->setPartida($partida);
         $nuevoTablero->setCasillas($cadena);
         $nuevoTablero->setTurno($turno);
         $nuevoTablero->setEnroques("DRdr");
-        $nuevoTablero->setPeonAlPaso("");
+        $nuevoTablero->setPeonAlPaso($peonAlPaso);
         $nuevoTablero->setRegla50mov("0000");
         $nuevoTablero->setUltimoMov($ultimoMov);
         $nuevoTablero->setJaque($jaque);
@@ -254,7 +256,7 @@ class PartidaOnlineController extends Controller
     function setPeonAlPaso($cadenaPeonAlPaso)
     {
         $objeto = new stdClass();
-        if(strlen($cadenaPeonAlPaso) === 2) {
+        if (strlen($cadenaPeonAlPaso) === 2) {
             $objeto->x = (int)$cadenaPeonAlPaso[0];
             $objeto->y = (int)$cadenaPeonAlPaso[1];
         } else {
@@ -267,6 +269,11 @@ class PartidaOnlineController extends Controller
     function cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY)
     {
         return strval($origenX) . strval($origenY) . strval($destinoX) . strval($destinoY);
+    }
+
+    function cadenaPeonAlPaso()
+    {
+        return strval($this->peonAlPaso->x) . strval($this->peonAlPaso->y);
     }
 
     function seleccionarPieza($x, $y)
@@ -449,6 +456,43 @@ class PartidaOnlineController extends Controller
         return $jaque;
     }
 
+    // Comprueba cuando un peon mueve dos casillas y lo guarda para que pueda ser capturado al paso
+    // Comprueba si el movimiento que se acaba de hacer es una captura al paso y elimina el peon capturado
+    function capturaAlPasoYComprobaciones($x, $y)
+    {
+        $haCapturadoAlPAso = false;
+
+        // Si la pieza movida es un peon
+        if (strtoupper($this->tablero[$x][$y]) === "P") {
+            // Si ha avanzado dos casillas
+            if (abs($this->piezaSelec->x - $x) === 2) {
+                $this->peonAlPaso->x = $x;
+                $this->peonAlPaso->y = $y;
+            } else {
+                if ($this->turno) {
+                    if ($x === $this->peonAlPaso->x - 1) {    // Si las blancas han capturado al paso
+                        $this->tablero[$x + 1][$y] = "0";
+                        $this->piezasNegras = $this->eliminarObjetoPiezaCapturada($this->piezasNegras, $x + 1, $y);
+                        $haCapturadoAlPAso = true;
+                    }
+                } else {    // Si comen las negras
+                    if ($x === $this->peonAlPaso->x + 1) {    // Si las negras han capturado al paso
+                        $this->tablero[$x - 1][$y] = "0";
+                        $this->piezasBlancas = $this->eliminarObjetoPiezaCapturada($this->piezasBlancas, $x - 1, $y);
+                        $haCapturadoAlPAso = true;
+                    }
+                }
+                $this->peonAlPaso->x = null;
+                $this->peonAlPaso->y = null;
+            }
+        } else {
+            $this->peonAlPaso->x = null;
+            $this->peonAlPaso->y = null;
+        }
+
+        return $haCapturadoAlPAso;
+    }
+
     function calcularMovSegunPieza($x, $y)
     {
         $tipo = $this->tablero[$x][$y];
@@ -519,8 +563,8 @@ class PartidaOnlineController extends Controller
                 if (ctype_lower($this->tablero[$x - 1][$y - 1]))
                     $this->annadirMov($x - 1, $y - 1);
                 // Capturar al paso
-                //if ($x === 3 && $this->peonAlPaso->x === 3 && $this->peonAlPaso->y === $y - 1)
-                //$this->annadirMov($x - 1, $y - 1);
+                if ($x === 3 && $this->peonAlPaso->x === 3 && $this->peonAlPaso->y === $y - 1)
+                    $this->annadirMov($x - 1, $y - 1);
             }
 
             // Capturar hacia la derecha
@@ -529,8 +573,8 @@ class PartidaOnlineController extends Controller
                 if (ctype_lower($this->tablero[$x - 1][$y + 1]))
                     $this->annadirMov($x - 1, $y + 1);
                 // Capturar al paso
-                //if ($x === 3 && $this->peonAlPaso->x === 3 && $this->peonAlPaso->y === $y + 1)
-                //$this->annadirMov($x - 1, $y + 1);
+                if ($x === 3 && $this->peonAlPaso->x === 3 && $this->peonAlPaso->y === $y + 1)
+                    $this->annadirMov($x - 1, $y + 1);
             }
         }
 
@@ -552,8 +596,8 @@ class PartidaOnlineController extends Controller
                 if (ctype_upper($this->tablero[$x + 1][$y - 1]))
                     $this->annadirMov($x + 1, $y - 1);
                 // Capturar al paso
-                //if ($x === 4 && $this->peonAlPaso->x === 4 && $this->peonAlPaso->y === $y - 1)
-                //$this->annadirMov($x + 1, $y - 1);
+                if ($x === 4 && $this->peonAlPaso->x === 4 && $this->peonAlPaso->y === $y - 1)
+                    $this->annadirMov($x + 1, $y - 1);
             }
 
             // Capturar hacia la derecha
@@ -562,8 +606,8 @@ class PartidaOnlineController extends Controller
                 if (ctype_upper($this->tablero[$x + 1][$y + 1]))
                     $this->annadirMov($x + 1, $y + 1);
                 // Capturar al paso
-                //if ($x === 4 && $this->peonAlPaso->x === 4 && $this->peonAlPaso->y === $y + 1)
-                //$this->annadirMov($x + 1, $y + 1);
+                if ($x === 4 && $this->peonAlPaso->x === 4 && $this->peonAlPaso->y === $y + 1)
+                    $this->annadirMov($x + 1, $y + 1);
             }
         }
 
