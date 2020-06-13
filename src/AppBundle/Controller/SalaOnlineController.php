@@ -239,6 +239,7 @@ class SalaOnlineController extends Controller
             $objeto->id = $p->getId();
             $objeto->rival = $rival;
             $objeto->numMov = $num;
+            $objeto->miColor = $miColor;
             $objeto->miTurno = $miTurno;
             array_push($lista, $objeto);
         }

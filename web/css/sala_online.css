@@ -138,7 +138,12 @@
 }
 
 .partidaNumMov,
-.partidaMiTurno {
+.partidaMiTurno,
+.partidaColor {
     float: right;
     margin-right: 2.5em;
+}
+
+.partidaColor svg {
+    height: 1.5em;
 }
