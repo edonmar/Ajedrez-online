@@ -24,10 +24,15 @@
     {% endif %}
 
     <link rel="stylesheet" href="{{ asset('css/partida.css') }}">
-    <script type="text/javascript" src="{{ asset('js/partida_online.js') }}"></script>
     <script>
-        let idPartida = {{ partida.id }}
+        let idPartida = {{ partida.id }};
+        {% if app.user.nombre == nombreNegras %}
+            let eresNegras = true;
+        {% else %}
+            let eresNegras = false;
+        {% endif %}
     </script>
+    <script type="text/javascript" src="{{ asset('js/partida_online.js') }}"></script>
 
     <div id="contenido">
         <div id="contenedorChat">

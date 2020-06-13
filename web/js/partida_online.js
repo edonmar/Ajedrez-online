@@ -23,6 +23,8 @@ window.onload = function () {
     inicializarTableroHTML();
     iniciarEventoBtnGirar();
     cargarTablero();
+    if(eresNegras)
+        girar();
 }
 
 // Asigna a la variable Tablero un array 8x8 vacio
