@@ -101,8 +101,8 @@
 
 #contenedorInvitaciones,
 #contenedorPartidas {
-    width: 22vw;
-    min-width: 18em;
+    width: 25vw;
+    min-width: 20em;
     margin-left: 2vw;
 }
 
@@ -137,7 +137,8 @@
     background-color: #e6e6e6;
 }
 
-.partidaNumMov {
+.partidaNumMov,
+.partidaMiTurno {
     float: right;
-    margin-right: 2em;
+    margin-right: 2.5em;
 }

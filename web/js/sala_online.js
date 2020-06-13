@@ -187,18 +187,23 @@ function cargarPartidasEnCurso() {
                 let rival = document.createElement("span");
                 let jugar = document.createElement("span");
                 let numMov = document.createElement("span");
+                let miTurno = document.createElement("span");
                 partida.classList.add("divPartida");
                 rival.classList.add("partidaRival");
                 jugar.classList.add("partidaJugar");
                 numMov.classList.add("partidaNumMov");
+                miTurno.classList.add("partidaMiTurno");
 
                 rival.innerHTML = respuesta[i].rival;
                 jugar.innerHTML = "<a href='partida_online/" + respuesta[i].id + "'>Jugar</a>";
                 numMov.innerHTML = "Movs: " + respuesta[i].numMov;
+                if(respuesta[i].miTurno)
+                    miTurno.innerHTML = "Mi turno";
 
                 partida.appendChild(rival);
                 partida.appendChild(jugar);
                 partida.appendChild(numMov);
+                partida.appendChild(miTurno);
                 divPartidas.appendChild(partida);
             }
         }

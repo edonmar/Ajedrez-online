@@ -210,17 +210,45 @@ class SalaOnlineController extends Controller
             else
                 $rival = $jugadores[0]->getNombre();
 
+            // Obtengo el numero de movimientos
             $num = $tableroRepository->contarByPartida($p) - 1;
-            if($num % 2 !== 0)
+            if ($num % 2 !== 0)
                 $num++;
             $num = $num / 2;
+
+            // Obtengo si es mi turno o no
+            $ultimoTab = $tableroRepository->findUltimoByPartida($p);
+            $colorTurno = $ultimoTab[0]->isTurno();
+            if ($p->isJugadorBlancas()) {
+                if ($p->getJugadorAnfitrion() === $this->getUser()->getId())
+                    $miColor = true;
+                else
+                    $miColor = false;
+            } else {
+                if ($p->getJugadorAnfitrion() === $this->getUser()->getId())
+                    $miColor = false;
+                else
+                    $miColor = true;
+            }
+            if ($colorTurno === $miColor)
+                $miTurno = true;
+            else
+                $miTurno = false;
 
             $objeto = new stdClass();
             $objeto->id = $p->getId();
             $objeto->rival = $rival;
             $objeto->numMov = $num;
+            $objeto->miTurno = $miTurno;
             array_push($lista, $objeto);
         }
+
+        // Ordeno las partidas segun sea mi turno o no
+        usort($lista, function ($a, $b) {
+            if ($a->miTurno == $b->miTurno) return 0;
+            if ($a->miTurno > $b->miTurno) return -1;
+            return 1;
+        });
 
         return new JsonResponse($lista);
     }
