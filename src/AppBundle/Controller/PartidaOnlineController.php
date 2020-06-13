@@ -33,6 +33,7 @@ class PartidaOnlineController extends Controller
     public $jaque;
     public $turno;
     public $resultado = null;
+    public $pgn;
 
     /**
      * @Route("/partida_online/{id}", name="partida_online")
@@ -138,6 +139,7 @@ class PartidaOnlineController extends Controller
                 $this->setEnroques($tablero[0]->getEnroques());
                 $this->setPeonAlPaso($tablero[0]->getPeonAlPaso());
                 $this->setRegla50Mov($tablero[0]->getRegla50Mov());
+                $this->pgn = $partida->getPgn();
                 // Comprueba que la pieza que se va a mover es del color del jugador que ha hecho la llamada, y que es su turno
                 if ($miColor && ctype_upper($this->tablero[$origenX][$origenY]) && $this->turno ||
                     !$miColor && ctype_lower($this->tablero[$origenX][$origenY]) && !$this->turno) {
@@ -155,6 +157,7 @@ class PartidaOnlineController extends Controller
                         $this->nuevoTablero($partida, $cadena, $this->turno, $enroques, $peonAlPaso,
                             $regla50Mov, $ultimoMov, $this->jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
+                        $this->actualizarPartida($partida);
                         if ($finDePartida)
                             $this->finalizarPartida($partida);
                     }
@@ -192,6 +195,7 @@ class PartidaOnlineController extends Controller
 
         if ($promocionPeon !== "null")
             $this->tablero[$this->piezaSelec->x][$this->piezaSelec->y] = $promocionPeon;
+        $piezasAmbiguedad = $this->obtenerPiezasAmbiguedad($destinoX, $destinoY, $valorAnteriorCasillaOrigen);
         $this->moverPieza($destinoX, $destinoY);
         $haEnrocado = $this->enroqueYComprobaciones($destinoX, $destinoY);
         $haCapturadoAlPAso = $this->capturaAlPasoYComprobaciones($destinoX, $destinoY);
@@ -216,6 +220,9 @@ class PartidaOnlineController extends Controller
             } else
                 $this->resultado = "A";
         }
+
+        $this->annadirMovAPgn($this->movANotacion($valorAnteriorCasillaOrigen, $valorAnteriorCasillaDestino,
+            $destinoX, $destinoY, $piezasAmbiguedad, $haEnrocado, $haCapturadoAlPAso, $jaque, $mate));
 
         if (!$finDePartida) {
             if ($this->piezasInsuficientes($this->piezasBlancas) && $this->piezasInsuficientes($this->piezasNegras)) {
@@ -262,6 +269,13 @@ class PartidaOnlineController extends Controller
         $nuevoTablero->setJaque($jaque);
         $em = $this->getDoctrine()->getManager();
         $em->persist($nuevoTablero);
+        $em->flush();
+    }
+
+    function actualizarPartida($partida)
+    {
+        $partida->setPgn($this->pgn);
+        $em = $this->getDoctrine()->getManager();
         $em->flush();
     }
 
@@ -893,6 +907,169 @@ class PartidaOnlineController extends Controller
         }
 
         return $this->regla50MovBlancas === 50 && $this->regla50MovNegras === 50;
+    }
+
+    function annadirMovAPgn($notacionMov)
+    {
+        $subStrings = explode(" ", $this->pgn);
+
+        if ($this->turno) {
+            if (sizeof($subStrings) === 1)
+                $this->pgn .= "1.";
+            else
+                $this->pgn .= " " . ((sizeof($subStrings) / 3) + 1) . ".";
+        }
+
+        $this->pgn .= " " . $notacionMov;
+    }
+
+    // Obtiene la notacion en texto de un movimiento, usando la notacion algebraica
+    function movANotacion($tipoOrigen, $tipoDestino, $x, $y, $piezasAmbiguedad, $haEnrocado, $haCapturadoAlPAso,
+                          $jaque, $mate)
+    {
+        $notacion = "";
+        $tipoOrigen = strtoupper($tipoOrigen);
+
+        if ($haEnrocado->corto)
+            $notacion = "O-O";
+        else if ($haEnrocado->largo)
+            $notacion = "O-O-O";
+        else {
+            // Si no es un peon, annade el tipo de pieza
+            if ($tipoOrigen !== "P")
+                $notacion .= $tipoOrigen;
+
+            // Desambiguacion (annado letra y/o numero para especificar cual de las piezas se mueve)
+            if (sizeof($piezasAmbiguedad) > 0) {
+                $coincideMismaLetra = false;
+                $coincideMismoNumero = false;
+
+                for ($i = 0, $finI = sizeof($piezasAmbiguedad); $i < $finI; $i++) {
+                    if ($this->piezaSelec->y === $piezasAmbiguedad[$i]->y)
+                        $coincideMismaLetra = true;
+                    if ($this->piezaSelec->x === $piezasAmbiguedad[$i]->x)
+                        $coincideMismoNumero = true;
+                }
+
+                if (!$coincideMismaLetra)
+                    $notacion .= $this->posicionALetra($this->piezaSelec->y);
+                else {
+                    if (!$coincideMismoNumero)
+                        $notacion .= $this->posicionANumero($this->piezaSelec->x);
+                    else
+                        $notacion .= $this->posicionALetra($this->piezaSelec->y) . $this->posicionANumero($this->piezaSelec->x);
+                }
+            }
+
+            // Si captura, annade una x
+            if ($tipoDestino !== "0" || $haCapturadoAlPAso) {
+                if ($tipoOrigen === "P")    // Si la pieza que captura es peon, annade su letra de origen antes de la x
+                    $notacion .= $this->posicionALetra($this->piezaSelec->y);
+                $notacion .= "x";
+            }
+
+            // Annade la nueva casilla
+            $notacion .= $this->posicionALetra($y);
+            $notacion .= $this->posicionANumero($x);
+
+            // Si peon promociona
+            if ($tipoOrigen === "P" && ($x === 0 || $x === 7))
+                $notacion .= "=" . strtoupper($this->tablero[$x][$y]);
+        }
+        // Annade si es jaque o mate
+        if ($jaque)
+            $notacion .= "+";
+        else if ($mate)
+            $notacion .= "#";
+
+        return $notacion;
+    }
+
+    // Compruebo si, aparte de la pieza movida, hay otra pieza del mismo tipo que pueda realizar el mismo movimiento
+    // Necesito saberlo a la hora de escribir la notacion del movimiento
+    function obtenerPiezasAmbiguedad($x, $y, $tipoOrigen)
+    {
+        $piezasMismoTipo = [];
+        $piezasAmbiguedad = [];
+
+        // Si no es peon ni rey
+        if (strtoupper($tipoOrigen) !== "P" && strtoupper($tipoOrigen) !== "R") {
+            if ($this->turno)
+                $piezasColor = $this->piezasBlancas;
+            else
+                $piezasColor = $this->piezasNegras;
+
+            // Obtiene las piezas del mismo tipo
+            for ($i = 0, $finI = sizeof($piezasColor); $i < $finI; $i++) {
+                if ($this->tablero[$piezasColor[$i]->x][$piezasColor[$i]->y] === $tipoOrigen)
+                    if ($this->piezaSelec->x !== $piezasColor[$i]->x ||
+                        $this->piezaSelec->y !== $piezasColor[$i]->y) {
+
+                        $pieza = new stdClass();
+                        $pieza->x = $piezasColor[$i]->x;
+                        $pieza->y = $piezasColor[$i]->y;
+                        array_push($piezasMismoTipo, $pieza);
+                    }
+            }
+
+            // Obtiene las piezas del mismo tipo que provocan anbiguedad
+            if (sizeof($piezasMismoTipo) > 0) {
+                $movPosiblesAux = $this->movPosibles;
+
+                for ($i = 0, $finI = sizeof($piezasMismoTipo); $i < $finI; $i++) {
+                    $this->movPosibles = [];
+                    $this->calcularMovSegunPieza($piezasMismoTipo[$i]->x, $piezasMismoTipo[$i]->y);
+                    for ($j = 0, $finJ = sizeof($this->movPosibles); $j < $finJ;
+                         $j++) {
+                        if ($x === $this->movPosibles[$j]->x && $y === $this->movPosibles[$j]->y) {
+                            if (!$this->movAmenazaReyPropio($j, !$this->turno, $piezasMismoTipo[$i], $tipoOrigen))
+                                array_push($piezasAmbiguedad, $piezasMismoTipo[$i]);
+                        }
+                    }
+                }
+
+                $this->movPosibles = $movPosiblesAux;
+            }
+        }
+
+        return $piezasAmbiguedad;
+    }
+
+    function posicionANumero($x)
+    {
+        return (8 - $x);
+    }
+
+    function posicionALetra($y)
+    {
+        switch ($y) {
+            case 0:
+                $letra = "a";
+                break;
+            case 1:
+                $letra = "b";
+                break;
+            case 2:
+                $letra = "c";
+                break;
+            case 3:
+                $letra = "d";
+                break;
+            case 4:
+                $letra = "e";
+                break;
+            case 5:
+                $letra = "f";
+                break;
+            case 6:
+                $letra = "g";
+                break;
+            case 7:
+                $letra = "h";
+                break;
+        }
+
+        return $letra;
     }
 
     function calcularMovSegunPieza($x, $y)

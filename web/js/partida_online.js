@@ -240,6 +240,7 @@ function actualizarTablero(respuesta) {
     cargarPeonAlPaso(respuesta.peonAlPaso);
     if (respuesta.resultado !== null) {
         partidaTerminada = true;
+        escribirResultado(respuesta.resultado);
         modalFinDePartida(respuesta.resultado);
     }
 
@@ -439,6 +440,41 @@ function cargarCadenaMovimientos(cadena) {
             fila.appendChild(div);
         }
     }
+}
+
+function escribirResultado(resultado) {
+    let tablaMov = document.getElementById("tablaMov");
+
+    let nuevaFila = document.createElement("div");
+    nuevaFila.className = "filaResultado";
+
+    let spanResultado = document.createElement("span");
+    switch (resultado) {
+        case "B":
+            spanResultado.innerHTML = "1-0";
+            break;
+        case "N":
+            spanResultado.innerHTML = "0-1";
+            break;
+        case "A":
+            spanResultado.innerHTML = "1/2-1/2";
+            break;
+        case "I":
+            spanResultado.innerHTML = "1/2-1/2";
+            break;
+        case "3":
+            spanResultado.innerHTML = "1/2-1/2";
+            break;
+        case "5":
+            spanResultado.innerHTML = "1/2-1/2";
+            break;
+    }
+
+    nuevaFila.appendChild(spanResultado);
+    tablaMov.appendChild(nuevaFila);
+
+    // Mueve el scroll hacia abajo
+    tablaMov.scrollTop = tablaMov.scrollHeight;
 }
 
 function cargarEnroques(enroques) {
