@@ -144,15 +144,16 @@ class PartidaOnlineController extends Controller
                     $this->realizarSeleccionPieza($origenX, $origenY);
                     // Comprueba que el movimiento que se va a realizar es valido
                     if ($valido = $this->esMovValido($destinoX, $destinoY)) {
-                        $finDePartida = $this->realizarMovimientoYComprobaciones($destinoX, $destinoY, $request->get('promocionPeon'));
+                        $finDePartida = $this->realizarMovimientoYComprobaciones($destinoX, $destinoY,
+                            $request->get('promocionPeon'), $partida, $tableroRepository);
                         $cadena = $this->tableroACadena();
                         $ultimoMov = $this->cadenaUltimoMov($origenX, $origenY, $destinoX, $destinoY);
-                        $this->turno = !$this->turno;
                         $peonAlPaso = $this->cadenaPeonAlPaso();
                         $enroques = $this->cadenaEnroques();
                         $regla50Mov = $this->cadenaRegla50Mov();
-                        $this->nuevoTablero($partida, $cadena, $ultimoMov, $this->turno, $enroques, $peonAlPaso,
-                            $regla50Mov, $this->jaque);
+                        $this->turno = !$this->turno;
+                        $this->nuevoTablero($partida, $cadena, $this->turno, $enroques, $peonAlPaso,
+                            $regla50Mov, $ultimoMov, $this->jaque);
                         $tablero = $tableroRepository->findUltimoByPartida($partida);
                         if ($finDePartida)
                             $this->finalizarPartida($partida);
@@ -174,7 +175,7 @@ class PartidaOnlineController extends Controller
             $this->annadirEnroquesPosibles();
     }
 
-    function realizarMovimientoYComprobaciones($destinoX, $destinoY, $promocionPeon)
+    function realizarMovimientoYComprobaciones($destinoX, $destinoY, $promocionPeon, $partida, $tableroRepository)
     {
         $finDePartida = false;
         $jaque = false;
@@ -220,6 +221,9 @@ class PartidaOnlineController extends Controller
             if ($this->piezasInsuficientes($this->piezasBlancas) && $this->piezasInsuficientes($this->piezasNegras)) {
                 $finDePartida = true;
                 $this->resultado = "I";
+            } else if ($this->tripleRepeticion($partida, $tableroRepository)) {
+                $finDePartida = true;
+                $this->resultado = "3";
             } else if ($this->regla50Movimientos($valorAnteriorCasillaOrigen, $valorAnteriorCasillaDestino)) {
                 $finDePartida = true;
                 $this->resultado = "5";
@@ -245,7 +249,7 @@ class PartidaOnlineController extends Controller
         return $objeto;
     }
 
-    function nuevoTablero($partida, $cadena, $ultimoMov, $turno, $enroques, $peonAlPaso, $regla50Mov, $jaque)
+    function nuevoTablero($partida, $cadena, $turno, $enroques, $peonAlPaso, $regla50Mov, $ultimoMov, $jaque)
     {
         $nuevoTablero = new Tablero();
         $nuevoTablero->setPartida($partida);
@@ -382,11 +386,11 @@ class PartidaOnlineController extends Controller
     function cadenaRegla50Mov()
     {
         $cadenaBlancas = strval($this->regla50MovBlancas);
-        if(strlen($cadenaBlancas) === 1)
+        if (strlen($cadenaBlancas) === 1)
             $cadenaBlancas = "0" . $cadenaBlancas;
 
         $cadenaNegras = strval($this->regla50MovNegras);
-        if(strlen($cadenaNegras) === 1)
+        if (strlen($cadenaNegras) === 1)
             $cadenaNegras = "0" . $cadenaNegras;
 
         return $cadenaBlancas . $cadenaNegras;
@@ -851,6 +855,28 @@ class PartidaOnlineController extends Controller
         }
 
         return $piezasInsuficientes;
+    }
+
+    function tripleRepeticion($partida, TableroRepository $tableroRepository)
+    {
+        $tablas = false;
+        $tableros = $tableroRepository->findBy(array('partida' => $partida));
+        $casillas = $this->tableroACadena();
+        $enroques = $this->cadenaEnroques();
+
+        // Comprueba si el tablero actual se repite 3 veces (casillas, enroques y turno)
+        if (sizeof($tableros) >= 3) {
+            $veces = 1;
+            for ($i = 1, $finI = sizeof($tableros); $i < $finI; $i++) {
+                if (strcmp($casillas, $tableros[$i]->getCasillas()) === 0 &&
+                    strcmp($enroques, $tableros[$i]->getEnroques()) === 0 && $this->turno === !$tableros[$i]->isTurno())
+                    $veces++;
+            }
+            if ($veces >= 3)
+                $tablas = true;
+        }
+
+        return $tablas;
     }
 
     function regla50Movimientos($valorAnteriorCasillaOrigen, $valorAnteriorCasillaDestino)
