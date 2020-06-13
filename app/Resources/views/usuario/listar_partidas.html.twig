@@ -65,7 +65,7 @@
                             {% endif %}
                         {% endif %}
                     </td>
-                    <td class="numMovimientos">{{ partida.numMovimientos }}</td>
+                    <td class="numMovimientos">{{ numMov[loop.index - 1] }}</td>
                     <td class="fecha">{{ partida.fechaInicio|date('d/m/Y H:i') }}</td>
                     <td class="fecha">{{ partida.fechaFin|date('d/m/Y H:i') }}</td>
                 </tr>

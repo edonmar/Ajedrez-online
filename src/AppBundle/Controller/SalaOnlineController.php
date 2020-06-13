@@ -7,6 +7,7 @@ use AppBundle\Entity\Partida;
 use AppBundle\Entity\Tablero;
 use AppBundle\Repository\MensajeRepository;
 use AppBundle\Repository\PartidaRepository;
+use AppBundle\Repository\TableroRepository;
 use AppBundle\Repository\UsuarioRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use stdClass;
@@ -197,7 +198,7 @@ class SalaOnlineController extends Controller
     /**
      * @Route("/cargar_partidas_en_curso", name="cargar_partidas_en_curso")
      */
-    public function cargar_partidas_en_curso(PartidaRepository $partidaRepository)
+    public function cargar_partidas_en_curso(PartidaRepository $partidaRepository, TableroRepository $tableroRepository)
     {
         $partidas = $partidaRepository->findEnCusro($this->getUser());
 
@@ -209,9 +210,15 @@ class SalaOnlineController extends Controller
             else
                 $rival = $jugadores[0]->getNombre();
 
+            $num = $tableroRepository->contarByPartida($p) - 1;
+            if($num % 2 !== 0)
+                $num++;
+            $num = $num / 2;
+
             $objeto = new stdClass();
             $objeto->id = $p->getId();
             $objeto->rival = $rival;
+            $objeto->numMov = $num;
             array_push($lista, $objeto);
         }
 

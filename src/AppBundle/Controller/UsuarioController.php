@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Usuario;
 use AppBundle\Form\Type\UsuarioType;
 use AppBundle\Repository\PartidaRepository;
+use AppBundle\Repository\TableroRepository;
 use AppBundle\Repository\UsuarioRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,12 +33,20 @@ class UsuarioController extends Controller
     /**
      * @Route("/usuario/partidas/{id}", name="usuario_partidas_listar")
      */
-    public function partidasAction(PartidaRepository $partidaRepository, Usuario $usuario)
+    public function partidasAction(PartidaRepository $partidaRepository, TableroRepository $tableroRepository, Usuario $usuario)
     {
         $partidas = $partidaRepository->findTerminadasByUsuario($usuario);
+        $numMov = array();
+        foreach ($partidas as $p) {
+            $num = $tableroRepository->contarByPartida($p) - 1;
+            if($num % 2 !== 0)
+                $num++;
+            $numMov[] = $num / 2;
+        }
 
         return $this->render('usuario/listar_partidas.html.twig', [
             'partidas' => $partidas,
+            'numMov' => $numMov,
             'usuario' => $usuario
         ]);
     }

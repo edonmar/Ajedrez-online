@@ -100,7 +100,7 @@
 }
 
 #contenedorInvitaciones,
-#contenedorPartidas{
+#contenedorPartidas {
     width: 22vw;
     min-width: 18em;
     margin-left: 2vw;
@@ -135,4 +135,9 @@
 
 #divPartidas div.divPartida:nth-child(even) {
     background-color: #e6e6e6;
+}
+
+.partidaNumMov {
+    float: right;
+    margin-right: 2em;
 }

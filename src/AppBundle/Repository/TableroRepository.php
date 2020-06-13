@@ -24,4 +24,13 @@ class TableroRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function contarByPartida(Partida $partida){
+        return $this->createQueryBuilder('t')
+            ->select('count(t)')
+            ->where('t.partida = :partida')
+            ->setParameter('partida', $partida)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
