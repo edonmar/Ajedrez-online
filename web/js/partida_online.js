@@ -10,6 +10,7 @@ let movidaEnroqueLargoBlanco = false;
 let movidaEnroqueCortoNegro = false;
 let movidaEnroqueLargoNegro = false;
 let tableroGirado = false;
+let cadenaMovimientos = "";
 let turno;
 let estadoActual;    // Si actualmente es mi turno o no
 let partidaTerminada = false;
@@ -350,6 +351,13 @@ function annadirEstiloMovAnterior(x, y) {
     tableroHTML[x][y].classList.add("casillasMovAnterior");
 }
 
+function eliminarEstiloMovAnterior() {
+    let casillasMovAnterior = document.querySelectorAll(".casillasMovAnterior");
+
+    for (let i = 0, finI = casillasMovAnterior.length; i < finI; i++)
+        casillasMovAnterior[i].classList.remove("casillasMovAnterior");
+}
+
 function annadirEstiloMovPosibles() {
     let x = piezaSelec.x;
     let y = piezaSelec.y;
@@ -399,6 +407,46 @@ function eliminarEstiloMovPosibles() {
         }
         tableroHTML[x][y].innerHTML = "";
     }
+}
+
+function annadirEstiloJaque() {
+    let piezasColor;
+
+    if (turno)
+        piezasColor = piezasNegras;
+    else
+        piezasColor = piezasBlancas;
+
+    let x = piezasColor[0].x;
+    let y = piezasColor[0].y;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
+    casillaHTML.classList.add("reyAmenazado");
+    casillaHTML.innerHTML = "<div class='piezaResaltadaBorde'></div>";
+}
+
+function eliminarEstiloJaque() {
+    let piezasColor;
+
+    if (turno)
+        piezasColor = piezasBlancas;
+    else
+        piezasColor = piezasNegras;
+
+    let x = piezasColor[0].x;
+    let y = piezasColor[0].y;
+    if (tableroGirado) {
+        x = 7 - x;
+        y = 7 - y;
+    }
+    let casillaHTML = tableroHTML[x][y];
+
+    casillaHTML.classList.remove("reyAmenazado");
+    casillaHTML.innerHTML = "";
 }
 
 // Rellena la tabla de movimientos con el string de los movimientos de la repeticion
@@ -626,9 +674,7 @@ function clickEnCasilla(x, y) {
                 modalPromocionPeon(x, y);
             else {
                 enviarMovimiento(x, y, null);
-                eliminarEstiloMovPosibles();
-                deseleccionarPieza();
-                movPosibles = [];
+                realizarMovimientoYComprobaciones(x, y, false);
             }
         } else {
             // Si la pieza pulsada no es la que estaba seleccionada, selecciono la nueva
@@ -679,6 +725,49 @@ function enviarMovimiento(x, y, promocionPeon) {
     xhr.send();
 }
 
+function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
+    let jaque = false;
+    let mate = false;
+    // Las siguientes variables son como estaba el tablero antes de mover la pieza. Las necesito para comprobar tablas
+    let valorAnteriorCasillaOrigen;
+    if (esPromocionPeon) {
+        if (turno)
+            valorAnteriorCasillaOrigen = "P";
+        else
+            valorAnteriorCasillaOrigen = "p";
+    } else
+        valorAnteriorCasillaOrigen = tablero[piezaSelec.x][piezaSelec.y];
+    let valorAnteriorCasillaDestino = tablero[x][y];
+
+    let piezasAmbiguedad = obtenerPiezasAmbiguedad(x, y, valorAnteriorCasillaOrigen);
+    eliminarEstiloMovAnterior();
+    eliminarEstiloJaque();
+    moverPieza(x, y);
+    let haEnrocado = enroqueYComprobaciones(x, y);
+    let haCapturadoAlPAso = capturaAlPasoYComprobaciones(x, y);
+    eliminarEstiloMovPosibles();
+    annadirEstiloMovAnterior(x, y);
+
+    if (tieneMovimientos()) {
+        if (esJaque(turno)) {    // Jaque
+            annadirEstiloJaque();
+            jaque = true;
+        }
+    } else {
+        if (esJaque(turno)) {    // Jaque mate
+            annadirEstiloJaque();
+            mate = true;
+        }
+    }
+
+    escribirMovEnTabla(movANotacion(valorAnteriorCasillaOrigen, valorAnteriorCasillaDestino, x, y, piezasAmbiguedad,
+        haEnrocado, haCapturadoAlPAso, jaque, mate));
+    deseleccionarPieza();
+
+    movPosibles = [];
+    turno = !turno;
+}
+
 function seleccionarPieza(x, y) {
     hayPiezaSelec = true;
     piezaSelec = {x: x, y: y};
@@ -691,6 +780,44 @@ function deseleccionarPieza() {
 
 function esMovValido(x, y) {
     return movPosibles.some(pos => pos.x === x && pos.y === y);
+}
+
+function moverPieza(x, y) {
+    let come = false;
+
+    // Si come otra pieza, eliminar estilo de la pieza comida
+    if (tablero[x][y] !== "0") {
+        eliminarImgPieza(x, y);
+        come = true;
+    }
+
+    // Pone la pieza y el estilo en la nueva posicion
+    tablero[x][y] = tablero[piezaSelec.x][piezaSelec.y];
+    annadirImgPieza(x, y);
+
+    // Elimina el estilo y la pieza de la anterior posicion
+    eliminarImgPieza(piezaSelec.x, piezaSelec.y);
+    tablero[piezaSelec.x][piezaSelec.y] = "0";
+
+    if (turno) {
+        cambiarObjetoPiezaMovida(piezasBlancas, x, y);
+        if (come)
+            eliminarObjetoPiezaComida(piezasNegras, x, y);
+    } else {
+        cambiarObjetoPiezaMovida(piezasNegras, x, y);
+        if (come)
+            eliminarObjetoPiezaComida(piezasBlancas, x, y);
+    }
+}
+
+// Cambia las coordenadas de la pieza en el array de objetos
+function cambiarObjetoPiezaMovida(piezasColor, x, y) {
+    piezasColor.find((pos, i) => {
+        if (pos.x === piezaSelec.x && pos.y === piezaSelec.y) {
+            piezasColor[i] = {x: x, y: y};
+            return true;    // Parar la busqueda
+        }
+    });
 }
 
 // Elimina la pieza comida del array del otro color
@@ -820,6 +947,133 @@ function movAmenazaReyPropio(i, colorAmenazante, casillaOrigen, valorCasillaOrig
         colorComida.splice(posComida, 0, {x: peonAlPaso.x, y: peonAlPaso.y});
 
     return jaque;
+}
+
+
+// Compruebo si el color contrario al que acaba de mover tiene algun movimiento posible
+// Para cada movimiento de cada pieza, compruebo si al hacer ese movimiento el rey de ese color quedaria en jaque
+// Si hay al menos un movimiento que sea posible sin colocar a su propio rey en jaque, acaba el bucle y devuelve true
+function tieneMovimientos() {
+    let puedeMover = false;
+    let piezasAmenazadas;
+
+    if (turno)
+        piezasAmenazadas = piezasNegras;
+    else
+        piezasAmenazadas = piezasBlancas;
+
+    let numPiezasAmenazadas = piezasAmenazadas.length;
+    let i = 0;
+    do {
+        movPosibles = [];
+        calcularMovSegunPieza(piezasAmenazadas[i].x, piezasAmenazadas[i].y);
+        let numMovimientos = movPosibles.length;
+        if (numMovimientos > 0) {
+            let valorCasillaOrigen = tablero[piezasAmenazadas[i].x][piezasAmenazadas[i].y];
+            let j = 0;
+            do {
+                if (!movAmenazaReyPropio(j, turno, piezasAmenazadas[i], valorCasillaOrigen))
+                    puedeMover = true;
+                j++;
+            } while (j < numMovimientos && !puedeMover);
+        }
+        i++;
+    } while (i < numPiezasAmenazadas && !puedeMover);
+
+    return puedeMover;
+}
+
+// Comprueba cuando se mueve el rey o la torre. Ese color no podra hacer enroque
+// Comprueba si el movimiento que se acaba de hacer es un enroque y mueve la torre
+function enroqueYComprobaciones(x, y) {
+    let haEnrocado = {corto: false, largo: false};
+
+    if (tablero[x][y] === "T") {    // Si ha movido torre blanca
+        if (piezaSelec.y === 0)
+            movidaEnroqueLargoBlanco = true;
+        if (piezaSelec.y === 7)
+            movidaEnroqueCortoBlanco = true;
+    } else if (tablero[x][y] === "t") {    // Si ha movido torre negra
+        if (piezaSelec.y === 0)
+            movidaEnroqueLargoNegro = true;
+        if (piezaSelec.y === 7)
+            movidaEnroqueCortoNegro = true;
+    } else if (tablero[x][y].toUpperCase() === "R") {    // Si ha movido un rey
+        if (Math.abs(piezaSelec.y - y) === 2) {    // Si el movimiento es un enroque (el rey mueve 2 posiciones)
+            let x;
+            let posYOrigenTorre;
+            let posYDestinoTorre;
+
+            if (turno)
+                x = 7;
+            else
+                x = 0;
+
+            if (y === 6) {    // Enroque corto
+                posYOrigenTorre = 7;
+                posYDestinoTorre = 5;
+                haEnrocado.corto = true;
+            } else {    // Enroque largo
+                posYOrigenTorre = 0;
+                posYDestinoTorre = 3;
+                haEnrocado.largo = true;
+            }
+
+            // Selecciono la torre y la muevo
+            seleccionarPieza(x, posYOrigenTorre);
+            moverPieza(x, posYDestinoTorre);
+            // Vuelvo a seleccionar la casilla de origen del rey
+            seleccionarPieza(x, 4);
+        }
+
+        if (turno) {
+            movidaEnroqueLargoBlanco = true;
+            movidaEnroqueCortoBlanco = true;
+        } else {
+            movidaEnroqueLargoNegro = true;
+            movidaEnroqueCortoNegro = true;
+        }
+    }
+
+    return haEnrocado;
+}
+
+// Comprueba cuando un peon mueve dos casillas y lo guarda para que pueda ser capturado al paso
+// Comprueba si el movimiento que se acaba de hacer es una captura al paso y elimina el peon capturado
+function capturaAlPasoYComprobaciones(x, y) {
+    let haCapturadoAlPAso = false;
+
+    // Si la pieza movida es un peon
+    if (tablero[x][y].toUpperCase() === "P") {
+        // Si ha avanzado dos casillas
+        if (Math.abs(piezaSelec.x - x) === 2) {
+            peonAlPaso.x = x;
+            peonAlPaso.y = y;
+        } else {
+            if (turno) {
+                if (x === peonAlPaso.x - 1) {    // Si las blancas han capturado al paso
+                    eliminarImgPieza(x + 1, y);
+                    tablero[x + 1][y] = "0";
+                    eliminarObjetoPiezaComida(piezasNegras, x + 1, y);
+                    haCapturadoAlPAso = true;
+                }
+            } else {    // Si comen las negras
+                if (x === peonAlPaso.x + 1) {    // Si las negras han capturado al paso
+                    eliminarImgPieza(x - 1, y);
+                    tablero[x - 1][y] = "0";
+                    eliminarObjetoPiezaComida(piezasBlancas, x - 1, y);
+                    haCapturadoAlPAso = true;
+                }
+            }
+            peonAlPaso.x = undefined;
+            peonAlPaso.y = undefined;
+        }
+    } else {
+        peonAlPaso.x = undefined;
+        peonAlPaso.y = undefined;
+    }
+
+    return haCapturadoAlPAso;
 }
 
 // Comprueba si se ha seleccionado un rey y si tiene algun enroque disponible
@@ -993,9 +1247,7 @@ function modalPromocionPeon(x, y) {
         titulo.innerHTML = "";
         body.innerHTML = "";
         enviarMovimiento(x, y, nuevaPieza);
-        eliminarEstiloMovPosibles();
-        deseleccionarPieza();
-        movPosibles = [];
+        realizarMovimientoYComprobaciones(x, y, true);
     }
 }
 
@@ -1045,6 +1297,192 @@ function modalFinDePartida(resultado) {
 
     // Mostrar el modal
     modal.style.display = "block";
+}
+
+function escribirMovEnTabla(notacionMov) {
+    let tablaMov = document.getElementById("tablaMov");
+    let filas = tablaMov.querySelectorAll(".filaMov");
+    let numFilas = filas.length;
+
+    if (turno) {    // Movimiento de las blancas: crea una nuevo div con 3 span y rellena los 2 primeros
+        let nuevaFila = document.createElement("div");
+        let divNum = document.createElement("div");
+        let spanNum = document.createElement("span");
+        let divBlancas = document.createElement("div");
+        let spanBlancas = document.createElement("span");
+
+        nuevaFila.className = "filaMov";
+        divNum.classList.add("divNumMov");
+        spanNum.classList.add("spanNumMov");
+        spanNum.innerHTML = (numFilas + 1) + ".";
+        divBlancas.classList.add("divMov");
+        spanBlancas.innerHTML = notacionMov;
+
+        divNum.appendChild(spanNum);
+        nuevaFila.appendChild(divNum);
+        divBlancas.appendChild(spanBlancas);
+        nuevaFila.appendChild(divBlancas);
+        tablaMov.appendChild(nuevaFila);
+
+        if (numFilas > 0)
+            cadenaMovimientos += " ";
+        cadenaMovimientos += (numFilas + 1) + ". " + notacionMov;
+    } else {    // Movimiento de las negras: rellena el tercer span del ultimo div
+        let divNegras = document.createElement("div");
+        let spanNegras = document.createElement("span");
+
+        spanNegras.innerHTML = notacionMov;
+        divNegras.classList.add("divMov");
+
+        divNegras.appendChild(spanNegras);
+        filas[numFilas - 1].appendChild(divNegras);
+
+        cadenaMovimientos += " " + notacionMov;
+    }
+
+    // Mueve el scroll hacia abajo
+    tablaMov.scrollTop = tablaMov.scrollHeight;
+}
+
+// Obtiene la notacion en texto de un movimiento, usando la notacion algebraica
+function movANotacion(tipoOrigen, tipoDestino, x, y, piezasAmbiguedad, haEnrocado, haCapturadoAlPAso, jaque, mate) {
+    let notacion = "";
+    tipoOrigen = tipoOrigen.toUpperCase();
+
+    if (haEnrocado.corto)
+        notacion = "O-O";
+    else if (haEnrocado.largo)
+        notacion = "O-O-O";
+    else {
+        // Si no es un peon, annade el tipo de pieza
+        if (tipoOrigen !== "P")
+            notacion += tipoOrigen;
+
+        // Desambiguacion (annado letra y/o numero para especificar cual de las piezas se mueve)
+        if (piezasAmbiguedad.length > 0) {
+            let coincideMismaLetra = false;
+            let coincideMismoNumero = false;
+
+            for (let i = 0, finI = piezasAmbiguedad.length; i < finI; i++) {
+                if (piezaSelec.y === piezasAmbiguedad[i].y)
+                    coincideMismaLetra = true;
+                if (piezaSelec.x === piezasAmbiguedad[i].x)
+                    coincideMismoNumero = true;
+            }
+
+            if (!coincideMismaLetra)
+                notacion += posicionALetra(piezaSelec.y);
+            else {
+                if (!coincideMismoNumero)
+                    notacion += posicionANumero(piezaSelec.x);
+                else
+                    notacion += posicionALetra(piezaSelec.y) + posicionANumero(piezaSelec.x);
+            }
+        }
+
+        // Si captura, annade una x
+        if (tipoDestino !== "0" || haCapturadoAlPAso) {
+            if (tipoOrigen === "P")    // Si la pieza que captura es peon, annade su letra de origen antes de la x
+                notacion += posicionALetra(piezaSelec.y);
+            notacion += "x";
+        }
+
+        // Annade la nueva casilla
+        notacion += posicionALetra(y);
+        notacion += posicionANumero(x);
+
+        // Si peon promociona
+        if (tipoOrigen === "P" && (x === 0 || x === 7))
+            notacion += "=" + tablero[x][y].toUpperCase();
+    }
+    // Annade si es jaque o mate
+    if (jaque)
+        notacion += "+";
+    else if (mate)
+        notacion += "#";
+
+    return notacion;
+}
+
+// Compruebo si, aparte de la pieza movida, hay otra pieza del mismo tipo que pueda realizar el mismo movimiento
+// Necesito saberlo a la hora de escribir la notacion del movimiento
+function obtenerPiezasAmbiguedad(x, y, tipoOrigen) {
+    let piezasMismoTipo = [];
+    let piezasAmbiguedad = [];
+
+    // Si no es peon ni rey
+    if (tipoOrigen.toUpperCase() !== "P" && tipoOrigen.toUpperCase() !== "R") {
+        let piezasColor;
+
+        if (turno)
+            piezasColor = piezasBlancas;
+        else
+            piezasColor = piezasNegras;
+
+        // Obtiene las piezas del mismo tipo
+        for (let i = 0, finI = piezasColor.length; i < finI; i++) {
+            if (tablero[piezasColor[i].x][piezasColor[i].y] === tipoOrigen)
+                if (piezaSelec.x !== piezasColor[i].x || piezaSelec.y !== piezasColor[i].y)
+                    piezasMismoTipo.push({x: piezasColor[i].x, y: piezasColor[i].y});
+        }
+
+        // Obtiene las piezas del mismo tipo que provocan anbiguedad
+        if (piezasMismoTipo.length > 0) {
+            let movPosiblesAux = movPosibles;
+
+            for (let i = 0, finI = piezasMismoTipo.length; i < finI; i++) {
+                movPosibles = [];
+                calcularMovSegunPieza(piezasMismoTipo[i].x, piezasMismoTipo[i].y);
+                for (let j = 0, finJ = movPosibles.length; j < finJ; j++) {
+                    if (x === movPosibles[j].x && y === movPosibles[j].y) {
+                        if (!movAmenazaReyPropio(j, !turno, piezasMismoTipo[i], tipoOrigen))
+                            piezasAmbiguedad.push(piezasMismoTipo[i]);
+                    }
+                }
+            }
+
+            movPosibles = movPosiblesAux;
+        }
+    }
+
+    return piezasAmbiguedad;
+}
+
+function posicionANumero(x) {
+    return (8 - x);
+}
+
+function posicionALetra(y) {
+    let letra;
+
+    switch (y) {
+        case 0:
+            letra = "a";
+            break;
+        case 1:
+            letra = "b";
+            break;
+        case 2:
+            letra = "c";
+            break;
+        case 3:
+            letra = "d";
+            break;
+        case 4:
+            letra = "e";
+            break;
+        case 5:
+            letra = "f";
+            break;
+        case 6:
+            letra = "g";
+            break;
+        case 7:
+            letra = "h";
+            break;
+    }
+
+    return letra;
 }
 
 function calcularMovSegunPieza(x, y) {
