@@ -35,13 +35,7 @@ class Partida
      * @ORM\Column(type="boolean", nullable=true)
      * @var bool
      */
-    private $jugadorBlancas;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @var int
-     */
-    private $numMovimientos;
+    private $anfitrionEsBlancas;
 
     /**
      * @ORM\Column(type="text", nullable=true)
@@ -141,36 +135,18 @@ class Partida
     /**
      * @return bool
      */
-    public function isJugadorBlancas()
+    public function isAnfitrionEsBlancas()
     {
-        return $this->jugadorBlancas;
+        return $this->anfitrionEsBlancas;
     }
 
     /**
-     * @param bool $jugadorBlancas
+     * @param bool $anfitrionEsBlancas
      * @return Partida
      */
-    public function setJugadorBlancas($jugadorBlancas)
+    public function setAnfitrionEsBlancas($anfitrionEsBlancas)
     {
-        $this->jugadorBlancas = $jugadorBlancas;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getNumMovimientos()
-    {
-        return $this->numMovimientos;
-    }
-
-    /**
-     * @param int $numMovimientos
-     * @return Partida
-     */
-    public function setNumMovimientos($numMovimientos)
-    {
-        $this->numMovimientos = $numMovimientos;
+        $this->anfitrionEsBlancas = $anfitrionEsBlancas;
         return $this;
     }
 

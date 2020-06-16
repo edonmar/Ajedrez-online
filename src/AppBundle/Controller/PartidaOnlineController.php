@@ -290,7 +290,7 @@ class PartidaOnlineController extends Controller
     // Obtengo el color del jugador que ha realizado la peticion
     function colorJugador($partida)
     {
-        if ($partida->isJugadorBlancas()) {
+        if ($partida->isAnfitrionEsBlancas()) {
             if ($partida->getJugadorAnfitrion() === $this->getUser()->getId())
                 $miColor = true;
             else

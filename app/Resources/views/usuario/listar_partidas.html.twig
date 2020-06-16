@@ -21,7 +21,7 @@
             </thead>
             <tbody>
             {% for partida in partidas %}
-                {% if partida.jugadorBlancas == usuario.id %}
+                {% if partida.anfitrionEsBlancas == usuario.id %}
                     {% set color = true %}
                 {% else %}
                     {% set color = false %}

@@ -173,8 +173,7 @@ class SalaOnlineController extends Controller
         $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
 
         // Valores iniciales de la partida
-        $partida->setJugadorBlancas(rand(0, 1) > 0.5);
-        $partida->setNumMovimientos(0);
+        $partida->setAnfitrionEsBlancas(rand(0, 1) > 0.5);
         $partida->setPgn("");
         $partida->setFechaInicio(new \DateTime());
         $em = $this->getDoctrine()->getManager();
@@ -219,7 +218,7 @@ class SalaOnlineController extends Controller
             // Obtengo si es mi turno o no
             $ultimoTab = $tableroRepository->findUltimoByPartida($p);
             $colorTurno = $ultimoTab[0]->isTurno();
-            if ($p->isJugadorBlancas()) {
+            if ($p->isAnfitrionEsBlancas()) {
                 if ($p->getJugadorAnfitrion() === $this->getUser()->getId())
                     $miColor = true;
                 else

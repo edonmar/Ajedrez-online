@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    {% if partida.jugadorBlancas %}
+    {% if partida.anfitrionEsBlancas %}
         {% if partida.jugadorAnfitrion == partida.usuarios[0].id %}
             {% set nombreBlancas = partida.usuarios[0].nombre %}
             {% set nombreNegras = partida.usuarios[1].nombre %}
