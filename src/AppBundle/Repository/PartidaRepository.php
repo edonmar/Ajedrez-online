@@ -14,11 +14,12 @@ class PartidaRepository extends ServiceEntityRepository
         parent::__construct($registry, Partida::class);
     }
 
-    public function contarTerminadasByUsuario(Usuario $usuario){
+    public function contarTerminadasByUsuario(Usuario $usuario)
+    {
         return $this->createQueryBuilder('p')
             ->select('count(p)')
-            ->innerJoin('p.usuarios', 'u')
-            ->where('u.id = :usuario')
+            ->where('p.jugadorAnfitrion = :usuario')
+            ->orWhere('p.jugadorInvitado = :usuario')
             ->andWhere('p.fechaFin is not NULL')
             ->setParameter('usuario', $usuario)
             ->getQuery()
@@ -29,8 +30,8 @@ class PartidaRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->select('p')
-            ->innerJoin('p.usuarios', 'u')
-            ->where('u.id = :usuario')
+            ->where('p.jugadorAnfitrion = :usuario')
+            ->orWhere('p.jugadorInvitado = :usuario')
             ->andWhere('p.fechaFin is not NULL')
             ->setParameter('usuario', $usuario)
             ->orderBy('p.fechaFin', 'desc')
@@ -38,7 +39,7 @@ class PartidaRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findInvitacionesByUsuarioOrdenadas(Usuario $usuario)
+    public function findInvitacionesOrdenadas(Usuario $usuario)
     {
         return $this->createQueryBuilder('p')
             ->select('p')
@@ -54,8 +55,8 @@ class PartidaRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->select('p')
-            ->innerJoin('p.usuarios', 'u')
-            ->where('u.id = :usuario')
+            ->where('p.jugadorAnfitrion = :usuario')
+            ->orWhere('p.jugadorInvitado = :usuario')
             ->andWhere('p.fechaInicio is not NULL')
             ->andWhere('p.fechaFin is NULL')
             ->setParameter('usuario', $usuario)

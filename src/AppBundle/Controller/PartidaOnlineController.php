@@ -132,8 +132,8 @@ class PartidaOnlineController extends Controller
         if ($partida->getFechaInicio() !== null && $partida->getFechaFin() === null) {
             // Compruebo que el jugador que ha hecho la llamada es uno de los dos jugadores de la partida
             $miColor = $this->colorJugador($partida);
-            if ($partida->getJugadorAnfitrion() === $this->getUser()->getId() ||
-                $partida->getJugadorInvitado() === $this->getUser()->getId()) {
+            if ($partida->getJugadorAnfitrion() === $this->getUser() ||
+                $partida->getJugadorInvitado() === $this->getUser()) {
                 $this->cadenaATablero($tablero[0]->getCasillas());
                 $this->setArrayPiezas();
                 $this->setEnroques($tablero[0]->getEnroques());
@@ -291,12 +291,12 @@ class PartidaOnlineController extends Controller
     function colorJugador($partida)
     {
         if ($partida->isAnfitrionEsBlancas()) {
-            if ($partida->getJugadorAnfitrion() === $this->getUser()->getId())
+            if ($partida->getJugadorAnfitrion() === $this->getUser())
                 $miColor = true;
             else
                 $miColor = false;
         } else {
-            if ($partida->getJugadorAnfitrion() === $this->getUser()->getId())
+            if ($partida->getJugadorAnfitrion() === $this->getUser())
                 $miColor = false;
             else
                 $miColor = true;

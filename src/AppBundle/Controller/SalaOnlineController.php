@@ -120,9 +120,8 @@ class SalaOnlineController extends Controller
         $usuarioAnfitrion = $this->getUser();
 
         $nuevaPartida = new Partida();
-        $nuevaPartida->setJugadorAnfitrion($usuarioAnfitrion->getId());
-        $nuevaPartida->setJugadorInvitado($usuarioInvitado->getId());
-        $nuevaPartida->setUsuarios(array($usuarioAnfitrion, $usuarioInvitado));
+        $nuevaPartida->setJugadorAnfitrion($usuarioAnfitrion);
+        $nuevaPartida->setJugadorInvitado($usuarioInvitado);
         $em = $this->getDoctrine()->getManager();
         $em->persist($nuevaPartida);
         $em->flush();
@@ -135,11 +134,11 @@ class SalaOnlineController extends Controller
      */
     public function cargar_invitaciones(PartidaRepository $partidaRepository, UsuarioRepository $usuarioRepository)
     {
-        $partidas = $partidaRepository->findInvitacionesByUsuarioOrdenadas($this->getUser());
+        $partidas = $partidaRepository->findInvitacionesOrdenadas($this->getUser());
 
         $lista = array();
         foreach ($partidas as $p) {
-            $usuarioAnfitrion = $usuarioRepository->findOneBy(array('id' => $p->getJugadorAnfitrion()));
+            $usuarioAnfitrion = $usuarioRepository->findOneBy(array('id' => $p->getJugadorAnfitrion()->getId()));
             $objeto = new stdClass();
             $objeto->id = $p->getId();
             $objeto->anfitrion = $usuarioAnfitrion->getNombre();
@@ -203,11 +202,10 @@ class SalaOnlineController extends Controller
 
         $lista = array();
         foreach ($partidas as $p) {
-            $jugadores = $p->getUsuarios();
-            if ($jugadores[0]->getId() == $this->getUser()->getId())
-                $rival = $jugadores[1]->getNombre();
+            if ($p->getJugadorAnfitrion() == $this->getUser())
+                $rival = $p->getJugadorInvitado()->getNombre();
             else
-                $rival = $jugadores[0]->getNombre();
+                $rival = $p->getJugadorAnfitrion()->getNombre();
 
             // Obtengo el numero de movimientos
             $num = $tableroRepository->contarByPartida($p) - 1;
@@ -219,12 +217,12 @@ class SalaOnlineController extends Controller
             $ultimoTab = $tableroRepository->findUltimoByPartida($p);
             $colorTurno = $ultimoTab[0]->isTurno();
             if ($p->isAnfitrionEsBlancas()) {
-                if ($p->getJugadorAnfitrion() === $this->getUser()->getId())
+                if ($p->getJugadorAnfitrion() === $this->getUser())
                     $miColor = true;
                 else
                     $miColor = false;
             } else {
-                if ($p->getJugadorAnfitrion() === $this->getUser()->getId())
+                if ($p->getJugadorAnfitrion() === $this->getUser())
                     $miColor = false;
                 else
                     $miColor = true;

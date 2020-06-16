@@ -20,18 +20,6 @@ class Partida
     private $id;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @var int
-     */
-    private $jugadorAnfitrion;
-
-    /**
-     * @ORM\Column(type="integer", nullable=true)
-     * @var int
-     */
-    private $jugadorInvitado;
-
-    /**
      * @ORM\Column(type="boolean", nullable=true)
      * @var bool
      */
@@ -62,10 +50,16 @@ class Partida
     private $fechaFin;
 
     /**
-     * @ORM\ManyToMany(targetEntity="AppBundle\Entity\Usuario")
-     * @var Usuario[]
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Usuario", inversedBy="partidasAnfitrion")
+     * @var Usuario
      */
-    private $usuarios;
+    private $jugadorAnfitrion;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Usuario", inversedBy="partidasInvitado")
+     * @var Usuario
+     */
+    private $jugadorInvitado;
 
     /**
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\Tablero", mappedBy="partida")
@@ -94,42 +88,6 @@ class Partida
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @return int
-     */
-    public function getJugadorAnfitrion()
-    {
-        return $this->jugadorAnfitrion;
-    }
-
-    /**
-     * @param int $jugadorAnfitrion
-     * @return Partida
-     */
-    public function setJugadorAnfitrion($jugadorAnfitrion)
-    {
-        $this->jugadorAnfitrion = $jugadorAnfitrion;
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getJugadorInvitado()
-    {
-        return $this->jugadorInvitado;
-    }
-
-    /**
-     * @param int $jugadorInvitado
-     * @return Partida
-     */
-    public function setJugadorInvitado($jugadorInvitado)
-    {
-        $this->jugadorInvitado = $jugadorInvitado;
-        return $this;
     }
 
     /**
@@ -223,20 +181,38 @@ class Partida
     }
 
     /**
-     * @return Usuario[]
+     * @return Usuario
      */
-    public function getUsuarios()
+    public function getJugadorAnfitrion()
     {
-        return $this->usuarios;
+        return $this->jugadorAnfitrion;
     }
 
     /**
-     * @param Usuario[] $usuarios
+     * @param Usuario $jugadorAnfitrion
      * @return Partida
      */
-    public function setUsuarios($usuarios)
+    public function setJugadorAnfitrion($jugadorAnfitrion)
     {
-        $this->usuarios = $usuarios;
+        $this->jugadorAnfitrion = $jugadorAnfitrion;
+        return $this;
+    }
+
+    /**
+     * @return Usuario
+     */
+    public function getJugadorInvitado()
+    {
+        return $this->jugadorInvitado;
+    }
+
+    /**
+     * @param Usuario $jugadorInvitado
+     * @return Partida
+     */
+    public function setJugadorInvitado($jugadorInvitado)
+    {
+        $this->jugadorInvitado = $jugadorInvitado;
         return $this;
     }
 

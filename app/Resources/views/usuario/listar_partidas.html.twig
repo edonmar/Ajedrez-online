@@ -28,13 +28,13 @@
                 {% endif %}
                 <tr>
                     <td class="nombre">
-                        {% if partida.usuarios[0].id == usuario.id %}
-                            <a href="{{ path('usuario_partidas_listar', {'id': partida.usuarios[1].id}) }}">
-                                {{ partida.usuarios[1].nombre }}
+                        {% if partida.jugadorAnfitrion.id == usuario.id %}
+                            <a href="{{ path('usuario_partidas_listar', {'id': partida.jugadorInvitado.id}) }}">
+                                {{ partida.jugadorInvitado.nombre }}
                             </a>
                         {% else %}
-                            <a href="{{ path('usuario_partidas_listar', {'id': partida.usuarios[0].id}) }}">
-                                {{ partida.usuarios[0].nombre }}
+                            <a href="{{ path('usuario_partidas_listar', {'id': partida.jugadorAnfitrion.id}) }}">
+                                {{ partida.jugadorAnfitrion.nombre }}
                             </a>
                         {% endif %}
                     </td>

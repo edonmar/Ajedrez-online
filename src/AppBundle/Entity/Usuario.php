@@ -45,6 +45,18 @@ class Usuario implements UserInterface
     private $administrador;
 
     /**
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Partida", mappedBy="jugadorAnfitrion")
+     * @var Partida[]
+     */
+    private $partidasAnfitrion;
+
+    /**
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Partida", mappedBy="jugadorInvitado")
+     * @var Partida[]
+     */
+    private $partidasInvitado;
+
+    /**
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\Mensaje", mappedBy="usuario")
      * @var Mensaje[]
      */
@@ -56,7 +68,8 @@ class Usuario implements UserInterface
     public function __construct()
     {
         $this->mensajes = new ArrayCollection();
-        $this->partidas = new ArrayCollection();
+        $this->partidasAnfitrion = new ArrayCollection();
+        $this->partidasInvitado = new ArrayCollection();
     }
 
     /**
@@ -136,6 +149,42 @@ class Usuario implements UserInterface
     public function setAdministrador($administrador)
     {
         $this->administrador = $administrador;
+        return $this;
+    }
+
+    /**
+     * @return Partida[]
+     */
+    public function getPartidasAnfitrion()
+    {
+        return $this->partidasAnfitrion;
+    }
+
+    /**
+     * @param Partida[] $partidasAnfitrion
+     * @return Usuario
+     */
+    public function setPartidasAnfitrion($partidasAnfitrion)
+    {
+        $this->partidasAnfitrion = $partidasAnfitrion;
+        return $this;
+    }
+
+    /**
+     * @return Partida[]
+     */
+    public function getPartidasInvitado()
+    {
+        return $this->partidasInvitado;
+    }
+
+    /**
+     * @param Partida[] $partidasInvitado
+     * @return Usuario
+     */
+    public function setPartidasInvitado($partidasInvitado)
+    {
+        $this->partidasInvitado = $partidasInvitado;
         return $this;
     }
 

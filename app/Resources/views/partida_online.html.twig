@@ -6,21 +6,11 @@
 
 {% block content %}
     {% if partida.anfitrionEsBlancas %}
-        {% if partida.jugadorAnfitrion == partida.usuarios[0].id %}
-            {% set nombreBlancas = partida.usuarios[0].nombre %}
-            {% set nombreNegras = partida.usuarios[1].nombre %}
-        {% else %}
-            {% set nombreBlancas = partida.usuarios[1].nombre %}
-            {% set nombreNegras = partida.usuarios[0].nombre %}
-        {% endif %}
+        {% set nombreBlancas = partida.jugadorAnfitrion.nombre %}
+        {% set nombreNegras = partida.jugadorInvitado.nombre %}
     {% else %}
-        {% if partida.jugadorAnfitrion == partida.usuarios[0].id %}
-            {% set nombreBlancas = partida.usuarios[1].nombre %}
-            {% set nombreNegras = partida.usuarios[0].nombre %}
-        {% else %}
-            {% set nombreBlancas = partida.usuarios[0].nombre %}
-            {% set nombreNegras = partida.usuarios[1].nombre %}
-        {% endif %}
+        {% set nombreBlancas = partida.jugadorInvitado.nombre %}
+        {% set nombreNegras = partida.jugadorAnfitrion.nombre %}
     {% endif %}
 
     <link rel="stylesheet" href="{{ asset('css/partida.css') }}">
