@@ -5,8 +5,198 @@ AppBundle\Entity\Usuario:
     fechaRegistro: <dateTimeBetween("-3 years", "now")>
     administrador: true
 
-  usuarios_{1..4}:
+  usuariosA_{1..4}:
     nombre: '<es_ES:firstName()>'
     clave: password
     fechaRegistro: <dateTimeBetween("-3 years", "now")>
     administrador: false
+
+  usuariosB_{1..4}:
+    nombre: '<es_ES:firstName()>'
+    clave: password
+    fechaRegistro: <dateTimeBetween("-3 years", "now")>
+    administrador: false
+
+AppBundle\Entity\Mensaje:
+  mensajes_{1..7}:
+    texto: <sentence($nbWords = 6, $variableNbWords = true)>
+    fechaHora: <dateTimeBetween("-1 hour", "now")>
+    usuario: '@usuariosA*'
+    partida: null
+
+AppBundle\Entity\Partida:
+  partida_1:
+    anfitrionEsBlancas: <boolean(50)>
+    jugadorAnfitrion: '@usuariosA*'
+    jugadorInvitado: '@usuariosB*'
+    pgn: "1. f3 e6 2.g4 Dh4#"
+    resultado: "N"
+    fechaInicio: <dateTimeBetween("-3 months", "now")>
+    fechaFin: <dateTimeBetween("-3 months", "now")>
+
+  partida_2:
+    anfitrionEsBlancas: true
+    jugadorAnfitrion: '@admin'
+    jugadorInvitado: '@usuariosA*'
+    pgn: "1. Cc3 d6"
+    resultado: null
+    fechaInicio: <dateTimeBetween("-3 months", "now")>
+    fechaFin: null
+
+  partida_3:
+    anfitrionEsBlancas: false
+    jugadorAnfitrion: '@admin'
+    jugadorInvitado: '@usuariosB*'
+    pgn: "1. g4 f5 2. gxf5 g6"
+    resultado: null
+    fechaInicio: <dateTimeBetween("-3 months", "now")>
+    fechaFin: null
+
+  partida_4:
+    anfitrionEsBlancas: true
+    jugadorAnfitrion: '@usuariosA*'
+    jugadorInvitado: '@admin'
+    pgn: ""
+    resultado: null
+    fechaInicio: null
+    fechaFin: null
+
+  partida_5:
+    anfitrionEsBlancas: false
+    jugadorAnfitrion: '@usuariosB*'
+    jugadorInvitado: '@admin'
+    pgn: ""
+    resultado: null
+    fechaInicio: null
+    fechaFin: null
+
+AppBundle\Entity\Tablero:
+  tablero1_partida1:
+    casillas: tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: ""
+    jaque: false
+    partida: '@partida_1'
+
+  tablero2_partida1:
+    casillas: tcadractpppppppp00000000000000000000000000000P00PPPPP0PPTCADRACT
+    turno: false
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: "6555"
+    jaque: false
+    partida: '@partida_1'
+
+  tablero3_partida1:
+    casillas: tcadractpppp0ppp0000p000000000000000000000000P00PPPPP0PPTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: "1424"
+    jaque: false
+    partida: '@partida_1'
+
+  tablero4_partida1:
+    casillas: tcadractpppp0ppp0000p00000000000000000P000000P00PPPPP00PTCADRACT
+    turno: false
+    enroques: "DRdr"
+    peonAlPaso: "46"
+    regla50mov: "0000"
+    ultimoMov: "6646"
+    jaque: false
+    partida: '@partida_1'
+
+  tablero5_partida1:
+    casillas: tca0ractpppp0ppp0000p00000000000000000Pd00000P00PPPPP00PTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: "0347"
+    jaque: true
+    partida: '@partida_1'
+
+  tablero1_partida2:
+    casillas: tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: ""
+    jaque: false
+    partida: '@partida_2'
+
+  tablero2_partida2:
+    casillas: tcadractpppppppp00000000000000000000000000C00000PPPPPPPPT0ADRACT
+    turno: false
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0100"
+    ultimoMov: "7152"
+    jaque: false
+    partida: '@partida_2'
+
+  tablero3_partida2:
+    casillas: tcadractppp0pppp000p0000000000000000000000C00000PPPPPPPPT0ADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: "1323"
+    jaque: false
+    partida: '@partida_2'
+
+  tablero1_partida3:
+    casillas: tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: ""
+    jaque: false
+    partida: '@partida_3'
+
+  tablero2_partida3:
+    casillas: tcadractpppppppp0000000000000000000000P000000000PPPPPP0PTCADRACT
+    turno: false
+    enroques: "DRdr"
+    peonAlPaso: "46"
+    regla50mov: "0000"
+    ultimoMov: "6646"
+    jaque: false
+    partida: '@partida_3'
+
+  tablero3_partida3:
+    casillas: tcadractppppp0pp0000000000000p00000000P000000000PPPPPP0PTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: "35"
+    regla50mov: "0000"
+    ultimoMov: "1535"
+    jaque: false
+    partida: '@partida_3'
+
+  tablero4_partida3:
+    casillas: tcadractppppp0pp0000000000000P000000000000000000PPPPPP0PTCADRACT
+    turno: false
+    enroques: "DRdr"
+    peonAlPaso: "46"
+    regla50mov: "0000"
+    ultimoMov: "4635"
+    jaque: false
+    partida: '@partida_3'
+
+  tablero5_partida3:
+    casillas: tcadractppppp00p000000p000000P000000000000000000PPPPPP0PTCADRACT
+    turno: true
+    enroques: "DRdr"
+    peonAlPaso: ""
+    regla50mov: "0000"
+    ultimoMov: "1626"
+    jaque: false
+    partida: '@partida_3'
