@@ -11,6 +11,7 @@
         <table class="table table-bordered table-striped table-hover">
             <thead>
             <tr>
+                <th></th>
                 <th>Rival</th>
                 <th>Color</th>
                 <th>Resultado</th>
@@ -27,7 +28,10 @@
                     {% set color = false %}
                 {% endif %}
                 <tr>
-                    <td class="nombre">
+                    <td class="ver">
+                        <a class="btn btn-success" href="{{ path('partida_repeticion', {'id': partida.id}) }}">Ver</a>
+                    </td>
+                    <td class="nombre align-middle">
                         {% if partida.jugadorAnfitrion.id == usuario.id %}
                             <a href="{{ path('usuario_partidas_listar', {'id': partida.jugadorInvitado.id}) }}">
                                 {{ partida.jugadorInvitado.nombre }}
@@ -38,14 +42,14 @@
                             </a>
                         {% endif %}
                     </td>
-                    <td class="color">
+                    <td class="color align-middle">
                         {% if color %}
                             Blancas
                         {% else %}
                             Negras
                         {% endif %}
                     </td>
-                    <td class="resultado">
+                    <td class="resultado align-middle">
                         {% if partida.resultado == "A" or partida.resultado == "I"
                             or partida.resultado == "3" or partida.resultado == "5" %}
                             Tablas
@@ -65,9 +69,9 @@
                             {% endif %}
                         {% endif %}
                     </td>
-                    <td class="numMovimientos">{{ numMov[loop.index - 1] }}</td>
-                    <td class="fecha">{{ partida.fechaInicio|date('d/m/Y H:i') }}</td>
-                    <td class="fecha">{{ partida.fechaFin|date('d/m/Y H:i') }}</td>
+                    <td class="numMovimientos align-middle">{{ numMov[loop.index - 1] }}</td>
+                    <td class="fecha align-middle">{{ partida.fechaInicio|date('d/m/Y H:i') }}</td>
+                    <td class="fecha align-middle">{{ partida.fechaFin|date('d/m/Y H:i') }}</td>
                 </tr>
             {% endfor %}
             </tbody>
