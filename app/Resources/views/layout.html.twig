@@ -39,7 +39,7 @@
             {% endif %}
             <li class="nav-item">
                 {% if app.user %}
-                    <span class="navbar-text">{{ app.user.nombre }}</span>
+                    <span class="navbar-text"><a href="{{ path('usuario_perfil') }}">{{ app.user.nombre }}</a></span>
                     <a href="{{ path('usuario_salir') }}" class="ml-3 btn btn-primary"><i class="fas fa-power-off"></i>
                         Salir</a>
                 {% else %}
