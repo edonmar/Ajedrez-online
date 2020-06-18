@@ -18,11 +18,18 @@
                     <i class="fas fa-chess-board"></i> Visor de PGN
                 </a>
             </li>
-            <li class="nav-item{% if nombre starts with 'usuario' %} active{% endif %}">
+            <li class="nav-item{% if nombre == 'usuario_listar' %} active{% endif %}">
                 <a class="nav-link" href="{{ path('usuario_listar') }}">
                     <i class="fas fa-user-alt"></i> Ver usuarios
                 </a>
             </li>
+            {% if is_granted('ROLE_USER') %}
+                <li class="nav-item{% if nombre == 'usuario_partidas_listar' %} active{% endif %}">
+                    <a class="nav-link" href="{{ path('usuario_partidas_listar', {'id': app.user.id}) }}">
+                        <i class="fas fa-file"></i> Historial
+                    </a>
+                </li>
+            {% endif %}
             {% if is_granted('ROLE_USER') %}
                 <li class="nav-item{% if nombre == 'sala_online' %} active{% endif %}">
                     <a class="nav-link" href="{{ path('sala_online') }}">
