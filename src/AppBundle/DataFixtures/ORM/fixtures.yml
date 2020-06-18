@@ -1,19 +1,19 @@
 AppBundle\Entity\Usuario:
   admin:
     nombre: admin
-    clave: password
+    clave: <codificaClave('password')>
     fechaRegistro: <dateTimeBetween("-3 years", "now")>
     administrador: true
 
   usuariosA_{1..4}:
     nombre: '<es_ES:firstName()>'
-    clave: password
+    clave: <codificaClave('password')>
     fechaRegistro: <dateTimeBetween("-3 years", "now")>
     administrador: false
 
   usuariosB_{1..4}:
     nombre: '<es_ES:firstName()>'
-    clave: password
+    clave: <codificaClave('password')>
     fechaRegistro: <dateTimeBetween("-3 years", "now")>
     administrador: false
 
@@ -29,7 +29,7 @@ AppBundle\Entity\Partida:
     anfitrionEsBlancas: <boolean(50)>
     jugadorAnfitrion: '@usuariosA*'
     jugadorInvitado: '@usuariosB*'
-    pgn: "1. f3 e6 2.g4 Dh4#"
+    pgn: "1. f3 e6 2. g4 Dh4#"
     resultado: "N"
     fechaInicio: <dateTimeBetween("-3 months", "now")>
     fechaFin: <dateTimeBetween("-3 months", "now")>
