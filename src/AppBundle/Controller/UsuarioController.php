@@ -72,6 +72,7 @@ class UsuarioController extends Controller
 
     /**
      * @Route("/usuario/form/{id}", name="usuario_form", methods={"GET", "POST"})
+     * @Security("is_granted('ROLE_ADMINISTRADOR')")
      */
     public function formAction(Request $request, Usuario $usuario, UserPasswordEncoderInterface $encoder)
     {
@@ -102,6 +103,7 @@ class UsuarioController extends Controller
 
     /**
      * @Route("/usuario/eliminar/{id}", name="usuario_eliminar", methods={"GET", "POST"})
+     * @Security("is_granted('ROLE_ADMINISTRADOR')")
      */
     public function eliminarAction(Request $request, Usuario $usuario)
     {

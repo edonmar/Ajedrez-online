@@ -15,6 +15,9 @@
                 <th colspan="2">Número de partidas</th>
                 <th>Rol</th>
                 <th>Fecha de registro</th>
+                {% if is_granted('ROLE_ADMINISTRADOR') %}
+                    <th></th>
+                {% endif %}
             </tr>
             </thead>
             <tbody>
@@ -33,9 +36,11 @@
                         {% endif %}
                     </td>
                     <td class="fechaRegistro align-middle">{{ usuario.fechaRegistro|date('d/m/Y') }}</td>
-                    <td class="btnEditar align-middle text-center">
-                        <a class="btn btn-success" href="{{ path('usuario_form', {'id': usuario.id}) }}">Editar</a>
-                    </td>
+                    {% if is_granted('ROLE_ADMINISTRADOR') %}
+                        <td class="btnEditar align-middle text-center">
+                            <a class="btn btn-success" href="{{ path('usuario_form', {'id': usuario.id}) }}">Editar</a>
+                        </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
