@@ -21,4 +21,16 @@ class UsuarioRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findTodosMenosActualOrdenados(Usuario $usuario)
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u')
+            ->where('u != :uActual')
+            ->setParameter('uActual', $usuario)
+            ->addOrderBy('u.administrador', 'desc')
+            ->addOrderBy('u.nombre')
+            ->getQuery()
+            ->getResult();
+    }
 }

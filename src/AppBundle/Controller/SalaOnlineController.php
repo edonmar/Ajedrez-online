@@ -97,7 +97,7 @@ class SalaOnlineController extends Controller
      */
     public function cargar_usuarios(UsuarioRepository $usuarioRepository)
     {
-        $usuarios = $usuarioRepository->findOrdenadosPorNombre();
+        $usuarios = $usuarioRepository->findTodosMenosActualOrdenados($this->getUser());
 
         $lista = array();
         foreach ($usuarios as $u) {
@@ -119,12 +119,14 @@ class SalaOnlineController extends Controller
         $usuarioInvitado = $usuarioRepository->findOneBy(array('id' => $idInvitado));
         $usuarioAnfitrion = $this->getUser();
 
-        $nuevaPartida = new Partida();
-        $nuevaPartida->setJugadorAnfitrion($usuarioAnfitrion);
-        $nuevaPartida->setJugadorInvitado($usuarioInvitado);
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($nuevaPartida);
-        $em->flush();
+        if ($usuarioAnfitrion !== $usuarioInvitado) {
+            $nuevaPartida = new Partida();
+            $nuevaPartida->setJugadorAnfitrion($usuarioAnfitrion);
+            $nuevaPartida->setJugadorInvitado($usuarioInvitado);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($nuevaPartida);
+            $em->flush();
+        }
 
         return new JsonResponse(['status' => 'ok']);
     }
