@@ -1,0 +1,24 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}
+    Eliminar usuario
+{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{ asset('css/form.css') }}">
+    <div class="contenidoPagina">
+        <h1>Eliminar usuario</h1>
+
+        <div class="alert alert-warning">
+            ¿Seguro que desea eliminar el usuario {{ usuario }}? Esta operación no se puede deshacer.
+        </div>
+
+        <form method="post">
+            <a href="{{ path('usuario_form', {'id': usuario.id}) }}" class="btn btn-info"><i
+                        class="fa fa-arrow-left"></i> Volver al usuario</a>
+            <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Eliminar el usuario</button>
+        </form>
+    </div>
+{% endblock %}
+
+

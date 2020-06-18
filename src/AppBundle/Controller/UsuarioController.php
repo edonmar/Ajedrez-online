@@ -88,4 +88,27 @@ class UsuarioController extends Controller
             'usuario' => $usuario
         ]);
     }
+
+    /**
+     * @Route("/usuario/eliminar/{id}", name="usuario_eliminar", methods={"GET", "POST"})
+     */
+    public function eliminarAction(Request $request, Usuario $usuario)
+    {
+        if ($request->getMethod() == 'POST') {
+            try {
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($usuario);
+                $em->flush();
+                $this->addFlash('success', 'Usuario eliminado con éxito');
+                return $this->redirectToRoute('usuario_listar');
+            }
+            catch (\Exception $e) {
+                $this->addFlash('error', 'Ha ocurrido un error al eliminar el usuario. Puede que no se pueda eliminar porque tiene aportes.');
+                return $this->redirectToRoute('usuario_form', ['id' => $usuario->getId()]);
+            }
+        }
+        return $this->render('usuario/eliminar.html.twig', [
+            'usuario' => $usuario
+        ]);
+    }
 }
