@@ -942,6 +942,7 @@ function modificarCadena(cadena) {
 }
 
 function crearEventosMovRepeticion() {
+    let tablaMov = document.getElementById("tablaMov");
     let movs = document.querySelectorAll(".spanMovRepeticion");
     let svgPlay = '<svg x="0px" y="0px" viewBox="0 0 47.604 47.604">\n' +
         '<path d="M43.331,21.237L7.233,0.397c-0.917-0.529-2.044-0.529-2.96,0c-0.916,0.528-1.48,\n' +
@@ -975,8 +976,9 @@ function crearEventosMovRepeticion() {
     // Eventos de los botones
     document.getElementById("btnTodoAtras").onclick = function () {
         pararIntervalo();
-        estilosMovActualRep(-1);
+        estilosMovActualRep(0);
         cargarTablero(0);
+        tablaMov.scrollTop = 0;
     }
 
     document.getElementById("btnAtras").onclick = function () {
@@ -1006,6 +1008,7 @@ function crearEventosMovRepeticion() {
         pararIntervalo();
         estilosMovActualRep(movs.length - 1);
         cargarTablero(miPartida.movActualRep + 1);
+        tablaMov.scrollTop = tablaMov.scrollHeight;
     }
 
     function avanzarAutomaticamente() {
