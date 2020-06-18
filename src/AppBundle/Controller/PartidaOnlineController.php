@@ -37,6 +37,7 @@ class PartidaOnlineController extends Controller
 
     /**
      * @Route("/partida_online/{id}", name="partida_online")
+     * @Security("is_granted('PARTIDA_ENTRAR', partida)")
      */
     public function indexAction(Partida $partida)
     {
@@ -47,6 +48,7 @@ class PartidaOnlineController extends Controller
 
     /**
      * @Route("/nuevo_mensaje_partida", name="nuevo_mensaje_partida")
+     * @Security("is_granted('PARTIDA_ENTRAR', partida)")
      */
     public function nuevoMensaje(Request $request, PartidaRepository $partidaRepository)
     {
