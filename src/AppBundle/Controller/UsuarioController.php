@@ -145,6 +145,42 @@ class UsuarioController extends Controller
     }
 
     /**
+     * @Route("/usuario/clave/{id}", name="usuario_establecer_clave", methods={"GET", "POST"})
+     * @Security("is_granted('ROLE_ADMINISTRADOR')")
+     */
+    public function establecerClaveAction(
+        Request $request,
+        UserPasswordEncoderInterface $encoder,
+        Usuario $usuario
+    ) {
+        $cambioClave = new CambioClave();
+
+        $form = $this->createForm(CambioClaveType::class, $cambioClave, [
+            'es_admin' => true
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $em = $this->getDoctrine()->getManager();
+                $usuario->setClave(
+                    $encoder->encodePassword($usuario, $cambioClave->getNuevaClave())
+                );
+                $em->flush();
+                $this->addFlash('success', 'Cambios en la contraseña guardados con éxito');
+                return $this->redirectToRoute('usuario_form', ['id' => $usuario->getId()]);
+            }
+            catch(\Exception $e) {
+                $this->addFlash('error', 'Ha ocurrido un error al guardar la contraseña');
+            }
+        }
+        return $this->render('usuario/establecer_clave_form.html.twig', [
+            'formulario' => $form->createView(),
+            'usuario' => $usuario
+        ]);
+    }
+
+    /**
      * @Route("/perfil/clave", name="usuario_cambiar_clave", methods={"GET", "POST"})
      * @Security("is_granted('ROLE_USER')")
      */

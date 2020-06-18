@@ -19,16 +19,6 @@ class UsuarioType extends AbstractType
             ->add('nombre', TextType::class, [
                 'label' => 'Nombre'
             ])
-            ->add('clave', RepeatedType::class, [
-                'type' => PasswordType::class,
-                'label' => 'Clave',
-                'first_options' => [
-                    'label' => 'Clave',
-                ],
-                'second_options' => [
-                    'label' => 'Repita la clave',
-                ]
-            ])
             ->add('administrador', CheckboxType::class, [
                 'label' => '¿Es administrador?',
                 'required' => false

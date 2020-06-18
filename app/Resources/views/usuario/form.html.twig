@@ -21,6 +21,7 @@
         <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Guardar cambios</button>
         {% if usuario.id %}
             <a href="{{ path('usuario_eliminar', {'id': usuario.id}) }}" class="btn btn-danger"><i class="fa fa-trash"></i> Eliminar usuario</a>
+            <a href="{{ path('usuario_establecer_clave', {'id': usuario.id}) }}" class="btn btn-warning"><i class="fa fa-key"></i> Cambiar contraseña</a>
         {% endif %}
         {{ form_end(formulario) }}
     </div>
