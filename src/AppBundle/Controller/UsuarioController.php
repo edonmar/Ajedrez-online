@@ -59,27 +59,33 @@ class UsuarioController extends Controller
     /**
      * @Route("/usuario/nuevo", name="usuario_nuevo", methods={"GET", "POST"})
      */
-    public function nuevoAction(Request $request)
+    public function nuevoAction(Request $request, UserPasswordEncoderInterface $encoder)
     {
         $nuevoUsuario = new Usuario();
         $nuevoUsuario->setFechaRegistro(new \DateTime());
+        $nuevoUsuario->setAdministrador(false);
         $em = $this->getDoctrine()->getManager();
         $em->persist($nuevoUsuario);
 
-        return $this->formAction($request, $nuevoUsuario);
+        return $this->formAction($request, $nuevoUsuario, $encoder);
     }
 
     /**
      * @Route("/usuario/form/{id}", name="usuario_form", methods={"GET", "POST"})
      */
-    public function formAction(Request $request, Usuario $usuario)
+    public function formAction(Request $request, Usuario $usuario, UserPasswordEncoderInterface $encoder)
     {
-        $form = $this->createForm(UsuarioType::class, $usuario);
+        $form = $this->createForm(UsuarioType::class, $usuario, [
+            'nuevo' => $usuario->getId() === null
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $em = $this->getDoctrine()->getManager();
+                $usuario->setClave(
+                    $encoder->encodePassword($usuario, $usuario->getClave())
+                );
                 $em->flush();
                 $this->addFlash('success', 'Cambios en el usuario guardados con éxito');
                 return $this->redirectToRoute('usuario_listar');

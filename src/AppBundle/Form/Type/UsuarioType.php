@@ -18,17 +18,35 @@ class UsuarioType extends AbstractType
         $builder
             ->add('nombre', TextType::class, [
                 'label' => 'Nombre'
-            ])
-            ->add('administrador', CheckboxType::class, [
-                'label' => '¿Es administrador?',
-                'required' => false
             ]);
+
+        if ($options['nuevo'] === true) {
+            $builder
+                ->add('clave', RepeatedType::class, [
+                    'type' => PasswordType::class,
+                    'invalid_message' => 'Las dos contraseñas no coinciden',
+                    'first_options'  => [
+                        'label' => 'Contraseña'
+                    ],
+                    'second_options' => [
+                        'label' => 'Repita la contraseña'
+                    ],
+                ]);
+        }
+        else{
+            $builder
+                ->add('administrador', CheckboxType::class, [
+                    'label' => '¿Es administrador?',
+                    'required' => false
+                ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => Usuario::class
+            'data_class' => Usuario::class,
+            'nuevo' => false
         ]);
     }
 
