@@ -1,0 +1,19 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}
+    Crear usuario
+{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{ asset('css/form.css') }}">
+    <div class="contenidoPagina">
+        <h1>Modificar mi contraseña</h1>
+        {{ form_start(formulario) }}
+        {{ form_widget(formulario) }}
+        <a href="{{ path('usuario_perfil') }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Volver a mis datos</a>
+        <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Cambiar contraseña</button>
+        {{ form_end(formulario) }}
+    </div>
+{% endblock %}
+
+

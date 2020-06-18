@@ -3,6 +3,8 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Entity\Usuario;
+use AppBundle\Form\Model\CambioClave;
+use AppBundle\Form\Type\CambioClaveType;
 use AppBundle\Form\Type\MiUsuarioType;
 use AppBundle\Form\Type\UsuarioType;
 use AppBundle\Repository\PartidaRepository;
@@ -12,6 +14,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class UsuarioController extends Controller
 {
@@ -138,6 +141,38 @@ class UsuarioController extends Controller
         return $this->render('usuario/perfil_form.html.twig', [
             'formulario' => $form->createView(),
             'usuario' => $usuario
+        ]);
+    }
+
+    /**
+     * @Route("/perfil/clave", name="usuario_cambiar_clave", methods={"GET", "POST"})
+     * @Security("is_granted('ROLE_USER')")
+     */
+    public function cambioClaveAction(Request $request, UserPasswordEncoderInterface $encoder)
+    {
+        $cambioClave = new CambioClave();
+
+        $form = $this->createForm(CambioClaveType::class, $cambioClave);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $em = $this->getDoctrine()->getManager();
+                /** @var Usuario $user */
+                $user = $this->getUser();
+                $user->setClave(
+                    $encoder->encodePassword($user, $cambioClave->getNuevaClave())
+                );
+                $em->flush();
+                $this->addFlash('success', 'Cambios en la contraseña guardados con éxito');
+                return $this->redirectToRoute('usuario_perfil');
+            }
+            catch(\Exception $e) {
+                $this->addFlash('error', 'Ha ocurrido un error al guardar la contraseña');
+            }
+        }
+        return $this->render('usuario/cambio_clave_form.html.twig', [
+            'formulario' => $form->createView()
         ]);
     }
 }
