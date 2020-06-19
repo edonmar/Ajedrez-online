@@ -71,7 +71,7 @@ class UsuarioController extends Controller
     }
 
     /**
-     * @Route("/usuario/form/{id}", name="usuario_form", methods={"GET", "POST"})
+     * @Route("/usuario/form/{id}", name="usuario_form", requirements={"id"="\d+"}, methods={"GET", "POST"})
      * @Security("is_granted('ROLE_ADMINISTRADOR')")
      */
     public function formAction(Request $request, Usuario $usuario, UserPasswordEncoderInterface $encoder)
