@@ -5,6 +5,18 @@
 {% endblock %}
 
 {% block content %}
-
+    <link rel="stylesheet" href="{{ asset('css/inicio.css') }}">
+    <div class="contenidoPagina">
+        <img id="img_inicio" src="{{ asset('img/img_inicio.png') }}">
+        <div>
+            <h1>Ajedrez online</h1>
+            <h3>Invitados</h3>
+            <p>En esta aplicación pueden, sin necesidad de registro, jugar al ajedrez dos personas usando el mismo
+                ordenador, o introducir el texto PGN de una partida para ver su repetición</p>
+            <h3>Miembros</h3>
+            <p>Los usuarios registrados pueden, además, acceder a la sala online, donde pueden chatear con los demás
+                usuarios y jugar online. Sus partidas serán guardadas y podrán acceder a ellas en cualquier momento</p>
+        </div>
+    </div>
 {% endblock %}
 

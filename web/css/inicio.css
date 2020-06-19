@@ -1,0 +1,17 @@
+.contenidoPagina {
+    color: white;
+    text-align: center;
+}
+
+#img_inicio {
+    width: 30em;
+    margin-top: 2em;
+}
+
+h1 {
+    margin-bottom: 1em;
+}
+
+h3 {
+    margin-top: 1em;
+}
