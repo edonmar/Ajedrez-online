@@ -396,6 +396,8 @@ function modalFinDePartida(cabecera, parrafo) {
     let btnNuevaPartida = document.createElement("BUTTON");
     btnNuevaPartida.innerHTML = "Nueva partida";
     btnNuevaPartida.classList.add("btnBodyModal");
+    btnNuevaPartida.classList.add("btn");
+    btnNuevaPartida.classList.add("btn-success");
 
     btnNuevaPartida.onclick = function () {
         modal.style.display = "none";
@@ -407,6 +409,8 @@ function modalFinDePartida(cabecera, parrafo) {
     let btnVerRepeticion = document.createElement("BUTTON");
     btnVerRepeticion.innerHTML = "Ver repetici&oacute;n";
     btnVerRepeticion.classList.add("btnBodyModal");
+    btnVerRepeticion.classList.add("btn");
+    btnVerRepeticion.classList.add("btn-success");
 
     btnVerRepeticion.onclick = function () {
         modal.style.display = "none";

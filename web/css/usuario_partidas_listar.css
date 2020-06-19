@@ -3,12 +3,32 @@
     width: calc(100% - 13em);
 }
 
-.contenidoPagina * {
+h1 {
     color: white;
+}
+
+table {
+    background-color: #f2f2f2;
+}
+
+thead {
+    background-color: #e6e6e6;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #e6e6e6;
 }
 
 .nombre {
     width: 35%;
+}
+
+.nombre a {
+    color: #007BFF;
+}
+
+.nombre a:hover {
+    color: #0056B9;
 }
 
 .color {

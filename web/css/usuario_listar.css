@@ -1,5 +1,17 @@
-.contenidoPagina * {
+h1 {
     color: white;
+}
+
+table {
+    background-color: #f2f2f2;
+}
+
+thead {
+    background-color: #e6e6e6;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #e6e6e6;
 }
 
 .nombre {
