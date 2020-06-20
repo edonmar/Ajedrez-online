@@ -31,8 +31,8 @@ AppBundle\Entity\Partida:
     jugadorInvitado: '@usuariosB*'
     pgn: "1. f3 e6 2. g4 Dh4#"
     resultado: "N"
-    fechaInicio: <dateTimeBetween("-3 months", "now")>
-    fechaFin: <dateTimeBetween("-3 months", "now")>
+    fechaInicio: <dateTimeBetween("-2 weeks", "now")>
+    fechaFin: <dateTimeBetween("-2 weeks", "now")>
 
   partida_2:
     anfitrionEsBlancas: true
@@ -40,7 +40,7 @@ AppBundle\Entity\Partida:
     jugadorInvitado: '@usuariosA*'
     pgn: "1. Cc3 d6"
     resultado: null
-    fechaInicio: <dateTimeBetween("-3 months", "now")>
+    fechaInicio: <dateTimeBetween("-4 days", "now")>
     fechaFin: null
 
   partida_3:
@@ -49,7 +49,7 @@ AppBundle\Entity\Partida:
     jugadorInvitado: '@usuariosB*'
     pgn: "1. g4 f5 2. gxf5 g6"
     resultado: null
-    fechaInicio: <dateTimeBetween("-3 months", "now")>
+    fechaInicio: <dateTimeBetween("-4 days", "now")>
     fechaFin: null
 
   partida_4:
