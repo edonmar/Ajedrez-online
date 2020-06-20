@@ -59,8 +59,11 @@
     color: #007BFF;
 }
 
-.nombre a:hover {
+.invitacionAceptar:hover,
+.invitacionRechazar:hover,
+.usuariosInvitar:hover {
     color: #0056B9;
+    text-decoration: underline;
 }
 
 
