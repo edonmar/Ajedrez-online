@@ -164,9 +164,11 @@ class SalaOnlineController extends Controller
         $idPartida = $request->get('partida');
         $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
 
-        $em = $this->getDoctrine()->getManager();
-        $em->remove($partida);
-        $em->flush();
+        if ($partida->getJugadorInvitado() === $this->getUser()) {
+            $em = $this->getDoctrine()->getManager();
+            $em->remove($partida);
+            $em->flush();
+        }
 
         return new JsonResponse(['status' => 'ok']);
     }
@@ -180,26 +182,30 @@ class SalaOnlineController extends Controller
         $idPartida = $request->get('partida');
         $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
 
-        // Valores iniciales de la partida
-        $partida->setAnfitrionEsBlancas(rand(0, 1) > 0.5);
-        $partida->setPgn("");
-        $partida->setFechaInicio(new \DateTime());
-        $em = $this->getDoctrine()->getManager();
-        $em->flush();
+        if ($partida->getJugadorInvitado() === $this->getUser()) {
+            // Valores iniciales de la partida
+            $partida->setAnfitrionEsBlancas(rand(0, 1) > 0.5);
+            $partida->setPgn("");
+            $partida->setFechaInicio(new \DateTime());
+            $em = $this->getDoctrine()->getManager();
+            $em->flush();
 
-        // Creo el primer tablero de la partida
-        $nuevoTablero = new Tablero();
-        $nuevoTablero->setPartida($partida);
-        $nuevoTablero->setCasillas("tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT");
-        $nuevoTablero->setTurno(true);
-        $nuevoTablero->setEnroques("DRdr");
-        $nuevoTablero->setPeonAlPaso("");
-        $nuevoTablero->setRegla50mov("0000");
-        $nuevoTablero->setUltimoMov("");
-        $nuevoTablero->setJaque(false);
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($nuevoTablero);
-        $em->flush();
+            // Creo el primer tablero de la partida
+            $nuevoTablero = new Tablero();
+            $nuevoTablero->setPartida($partida);
+            $nuevoTablero->setCasillas("tcadractpppppppp00000000000000000000000000000000PPPPPPPPTCADRACT");
+            $nuevoTablero->setTurno(true);
+            $nuevoTablero->setEnroques("DRdr");
+            $nuevoTablero->setPeonAlPaso("");
+            $nuevoTablero->setRegla50mov("0000");
+            $nuevoTablero->setUltimoMov("");
+            $nuevoTablero->setJaque(false);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($nuevoTablero);
+            $em->flush();
+        }
+
+        return new JsonResponse(['status' => 'ok']);
     }
 
     /**
