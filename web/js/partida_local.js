@@ -106,6 +106,7 @@ function realizarMovimientoYComprobaciones(x, y, esPromocionPeon) {
     let haEnrocado = enroqueYComprobaciones(x, y);
     let haCapturadoAlPAso = capturaAlPasoYComprobaciones(x, y);
     eliminarEstiloMovPosibles();
+    annadirEstiloMovAnterior(miPartida.piezaSelec.x, miPartida.piezaSelec.y);
     annadirEstiloMovAnterior(x, y);
 
     if (tieneMovimientos()) {
