@@ -935,6 +935,9 @@ function modificarCadena(cadena) {
     // Si no hay espacios despues del punto, los annado
     cadena = cadena.replace(/[.](?! )/g, ". ");
 
+    // Si hay dos espacios, los convierto a un espacio
+    cadena = cadena.replace(/\s\s/g, " ");
+
     // Si el mate esta escrito como "++", lo cambio a "#"
     cadena = cadena.replace("++", "#");
 
