@@ -29,6 +29,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/nuevo_mensaje", name="nuevo_mensaje")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function nuevoMensaje(Request $request)
     {
@@ -59,6 +60,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/cargar_mensajes_sala", name="cargar_mensajes_sala")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function cargarMensajes(MensajeRepository $mensajeRespository)
     {
@@ -94,6 +96,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/cargar_usuarios", name="cargar_usuarios")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function cargar_usuarios(UsuarioRepository $usuarioRepository)
     {
@@ -112,6 +115,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/invitar_partida", name="invitar_partida")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function invitarPartida(Request $request, UsuarioRepository $usuarioRepository)
     {
@@ -133,6 +137,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/cargar_invitaciones", name="cargar_invitaciones")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function cargar_invitaciones(PartidaRepository $partidaRepository, UsuarioRepository $usuarioRepository)
     {
@@ -152,6 +157,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/rechazar_invitacion", name="rechazar_invitacion")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function rechazarInvitacion(Request $request, PartidaRepository $partidaRepository)
     {
@@ -167,6 +173,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/aceptar_invitacion", name="aceptar_invitacion")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function aceptarInvitacion(Request $request, PartidaRepository $partidaRepository)
     {
@@ -197,6 +204,7 @@ class SalaOnlineController extends Controller
 
     /**
      * @Route("/cargar_partidas_en_curso", name="cargar_partidas_en_curso")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function cargar_partidas_en_curso(PartidaRepository $partidaRepository, TableroRepository $tableroRepository)
     {

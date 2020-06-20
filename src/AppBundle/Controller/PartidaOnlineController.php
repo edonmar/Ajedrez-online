@@ -48,6 +48,7 @@ class PartidaOnlineController extends Controller
 
     /**
      * @Route("/nuevo_mensaje_partida", name="nuevo_mensaje_partida")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function nuevoMensaje(Request $request, PartidaRepository $partidaRepository)
     {
@@ -85,6 +86,7 @@ class PartidaOnlineController extends Controller
 
     /**
      * @Route("/cargar_mensajes_partida", name="cargar_mensajes_partida")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function cargarMensajes(Request $request, MensajeRepository $mensajeRespository)
     {
@@ -104,6 +106,7 @@ class PartidaOnlineController extends Controller
 
     /**
      * @Route("/cargar_tablero", name="cargar_tablero")
+     * @Security("is_granted('ROLE_USER')")
      */
     public function cargarTablero(Request $request, TableroRepository $tableroRepository, PartidaRepository $partidaRepository)
     {
