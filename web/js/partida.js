@@ -979,7 +979,7 @@ function crearEventosMovRepeticion() {
     // Eventos de los botones
     document.getElementById("btnTodoAtras").onclick = function () {
         pararIntervalo();
-        estilosMovActualRep(0);
+        estilosMovActualRep(-1);
         cargarTablero(0);
         tablaMov.scrollTop = 0;
     }
