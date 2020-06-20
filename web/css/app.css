@@ -12,6 +12,14 @@ body {
     background-color: #222831;
 }
 
+.container {
+    padding-top: 1em;
+}
+
+.filtros {
+    padding-bottom: 1em;
+}
+
 .contenidoPagina {
     padding: 2em 1em 1em 14.5em;
     width: calc(100% - 13em);
