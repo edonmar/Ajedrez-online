@@ -48,12 +48,12 @@ class PartidaOnlineController extends Controller
 
     /**
      * @Route("/nuevo_mensaje_partida", name="nuevo_mensaje_partida")
-     * @Security("is_granted('PARTIDA_ENTRAR', partida)")
      */
     public function nuevoMensaje(Request $request, PartidaRepository $partidaRepository)
     {
         $idPartida = $request->get('partida');
         $texto = $request->get('texto');
+        $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
         $valido = false;
 
         // Compruebo que el mensaje no este en blanco
@@ -65,9 +65,11 @@ class PartidaOnlineController extends Controller
                 }
         }
 
-        if ($valido) {
-            $partida = $partidaRepository->findOneBy(array('id' => $idPartida));
+        // Compruebo que el usuario que intenta mandar el mensaje es uno de los dos jugadores de la partida
+        if($partida->getJugadorAnfitrion() !== $this->getUser() && $partida->getJugadorInvitado() !== $this->getUser())
+            $valido = false;
 
+        if ($valido) {
             $nuevoMensaje = new Mensaje();
             $nuevoMensaje->setFechaHora(new \DateTime());
             $nuevoMensaje->setPartida($partida);
