@@ -16,7 +16,7 @@
         </h1>
         {{ form_start(formulario) }}
         {{ form_widget(formulario) }}
-        <a href="{{ path('inicio', {'id': usuario.id}) }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Volver
+        <a href="{{ path('inicio') }}" class="btn btn-info"><i class="fa fa-arrow-left"></i> Volver
             al inicio</a>
         <button type="submit" class="btn btn-success"><i class="fa fa-check"></i> Guardar cambios</button>
         {% if usuario.id %}
